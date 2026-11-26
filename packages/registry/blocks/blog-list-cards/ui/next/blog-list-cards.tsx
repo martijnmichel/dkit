@@ -5,21 +5,25 @@ import { collections, moduleBasePath } from "@/lib/dkit/config";
 async function getPosts(): Promise<BlogPost[]> {
   const url = process.env.DIRECTUS_URL;
   if (!url) return [];
-  const client = createDirectus(url).with(rest());
-  return client.request(
-    readItems(collections.posts, {
-      filter: { status: { _eq: "published" } },
-      fields: [
-        "id",
-        "title",
-        "slug",
-        "excerpt",
-        "published_at",
-        { author: ["id", "name", "slug"] },
-      ],
-      sort: ["-published_at"],
-    }),
-  ) as Promise<BlogPost[]>;
+  try {
+    const client = createDirectus(url).with(rest());
+    return (await client.request(
+      readItems(collections.posts, {
+        filter: { status: { _eq: "published" } },
+        fields: [
+          "id",
+          "title",
+          "slug",
+          "excerpt",
+          "published_at",
+          { author: ["id", "name", "slug"] },
+        ],
+        sort: ["-published_at"],
+      }),
+    )) as BlogPost[];
+  } catch {
+    return [];
+  }
 }
 
 export async function BlogListCards({

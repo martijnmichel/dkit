@@ -9,17 +9,21 @@ import { collections } from "@/lib/dkit/config";
 async function getPost(slug: string): Promise<BlogPost | null> {
   const url = process.env.DIRECTUS_URL;
   if (!url) return null;
-  const client = createDirectus(url).with(rest());
-  const rows = (await client.request(
-    readItems(collections.posts, {
-      filter: {
-        _and: [{ status: { _eq: "published" } }, { slug: { _eq: slug } }],
-      },
-      fields: ["id", "title", "slug", "body", "published_at"],
-      limit: 1,
-    }),
-  )) as BlogPost[];
-  return rows[0] ?? null;
+  try {
+    const client = createDirectus(url).with(rest());
+    const rows = (await client.request(
+      readItems(collections.posts, {
+        filter: {
+          _and: [{ status: { _eq: "published" } }, { slug: { _eq: slug } }],
+        },
+        fields: ["id", "title", "slug", "body", "published_at"],
+        limit: 1,
+      }),
+    )) as BlogPost[];
+    return rows[0] ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export async function BlogDetailMinimal({ slug }: { slug: string }) {

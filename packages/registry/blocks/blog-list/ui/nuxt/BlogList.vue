@@ -22,15 +22,19 @@ const config = useRuntimeConfig()
 const { data: posts } = await useAsyncData('dkit-blog-list', async () => {
   const url = config.public.directusUrl as string | undefined
   if (!url) return [] as BlogPost[]
-  const { createDirectus, rest, readItems } = await import('@directus/sdk')
-  const client = createDirectus(url).with(rest())
-  return client.request(
-    readItems(collections.posts, {
-      filter: { status: { _eq: 'published' } },
-      fields: ['id', 'title', 'slug', 'excerpt', 'published_at', { author: ['name'] }],
-      sort: ['-published_at'],
-    }),
-  ) as Promise<BlogPost[]>
+  try {
+    const { createDirectus, rest, readItems } = await import('@directus/sdk')
+    const client = createDirectus(url).with(rest())
+    return (await client.request(
+      readItems(collections.posts, {
+        filter: { status: { _eq: 'published' } },
+        fields: ['id', 'title', 'slug', 'excerpt', 'published_at', { author: ['name'] }],
+        sort: ['-published_at'],
+      }),
+    )) as BlogPost[]
+  } catch {
+    return [] as BlogPost[]
+  }
 })
 
 function authorName(post: BlogPost) {

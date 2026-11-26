@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { collections, moduleBasePath } from '@/lib/dkit/config'
 
+type BlogCategory = { id: string; title?: string; slug?: string }
 type BlogPost = {
   id: string
   title: string
@@ -8,7 +9,7 @@ type BlogPost = {
   body?: string | null
   published_at?: string | null
   author?: { name?: string } | string | null
-  categories?: Array<{ id: string; title?: string; slug?: string } | string> | null
+  categories?: Array<BlogCategory | { categories_id?: BlogCategory | string | null }> | null
 }
 
 const props = withDefaults(defineProps<{ slug: string; basePath?: string }>(), {
@@ -23,26 +24,30 @@ const config = useRuntimeConfig()
 const { data: post } = await useAsyncData(`dkit-blog-${props.slug}`, async () => {
   const url = config.public.directusUrl as string | undefined
   if (!url) return null
-  const { createDirectus, rest, readItems } = await import('@directus/sdk')
-  const client = createDirectus(url).with(rest())
-  const rows = (await client.request(
-    readItems(collections.posts, {
-      filter: {
-        _and: [{ status: { _eq: 'published' } }, { slug: { _eq: props.slug } }],
-      },
-      fields: [
-        'id',
-        'title',
-        'slug',
-        'body',
-        'published_at',
-        { author: ['name'] },
-        { categories: ['id', 'title', 'slug'] },
-      ],
-      limit: 1,
-    }),
-  )) as BlogPost[]
-  return rows[0] ?? null
+  try {
+    const { createDirectus, rest, readItems } = await import('@directus/sdk')
+    const client = createDirectus(url).with(rest())
+    const rows = (await client.request(
+      readItems(collections.posts, {
+        filter: {
+          _and: [{ status: { _eq: 'published' } }, { slug: { _eq: props.slug } }],
+        },
+        fields: [
+          'id',
+          'title',
+          'slug',
+          'body',
+          'published_at',
+          { author: ['name'] },
+          { categories: ['id', { categories_id: ['id', 'title', 'slug'] }] },
+        ],
+        limit: 1,
+      }),
+    )) as BlogPost[]
+    return rows[0] ?? null
+  } catch {
+    return null
+  }
 })
 
 const author = computed(() =>
@@ -51,12 +56,20 @@ const author = computed(() =>
     : null,
 )
 
-const categories = computed(() =>
-  (post.value?.categories ?? []).filter(
-    (c): c is { id: string; title?: string; slug?: string } =>
-      typeof c === 'object' && c !== null,
-  ),
-)
+const categories = computed(() => {
+  const raw = post.value?.categories ?? []
+  const out: BlogCategory[] = []
+  for (const item of raw) {
+    if (!item || typeof item !== 'object') continue
+    if ('title' in item && 'id' in item) {
+      out.push(item as BlogCategory)
+      continue
+    }
+    const related = (item as { categories_id?: BlogCategory | string | null }).categories_id
+    if (related && typeof related === 'object' && 'id' in related) out.push(related)
+  }
+  return out
+})
 </script>
 
 <template>
