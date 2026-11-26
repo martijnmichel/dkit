@@ -1,7 +1,18 @@
 "use client";
 
-import type { BlockSandpackProject } from "@/lib/sandpack/build-project";
-import type { PreviewFramework } from "@/lib/preview-prefs";
+import type {
+  PreviewFramework,
+  PreviewTheme,
+  PreviewUiKit,
+} from "@/lib/preview-prefs";
+import {
+  buildSandpackMinimalCss,
+  buildSandpackThemeCss,
+  THEME_PRESETS,
+  withSandpackThemeCss,
+} from "@/lib/sandpack/themes";
+import type { BlockSandpackProject } from "@/lib/sandpack/types";
+import { resolveProjectUiKit } from "@/lib/sandpack/types";
 import {
   SandpackCodeEditor,
   SandpackLayout,
@@ -10,32 +21,68 @@ import {
 } from "@codesandbox/sandpack-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 
-function useResolvedProject(
+function frameworkLabel(fw: PreviewFramework): string {
+  return fw === "nuxt" ? "Nuxt" : "Next";
+}
+
+function kitLabel(kit: PreviewUiKit, fw: PreviewFramework): string {
+  if (kit === "minimal") return "minimal";
+  return fw === "nuxt" ? "shadcn (Vue)" : "shadcn";
+}
+
+function useResolvedVariant(
   project: BlockSandpackProject,
   framework: PreviewFramework,
+  uiKit: PreviewUiKit,
+  theme: PreviewTheme,
 ) {
   return useMemo(() => {
-    const preferred = framework === "nuxt" ? project.nuxt : project.next;
-    const fallback = framework === "nuxt" ? project.next : project.nuxt;
-    const files = preferred ?? fallback;
+    const actualKit = resolveProjectUiKit(project, uiKit);
+    const variant = project.variants[actualKit];
+    const preferredFw =
+      framework === "nuxt" ? variant?.nuxt : variant?.next;
+    const fallbackFw =
+      framework === "nuxt" ? variant?.next : variant?.nuxt;
+    const baseFiles = preferredFw ?? fallbackFw ?? null;
     const actualFramework: PreviewFramework =
-      preferred != null ? framework : framework === "nuxt" ? "next" : "nuxt";
-    return { files, actualFramework, missingPreferred: !preferred };
-  }, [project, framework]);
+      preferredFw != null
+        ? framework
+        : framework === "nuxt"
+          ? "next"
+          : "nuxt";
+
+    const css =
+      actualKit === "minimal"
+        ? buildSandpackMinimalCss()
+        : buildSandpackThemeCss(theme);
+    const files = baseFiles ? withSandpackThemeCss(baseFiles, css) : null;
+
+    return {
+      files,
+      actualFramework,
+      actualKit,
+      kitFallback: actualKit !== uiKit,
+      frameworkFallback: preferredFw == null && fallbackFw != null,
+    };
+  }, [project, framework, uiKit, theme]);
 }
 
 function SandpackStage({
   project,
   framework,
+  uiKit,
+  theme,
   height,
   showCode,
 }: {
   project: BlockSandpackProject;
   framework: PreviewFramework;
+  uiKit: PreviewUiKit;
+  theme: PreviewTheme;
   height: number;
   showCode: boolean;
 }) {
-  const resolved = useResolvedProject(project, framework);
+  const resolved = useResolvedVariant(project, framework, uiKit, theme);
   if (!resolved.files) return null;
 
   const template =
@@ -43,7 +90,7 @@ function SandpackStage({
 
   return (
     <SandpackProvider
-      key={`${project.blockId}-${resolved.actualFramework}-${height}`}
+      key={`${project.blockId}-${resolved.actualFramework}-${resolved.actualKit}-${theme}-${height}`}
       template={template}
       theme="light"
       files={resolved.files}
@@ -70,11 +117,7 @@ function SandpackStage({
         }}
       >
         {showCode ? (
-          <SandpackCodeEditor
-            showTabs
-            showLineNumbers
-            style={{ height }}
-          />
+          <SandpackCodeEditor showTabs showLineNumbers style={{ height }} />
         ) : null}
         <SandpackPreview
           showOpenInCodeSandbox
@@ -89,15 +132,19 @@ function SandpackStage({
 export function SandpackBlockPreview({
   project,
   framework,
+  uiKit,
+  theme,
 }: {
   project: BlockSandpackProject;
   framework: PreviewFramework;
+  uiKit: PreviewUiKit;
+  theme: PreviewTheme;
 }) {
   const [showCode, setShowCode] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
-  const resolved = useResolvedProject(project, framework);
+  const resolved = useResolvedVariant(project, framework, uiKit, theme);
 
   useEffect(() => {
     const el = dialogRef.current;
@@ -122,24 +169,37 @@ export function SandpackBlockPreview({
     return (
       <p className="p-6 text-sm text-muted-foreground">
         No live preview for{" "}
-        <code className="font-mono">{project.blockId}</code> yet. Install the
-        block with <code className="font-mono">dkit add</code> to use it locally.
+        <code className="font-mono">{project.blockId}</code> with this
+        framework / UI kit.
       </p>
     );
   }
 
-  const metaLabel = resolved.missingPreferred
-    ? `This block ships ${resolved.actualFramework} UI only — showing that variant.`
-    : `Live sandbox · ${
-        resolved.actualFramework === "nuxt"
-          ? "Nuxt / Vue · shadcn-vue tokens"
-          : "Next / React · shadcn tokens"
-      }`;
+  const themeLabel =
+    resolved.actualKit === "shadcn"
+      ? THEME_PRESETS[theme]?.label ?? theme
+      : null;
+
+  const metaLabel = [
+    frameworkLabel(resolved.actualFramework),
+    kitLabel(resolved.actualKit, resolved.actualFramework),
+    themeLabel,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  const fallbackNote = resolved.kitFallback
+    ? `This component ships ${project.uiKits.join(" / ")} only — showing ${resolved.actualKit}.`
+    : resolved.frameworkFallback
+      ? `No ${framework} UI — showing ${resolved.actualFramework}.`
+      : null;
 
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-center justify-between gap-2 px-1">
-        <p className="text-xs text-muted-foreground">{metaLabel}</p>
+        <p className="text-xs text-muted-foreground">
+          {fallbackNote ?? metaLabel}
+        </p>
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -161,6 +221,8 @@ export function SandpackBlockPreview({
       <SandpackStage
         project={project}
         framework={framework}
+        uiKit={uiKit}
+        theme={theme}
         height={showCode ? 360 : 520}
         showCode={showCode}
       />
@@ -183,7 +245,9 @@ export function SandpackBlockPreview({
               >
                 {project.blockId}
               </h3>
-              <p className="truncate text-xs text-muted-foreground">{metaLabel}</p>
+              <p className="truncate text-xs text-muted-foreground">
+                {fallbackNote ?? metaLabel}
+              </p>
             </div>
             <div className="flex shrink-0 items-center gap-2">
               <button
@@ -207,6 +271,8 @@ export function SandpackBlockPreview({
               <SandpackStage
                 project={project}
                 framework={framework}
+                uiKit={uiKit}
+                theme={theme}
                 height={showCode ? 480 : 720}
                 showCode={showCode}
               />

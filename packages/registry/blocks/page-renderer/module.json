@@ -5,6 +5,8 @@
   "description": "Dynamic M2A block renderer",
   "version": "0.1.0",
   "frameworks": ["next"],
+  "uiKits": ["shadcn"],
+  "slot": "renderer",
   "registryDependencies": ["page-builder"],
   "dependencies": ["@directus/sdk"],
   "layers": ["ui"]

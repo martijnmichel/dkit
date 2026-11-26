@@ -6,8 +6,8 @@ import { getPostBySlug } from "@/lib/dkit/blog";
 import { getPageBySlug } from "@/lib/dkit/pages";
 import type { RegistryItem } from "@/lib/registry";
 import { buildModuleSandpackProjects } from "@/lib/sandpack/build-project";
-import { BlogDetail } from "../../../../packages/registry/blocks/blog-detail/ui/next/blog-detail";
-import { PageDetail } from "../../../../packages/registry/blocks/page-detail/ui/next/page-detail";
+import { BlogDetail } from "../../../../packages/registry/blocks/blog-detail/ui/shadcn/next/blog-detail";
+import { PageDetail } from "../../../../packages/registry/blocks/page-detail/ui/shadcn/next/page-detail";
 
 export async function ModuleBlockPreviews({
   moduleId,

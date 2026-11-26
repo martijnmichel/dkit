@@ -5,7 +5,9 @@
   "description": "Validated Next.js Server Action form",
   "version": "0.1.0",
   "frameworks": ["next"],
+  "uiKits": ["shadcn"],
+  "slot": "form",
   "registryDependencies": ["contact-form"],
-  "dependencies": ["@directus/sdk", "zod"],
+  "dependencies": ["@directus/sdk"],
   "layers": ["ui"]
 }

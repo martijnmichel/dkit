@@ -9,7 +9,7 @@
     "preview": "nuxt preview --port 3002",
     "dkit:init": "node ../../packages/cli/dist/bin.js init --yes --framework nuxt --url ${DIRECTUS_URL:-http://localhost:8010} --token ${DIRECTUS_TOKEN:?set DIRECTUS_TOKEN}",
     "dkit:add-blog": "node ../../packages/cli/dist/bin.js add blog --framework nuxt --seed --force --yes --path /blog --prefix dkit_",
-    "dkit:add-blog-cards": "node ../../packages/cli/dist/bin.js add blog --framework nuxt --template list=blog-list-cards,detail=blog-detail-minimal --seed --force --yes --path /blog --prefix dkit_",
+    "dkit:add-blog-cards": "node ../../packages/cli/dist/bin.js add blog --framework nuxt --template list=blog-list-cards --seed --force --yes --path /blog --prefix dkit_",
     "dkit:clear": "node ./scripts/clear-dkit.mjs",
     "dkit:reset": "pnpm dkit:clear && pnpm dkit:add-blog"
   },

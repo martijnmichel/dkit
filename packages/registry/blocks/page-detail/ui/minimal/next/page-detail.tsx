@@ -1,6 +1,7 @@
 import { getPage } from "@/lib/dkit/pages";
 
-export async function PageDetailMinimal({ slug }: { slug: string }) {
+/** Minimal kit — semantic HTML + dkit-prose only. */
+export async function PageDetail({ slug }: { slug: string }) {
   const page = await getPage(slug);
   if (!page) return <p>Page not found.</p>;
 

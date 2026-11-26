@@ -3,6 +3,14 @@ import { z } from "zod";
 export const FrameworkSchema = z.enum(["next", "nuxt", "sveltekit", "astro"]);
 export type Framework = z.infer<typeof FrameworkSchema>;
 
+/**
+ * How block UI binds to the host design system.
+ * - shadcn: theme tokens (Next shadcn/ui or Nuxt shadcn-vue — same kit id)
+ * - minimal: semantic HTML + `.dkit-prose` only
+ */
+export const UiKitSchema = z.enum(["shadcn", "minimal"]);
+export type UiKit = z.infer<typeof UiKitSchema>;
+
 export const LayerSchema = z.enum([
   "schema",
   "access",
@@ -60,12 +68,27 @@ export const BlockManifestSchema = z.object({
   dependencies: z.array(z.string()).default([]),
   registryDependencies: z.array(z.string()).default([]),
   frameworks: z.array(FrameworkSchema).default(["next"]),
+  /**
+   * UI kits this component ships. Layout lives under `ui/{kit}/{framework}/`.
+   * Not every block needs every kit — omit unsupported ones.
+   */
+  uiKits: z.array(UiKitSchema).default(["shadcn"]),
   /** Which module slot this template fills (list | detail | form | …) */
   slot: z.string().optional(),
   layers: z.array(LayerSchema).default(["ui"]),
 });
 
 export type BlockManifest = z.infer<typeof BlockManifestSchema>;
+
+/** Pick preferred kit if the block ships it; otherwise first available. */
+export function resolveUiKit(
+  available: UiKit[] | undefined,
+  preferred?: UiKit | null,
+): UiKit {
+  const kits = available?.length ? available : (["shadcn"] as UiKit[]);
+  if (preferred && kits.includes(preferred)) return preferred;
+  return kits[0]!;
+}
 
 export const RegistryItemSchema = z.discriminatedUnion("type", [
   ModuleManifestSchema,
@@ -97,6 +120,8 @@ export const RegistryIndexSchema = z.object({
         .optional(),
       registryDependencies: z.array(z.string()).optional(),
       slot: z.string().optional(),
+      uiKits: z.array(UiKitSchema).optional(),
+      frameworks: z.array(FrameworkSchema).optional(),
     }),
   ),
 });

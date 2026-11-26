@@ -50,7 +50,7 @@ export function initCommand(): Command {
     .option("--framework <name>", "Force framework (next|nuxt); skips detect")
     .option(
       "--ui <adapter>",
-      "UI adapter: shadcn (Next shadcn/ui or Nuxt shadcn-vue) | minimal",
+      "UI kit: shadcn (Next shadcn/ui · Nuxt shadcn-vue) | minimal",
     )
     .option("--yes", "Non-interactive: require --url and --token (CI)")
     .action(
@@ -201,14 +201,14 @@ export function initCommand(): Command {
         let uiAdapter: UiAdapter = uiFromFlag ?? "shadcn";
         if (!uiFromFlag) {
           const uiPick = await p.select({
-            message: "UI adapter (how installed blocks are styled)",
+            message: "UI kit (how components bind to your design system)",
             options: [
               {
                 value: "shadcn" as const,
                 label:
                   framework === "nuxt"
-                    ? "shadcn-vue theme tokens"
-                    : "shadcn/ui theme tokens",
+                    ? "shadcn (Vue / shadcn-vue tokens)"
+                    : "shadcn (React / shadcn-ui tokens)",
                 hint: "recommended — inherits your theme CSS variables",
               },
               {
@@ -391,12 +391,12 @@ async function finishInit(args: {
       ? args.framework === "nuxt"
         ? "Ensure shadcn-vue CSS variables are in your theme."
         : "Ensure shadcn/ui CSS variables are in your theme."
-      : "Minimal blocks prefer *-minimal templates + dkit-prose.";
+      : "Minimal kit: semantic HTML + dkit-prose (blocks fall back if they only ship shadcn).";
 
   p.note(
     [
       `Framework: ${args.framework}`,
-      `UI:        ${args.uiAdapter}`,
+      `UI kit:    ${args.uiAdapter}`,
       `Prefix:    ${args.collectionPrefix || "(none)"}`,
       `Config:    ${path.join(args.projectRoot, "dkit.json")}`,
       `Env:       ${path.join(args.projectRoot, ".env.local")}`,

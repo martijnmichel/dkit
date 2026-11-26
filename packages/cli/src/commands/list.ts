@@ -60,11 +60,13 @@ export function listCommand(): Command {
       }
       console.log(
         pc.dim(
-          "\nOverride: dkit add blog --template list=blog-list-cards,detail=blog-detail-minimal",
+          "\nOverride: dkit add blog --template list=blog-list-cards",
         ),
       );
       console.log(
-        pc.dim("Or pick explicitly: dkit add blog --with blog-list-cards,blog-detail\n"),
+        pc.dim(
+          "UI kit from dkit.json uiAdapter (shadcn|minimal). Or: dkit add blog --with blog-list-cards,blog-detail\n",
+        ),
       );
     });
 }

@@ -8,9 +8,9 @@ export const ModuleInstallConfigSchema = z.object({
 });
 
 /**
- * Visual adapter for installed UI blocks.
- * - shadcn: theme tokens (bg-background, text-primary, …) — Next shadcn/ui or Nuxt shadcn-vue
- * - minimal: semantic HTML + dkit-prose only (prefer *-minimal block templates)
+ * Preferred UI kit when installing blocks (`dkit.json`).
+ * Same values as block `uiKits`: shadcn (tokens / shadcn-vue on Nuxt) | minimal.
+ * If a block does not ship the preferred kit, CLI falls back to that block's first kit.
  */
 export const UiAdapterSchema = z.enum(["shadcn", "minimal"]);
 export type UiAdapter = z.infer<typeof UiAdapterSchema>;

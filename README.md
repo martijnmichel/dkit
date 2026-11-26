@@ -46,7 +46,7 @@ npx dkit add blog --seed
 
 ```bash
 dkit add blog
-dkit add blog --template list=blog-list-cards,detail=blog-detail-minimal
+dkit add blog --template list=blog-list-cards
 dkit add blog --with blog-list-cards,blog-detail
 dkit add blog --framework nuxt
 dkit add blog --schema-only
@@ -56,7 +56,7 @@ dkit list
 dkit doctor
 ```
 
-Blog ships multiple **templates per slot** (`list`, `detail`). Defaults are used unless you pass `--template` or `--with`.
+Blog ships multiple **component variants per slot** (`list`, `detail`). UI kit (`shadcn` | `minimal`) comes from `dkit.json` `uiAdapter`. Defaults are used unless you pass `--template` or `--with`.
 
 Interactive `dkit add` **always asks** for:
 

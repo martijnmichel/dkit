@@ -64,7 +64,7 @@ export function addCommand(): Command {
     )
     .option(
       "--template <slots>",
-      "Override slots: list=blog-list-cards,detail=blog-detail-minimal",
+      "Override slots: list=blog-list-cards (UI kit comes from dkit.json uiAdapter)",
     )
     .option("--path <basePath>", "Prefill route base path (still prompted unless --yes)")
     .option(
@@ -133,11 +133,10 @@ export function addCommand(): Command {
           uiOnly: opts.uiOnly,
           withBlocks,
           templateOverrides,
-          uiAdapter: config.uiAdapter,
         });
 
         p.log.info(
-          `Plan: modules [${plan.modules.join(", ") || "—"}] · blocks [${plan.blocks.join(", ") || "—"}] · framework ${framework} · ui ${config.uiAdapter}`,
+          `Plan: modules [${plan.modules.join(", ") || "—"}] · blocks [${plan.blocks.join(", ") || "—"}] · framework ${framework} · ui kit ${config.uiAdapter}`,
         );
 
         // —— Collection prefix (always ask unless --yes) ——
@@ -271,7 +270,12 @@ export function addCommand(): Command {
         const pendingBlocks: LoadedBlock[] = [];
         if (!opts.schemaOnly) {
           for (const blockId of plan.blocks) {
-            const loaded = await loadItem(blockId, config.registry, framework);
+            const loaded = await loadItem(
+              blockId,
+              config.registry,
+              framework,
+              config.uiAdapter,
+            );
             if (loaded.kind !== "block") continue;
             pendingBlocks.push(loaded.item);
           }
@@ -424,7 +428,7 @@ export function addCommand(): Command {
           for (const block of pendingBlocks) {
             if (opts.dryRun) {
               p.log.info(
-                `ui: would write ${block.uiFiles.length} file(s) for ${block.manifest.id} (${framework})`,
+                `ui: would write ${block.uiFiles.length} file(s) for ${block.manifest.id} (${framework}/${block.uiKit})`,
               );
               continue;
             }

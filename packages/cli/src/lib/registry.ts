@@ -9,7 +9,8 @@ import {
   type ModuleManifest,
   type RegistryIndex,
   type RegistryItem,
-  type UiAdapter,
+  resolveUiKit,
+  type UiKit,
 } from "@dkit/shared";
 import { getBundledRegistryRoot } from "./paths.js";
 import {
@@ -36,6 +37,7 @@ export type LoadedBlock = {
   manifest: BlockManifest;
   dir: string;
   framework: Framework;
+  uiKit: UiKit;
   uiFiles: Array<{ abs: string; rel: string }>;
 };
 
@@ -65,6 +67,7 @@ export async function loadItem(
   id: string,
   registryUrlOrPath?: string,
   framework: Framework = "next",
+  preferredUiKit?: UiKit,
 ): Promise<
   | { kind: "module"; item: LoadedModule }
   | { kind: "block"; item: LoadedBlock }
@@ -87,7 +90,7 @@ export async function loadItem(
   if (entry.type === "dkit:module") {
     return { kind: "module", item: loadModuleDir(dir) };
   }
-  return { kind: "block", item: loadBlockDir(dir, framework) };
+  return { kind: "block", item: loadBlockDir(dir, framework, preferredUiKit) };
 }
 
 function loadModuleDir(dir: string): LoadedModule {
@@ -157,7 +160,11 @@ function loadSeedBundle(servicesDir: string, seedPath: string): unknown {
   return seed;
 }
 
-function loadBlockDir(dir: string, framework: Framework): LoadedBlock {
+function loadBlockDir(
+  dir: string,
+  framework: Framework,
+  preferredUiKit?: UiKit,
+): LoadedBlock {
   const manifest = BlockManifestSchema.parse(
     JSON.parse(fs.readFileSync(path.join(dir, "module.json"), "utf8")),
   );
@@ -166,17 +173,18 @@ function loadBlockDir(dir: string, framework: Framework): LoadedBlock {
       `Block "${manifest.id}" has no "${framework}" adapter. Available: ${manifest.frameworks.join(", ")}`,
     );
   }
-  const uiRoot = path.join(dir, "ui", framework);
+  const uiKit = resolveUiKit(manifest.uiKits, preferredUiKit);
+  const uiRoot = path.join(dir, "ui", uiKit, framework);
   const uiFiles: Array<{ abs: string; rel: string }> = [];
   if (!fs.existsSync(uiRoot)) {
     throw new Error(
-      `Missing ui/${framework} for block "${manifest.id}" at ${uiRoot}`,
+      `Missing ui/${uiKit}/${framework} for block "${manifest.id}" at ${uiRoot}`,
     );
   }
   walkFiles(uiRoot, (abs) => {
     uiFiles.push({ abs, rel: path.relative(uiRoot, abs) });
   });
-  return { manifest, dir, framework, uiFiles };
+  return { manifest, dir, framework, uiKit, uiFiles };
 }
 
 function readJsonIfExists(file: string): unknown | undefined {
@@ -202,7 +210,6 @@ export function resolveInstallPlan(
     uiOnly?: boolean;
     withBlocks?: string[];
     templateOverrides?: TemplateOverrides;
-    uiAdapter?: UiAdapter;
   },
 ): { modules: string[]; blocks: string[] } {
   const entry = index.items.find((i) => i.id === id);
@@ -220,7 +227,6 @@ export function resolveInstallPlan(
         registryRoot,
         opts.templateOverrides ?? {},
         opts.withBlocks,
-        opts.uiAdapter,
       );
       for (const b of names) blocks.add(b);
     }

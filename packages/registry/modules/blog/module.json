@@ -15,7 +15,7 @@
     },
     "detail": {
       "default": "blog-detail",
-      "options": ["blog-detail", "blog-detail-minimal"]
+      "options": ["blog-detail"]
     }
   },
   "collections": ["blog", "authors", "categories", "posts", "posts_categories"],

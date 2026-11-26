@@ -3,8 +3,10 @@
 import { usePreviewPrefs } from "@/components/previews/preview-prefs-context";
 import {
   type PreviewFramework,
+  type PreviewTheme,
   type PreviewUiKit,
 } from "@/lib/preview-prefs";
+import { THEME_OPTIONS } from "@/lib/sandpack/themes";
 
 const FRAMEWORK_OPTIONS: Array<{
   value: PreviewFramework;
@@ -14,17 +16,9 @@ const FRAMEWORK_OPTIONS: Array<{
   { value: "nuxt", label: "Nuxt" },
 ];
 
-function uiKitOptions(framework: PreviewFramework): Array<{
-  value: PreviewUiKit;
-  label: string;
-}> {
-  return [
-    {
-      value: "shadcn",
-      label: framework === "nuxt" ? "shadcn-vue" : "shadcn",
-    },
-    { value: "minimal", label: "Minimal" },
-  ];
+function uiKitLabel(kit: PreviewUiKit, framework: PreviewFramework): string {
+  if (kit === "minimal") return "Minimal";
+  return framework === "nuxt" ? "shadcn (Vue)" : "shadcn";
 }
 
 function SelectField({
@@ -37,7 +31,7 @@ function SelectField({
   id: string;
   label: string;
   value: string;
-  options: Array<{ value: string; label: string }>;
+  options: Array<{ value: string; label: string; disabled?: boolean }>;
   onChange: (value: string) => void;
 }) {
   return (
@@ -52,8 +46,9 @@ function SelectField({
         className="h-8 min-w-[7.5rem] flex-1 cursor-pointer rounded-md border border-border bg-white px-2 text-sm text-foreground shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
+          <option key={opt.value} value={opt.value} disabled={opt.disabled}>
             {opt.label}
+            {opt.disabled ? " (n/a)" : ""}
           </option>
         ))}
       </select>
@@ -61,15 +56,29 @@ function SelectField({
   );
 }
 
-/** Shared framework + UI kit selects (synced via PreviewPrefsProvider / localStorage). */
+/** Shared framework + UI kit (+ theme when shadcn) selects. */
 export function PreviewSelectBar({
   className,
   idPrefix = "preview",
+  availableFrameworks,
+  availableUiKits,
 }: {
   className?: string;
   idPrefix?: string;
+  availableFrameworks?: PreviewFramework[];
+  availableUiKits?: PreviewUiKit[];
 }) {
-  const { prefs, setFramework, setUi } = usePreviewPrefs();
+  const { prefs, setFramework, setUi, setTheme } = usePreviewPrefs();
+
+  const frameworks = availableFrameworks?.length
+    ? availableFrameworks
+    : (["next", "nuxt"] as PreviewFramework[]);
+  const kits = availableUiKits?.length
+    ? availableUiKits
+    : (["shadcn", "minimal"] as PreviewUiKit[]);
+
+  const activeUi = kits.includes(prefs.ui) ? prefs.ui : kits[0]!;
+  const showTheme = activeUi === "shadcn";
 
   return (
     <div
@@ -81,17 +90,37 @@ export function PreviewSelectBar({
       <SelectField
         id={`${idPrefix}-framework`}
         label="Framework"
-        value={prefs.framework}
-        options={FRAMEWORK_OPTIONS}
+        value={
+          frameworks.includes(prefs.framework)
+            ? prefs.framework
+            : frameworks[0]!
+        }
+        options={FRAMEWORK_OPTIONS.map((o) => ({
+          ...o,
+          disabled: !frameworks.includes(o.value),
+        }))}
         onChange={(v) => setFramework(v as PreviewFramework)}
       />
       <SelectField
         id={`${idPrefix}-ui`}
         label="UI kit"
-        value={prefs.ui}
-        options={uiKitOptions(prefs.framework)}
+        value={activeUi}
+        options={(["shadcn", "minimal"] as PreviewUiKit[]).map((kit) => ({
+          value: kit,
+          label: uiKitLabel(kit, prefs.framework),
+          disabled: !kits.includes(kit),
+        }))}
         onChange={(v) => setUi(v as PreviewUiKit)}
       />
+      {showTheme ? (
+        <SelectField
+          id={`${idPrefix}-theme`}
+          label="Theme"
+          value={prefs.theme}
+          options={THEME_OPTIONS}
+          onChange={(v) => setTheme(v as PreviewTheme)}
+        />
+      ) : null}
     </div>
   );
 }

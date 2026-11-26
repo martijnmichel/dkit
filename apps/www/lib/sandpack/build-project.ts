@@ -1,8 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
 import { registryRoot } from "@/lib/registry";
-import type { PreviewFramework } from "@/lib/preview-prefs";
+import type { PreviewFramework, PreviewUiKit } from "@/lib/preview-prefs";
 import { SANDPACK_THEME_CSS } from "@/lib/sandpack/theme-css";
+import type {
+  BlockSandpackProject,
+  KitVariantFiles,
+  SandpackFiles,
+} from "@/lib/sandpack/types";
 import {
   buildBlogMockSource,
   buildConfigMockSource,
@@ -11,21 +16,18 @@ import {
   buildPagesMockSource,
 } from "@/lib/sandpack/mocks";
 
-export type SandpackFiles = Record<string, string>;
-
-export type BlockSandpackProject = {
-  blockId: string;
-  title: string;
-  description?: string;
-  frameworks: PreviewFramework[];
-  next: SandpackFiles | null;
-  nuxt: SandpackFiles | null;
-};
+export type {
+  BlockSandpackProject,
+  KitVariantFiles,
+  SandpackFiles,
+} from "@/lib/sandpack/types";
+export { resolveProjectUiKit } from "@/lib/sandpack/types";
 
 const BLOCK_META: Record<
   string,
   {
     module: "blog" | "pages" | "contact-form" | "page-builder";
+    uiKits: PreviewUiKit[];
     nextFile?: string;
     nuxtFile?: string;
     exportName?: string;
@@ -34,51 +36,43 @@ const BLOCK_META: Record<
 > = {
   "blog-list": {
     module: "blog",
+    uiKits: ["shadcn"],
     nextFile: "blog-list.tsx",
     nuxtFile: "BlogList.vue",
     exportName: "BlogList",
   },
   "blog-list-cards": {
     module: "blog",
+    uiKits: ["shadcn"],
     nextFile: "blog-list-cards.tsx",
     nuxtFile: "BlogListCards.vue",
     exportName: "BlogListCards",
   },
   "blog-detail": {
     module: "blog",
+    uiKits: ["shadcn", "minimal"],
     nextFile: "blog-detail.tsx",
     nuxtFile: "BlogDetail.vue",
     exportName: "BlogDetail",
     props: { slug: '"sample-getting-started"' },
   },
-  "blog-detail-minimal": {
-    module: "blog",
-    nextFile: "blog-detail-minimal.tsx",
-    nuxtFile: "BlogDetailMinimal.vue",
-    exportName: "BlogDetailMinimal",
-    props: { slug: '"sample-getting-started"' },
-  },
   "page-detail": {
     module: "pages",
+    uiKits: ["shadcn", "minimal"],
     nextFile: "page-detail.tsx",
     nuxtFile: "PageDetail.vue",
     exportName: "PageDetail",
     props: { slug: '"about"' },
   },
-  "page-detail-minimal": {
-    module: "pages",
-    nextFile: "page-detail-minimal.tsx",
-    nuxtFile: "PageDetailMinimal.vue",
-    exportName: "PageDetailMinimal",
-    props: { slug: '"about"' },
-  },
   "contact-form-ui": {
     module: "contact-form",
+    uiKits: ["shadcn"],
     nextFile: "contact-form.tsx",
     exportName: "ContactForm",
   },
   "page-renderer": {
     module: "page-builder",
+    uiKits: ["shadcn"],
     nextFile: "page-renderer.tsx",
     exportName: "PageRenderer",
     props: { slug: '"sample"' },
@@ -87,6 +81,7 @@ const BLOCK_META: Record<
 
 function readUiFile(
   blockId: string,
+  kit: PreviewUiKit,
   framework: "next" | "nuxt",
   fileName: string,
 ): string | null {
@@ -95,6 +90,7 @@ function readUiFile(
     "blocks",
     blockId,
     "ui",
+    kit,
     framework,
     fileName,
   );
@@ -145,17 +141,17 @@ function ensureVueAutoImports(vueSource: string): string {
 
 function buildNextProject(
   blockId: string,
+  kit: PreviewUiKit,
   meta: (typeof BLOCK_META)[string],
 ): SandpackFiles | null {
   if (!meta.nextFile || !meta.exportName) return null;
-  const raw = readUiFile(blockId, "next", meta.nextFile);
+  const raw = readUiFile(blockId, kit, "next", meta.nextFile);
   if (!raw) return null;
 
   const component = rewriteImports(raw);
   const propEntries = meta.props ? Object.entries(meta.props) : [];
   const propsJsx = propEntries.map(([k, v]) => `${k}={${v}}`).join(" ");
   const propsObj = propEntries.map(([k, v]) => `${k}: ${v}`).join(", ");
-
   const isClientOnly = blockId === "contact-form-ui";
 
   const appAsync = `import { useEffect, useState, type ReactNode } from "react";
@@ -218,10 +214,11 @@ export default defineConfig({
 
 function buildNuxtProject(
   blockId: string,
+  kit: PreviewUiKit,
   meta: (typeof BLOCK_META)[string],
 ): SandpackFiles | null {
   if (!meta.nuxtFile) return null;
-  const raw = readUiFile(blockId, "nuxt", meta.nuxtFile);
+  const raw = readUiFile(blockId, kit, "nuxt", meta.nuxtFile);
   if (!raw) return null;
 
   const component = ensureVueAutoImports(rewriteImports(raw));
@@ -304,21 +301,27 @@ export function buildBlockSandpackProject(
   const meta = BLOCK_META[blockId];
   if (!meta) return null;
 
-  const next = buildNextProject(blockId, meta);
-  const nuxt = buildNuxtProject(blockId, meta);
+  const variants: BlockSandpackProject["variants"] = {};
+  const frameworks = new Set<PreviewFramework>();
 
-  const frameworks: PreviewFramework[] = [];
-  if (next) frameworks.push("next");
-  if (nuxt) frameworks.push("nuxt");
-  if (!frameworks.length) return null;
+  for (const kit of meta.uiKits) {
+    const next = buildNextProject(blockId, kit, meta);
+    const nuxt = buildNuxtProject(blockId, kit, meta);
+    if (!next && !nuxt) continue;
+    variants[kit] = { next, nuxt };
+    if (next) frameworks.add("next");
+    if (nuxt) frameworks.add("nuxt");
+  }
+
+  if (!Object.keys(variants).length) return null;
 
   return {
     blockId,
     title: info?.title ?? blockId,
     description: info?.description,
-    frameworks,
-    next,
-    nuxt,
+    frameworks: [...frameworks],
+    uiKits: meta.uiKits,
+    variants,
   };
 }
 

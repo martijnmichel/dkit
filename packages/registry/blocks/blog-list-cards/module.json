@@ -5,6 +5,7 @@
   "description": "Card grid of posts with date, excerpt, and hover accent",
   "version": "0.1.0",
   "frameworks": ["next", "nuxt"],
+  "uiKits": ["shadcn"],
   "slot": "list",
   "registryDependencies": ["blog"],
   "dependencies": ["@directus/sdk"],

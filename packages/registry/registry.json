@@ -18,7 +18,7 @@
         },
         "detail": {
           "default": "blog-detail",
-          "options": ["blog-detail", "blog-detail-minimal"]
+          "options": ["blog-detail"]
         }
       }
     },
@@ -26,41 +26,37 @@
       "id": "blog-list",
       "type": "dkit:block",
       "title": "Blog list",
-      "description": "Editorial stacked list (Tailwind) — numbered rows, hover affordances",
+      "description": "Stacked post list with optional thumbnails",
       "version": "0.1.0",
       "path": "blocks/blog-list",
       "registryDependencies": ["blog"],
-      "slot": "list"
+      "slot": "list",
+      "frameworks": ["next", "nuxt"],
+      "uiKits": ["shadcn"]
     },
     {
       "id": "blog-list-cards",
       "type": "dkit:block",
       "title": "Blog list (cards)",
-      "description": "Card grid (Tailwind) with date, excerpt, and hover accent",
+      "description": "Card grid of posts with date, excerpt, and hover accent",
       "version": "0.1.0",
       "path": "blocks/blog-list-cards",
       "registryDependencies": ["blog"],
-      "slot": "list"
+      "slot": "list",
+      "frameworks": ["next", "nuxt"],
+      "uiKits": ["shadcn"]
     },
     {
       "id": "blog-detail",
       "type": "dkit:block",
       "title": "Blog detail",
-      "description": "Styled article page (Tailwind) with categories, byline, and rich text",
+      "description": "Article page with categories, byline, and rich text",
       "version": "0.1.0",
       "path": "blocks/blog-detail",
       "registryDependencies": ["blog"],
-      "slot": "detail"
-    },
-    {
-      "id": "blog-detail-minimal",
-      "type": "dkit:block",
-      "title": "Blog detail (unstyled)",
-      "description": "Bare semantic HTML only — bring your own styles / design system",
-      "version": "0.1.0",
-      "path": "blocks/blog-detail-minimal",
-      "registryDependencies": ["blog"],
-      "slot": "detail"
+      "slot": "detail",
+      "frameworks": ["next", "nuxt"],
+      "uiKits": ["shadcn", "minimal"]
     },
     {
       "id": "pages",
@@ -73,7 +69,7 @@
       "templates": {
         "detail": {
           "default": "page-detail",
-          "options": ["page-detail", "page-detail-minimal"]
+          "options": ["page-detail"]
         }
       }
     },
@@ -81,21 +77,13 @@
       "id": "page-detail",
       "type": "dkit:block",
       "title": "Page detail",
-      "description": "Styled WYSIWYG page view (Tailwind)",
+      "description": "WYSIWYG page view with title, excerpt, and body",
       "version": "0.1.0",
       "path": "blocks/page-detail",
       "registryDependencies": ["pages"],
-      "slot": "detail"
-    },
-    {
-      "id": "page-detail-minimal",
-      "type": "dkit:block",
-      "title": "Page detail (unstyled)",
-      "description": "Bare semantic HTML for a WYSIWYG page",
-      "version": "0.1.0",
-      "path": "blocks/page-detail-minimal",
-      "registryDependencies": ["pages"],
-      "slot": "detail"
+      "slot": "detail",
+      "frameworks": ["next", "nuxt"],
+      "uiKits": ["shadcn", "minimal"]
     },
     {
       "id": "contact-form",
@@ -114,7 +102,9 @@
       "version": "0.1.0",
       "path": "blocks/contact-form-ui",
       "registryDependencies": ["contact-form"],
-      "slot": "form"
+      "slot": "form",
+      "frameworks": ["next"],
+      "uiKits": ["shadcn"]
     },
     {
       "id": "page-builder",
@@ -133,7 +123,9 @@
       "version": "0.1.0",
       "path": "blocks/page-renderer",
       "registryDependencies": ["page-builder"],
-      "slot": "renderer"
+      "slot": "renderer",
+      "frameworks": ["next"],
+      "uiKits": ["shadcn"]
     }
   ]
 }

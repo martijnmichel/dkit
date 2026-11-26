@@ -1,10 +1,10 @@
-import type { RegistryIndex, UiAdapter } from "@dkit/shared";
+import type { RegistryIndex } from "@dkit/shared";
 import fs from "node:fs";
 import path from "node:path";
 
 export type TemplateOverrides = Record<string, string>;
 
-/** Parse `list=blog-list-cards,detail=blog-detail-minimal` */
+/** Parse `list=blog-list-cards,detail=blog-detail` */
 export function parseTemplateFlag(raw?: string): TemplateOverrides {
   if (!raw) return {};
   const out: TemplateOverrides = {};
@@ -22,31 +22,23 @@ export function parseTemplateFlag(raw?: string): TemplateOverrides {
   return out;
 }
 
-/** Prefer `*-minimal` options when uiAdapter is minimal and no override is set. */
-function pickDefaultForAdapter(
-  def: { default: string; options?: string[] },
-  uiAdapter: UiAdapter | undefined,
-): string {
-  if (uiAdapter !== "minimal") return def.default;
-  const options = def.options?.length ? def.options : [def.default];
-  const minimal = options.find((id) => id.endsWith("-minimal"));
-  return minimal ?? def.default;
-}
-
+/**
+ * Resolve component ids for a module from templates / defaults.
+ * UI kit (shadcn | minimal) is chosen later when loading `ui/{kit}/{framework}/` —
+ * template options are component variants (list vs cards), not kits.
+ */
 export function resolveDefaultBlocksFromTemplates(
   moduleId: string,
   index: RegistryIndex,
   registryRoot: string,
   overrides: TemplateOverrides,
   withBlocks?: string[],
-  uiAdapter?: UiAdapter,
 ): string[] {
   if (withBlocks?.length) return withBlocks;
 
   const entry = index.items.find((i) => i.id === moduleId);
   if (!entry || entry.type !== "dkit:module") return [];
 
-  // Prefer templates from module.json on disk (richer than index)
   const manifestPath = path.join(registryRoot, entry.path, "module.json");
   let templates = entry.templates;
   if (fs.existsSync(manifestPath)) {
@@ -66,7 +58,7 @@ export function resolveDefaultBlocksFromTemplates(
 
   const blocks: string[] = [];
   for (const [slot, def] of Object.entries(templates)) {
-    const chosen = overrides[slot] ?? pickDefaultForAdapter(def, uiAdapter);
+    const chosen = overrides[slot] ?? def.default;
     const options = def.options?.length ? def.options : [def.default];
     if (!options.includes(chosen) && chosen !== def.default) {
       throw new Error(

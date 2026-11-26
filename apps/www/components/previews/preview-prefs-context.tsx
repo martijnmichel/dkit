@@ -6,6 +6,7 @@ import {
   writePreviewPrefs,
   type PreviewFramework,
   type PreviewPrefs,
+  type PreviewTheme,
   type PreviewUiKit,
 } from "@/lib/preview-prefs";
 import {
@@ -22,6 +23,7 @@ const PreviewPrefsContext = createContext<{
   prefs: PreviewPrefs;
   setFramework: (framework: PreviewFramework) => void;
   setUi: (ui: PreviewUiKit) => void;
+  setTheme: (theme: PreviewTheme) => void;
   ready: boolean;
 } | null>(null);
 
@@ -46,6 +48,7 @@ export function PreviewPrefsProvider({ children }: { children: ReactNode }) {
       setFramework: (framework: PreviewFramework) =>
         commit({ ...prefs, framework }),
       setUi: (ui: PreviewUiKit) => commit({ ...prefs, ui }),
+      setTheme: (theme: PreviewTheme) => commit({ ...prefs, theme }),
     }),
     [prefs, ready, commit],
   );
