@@ -1,12 +1,13 @@
 import { createDirectus, readItems, rest } from "@directus/sdk";
 import type { Page, PageBlock } from "@/lib/dkit/page-builder";
+import { collections } from "@/lib/dkit/config";
 
 async function getPage(slug: string): Promise<Page | null> {
   const url = process.env.DIRECTUS_URL;
   if (!url) return null;
   const client = createDirectus(url).with(rest());
   const rows = (await client.request(
-    readItems("pages", {
+    readItems(collections.pages, {
       filter: {
         _and: [{ status: { _eq: "published" } }, { slug: { _eq: slug } }],
       },
@@ -15,11 +16,7 @@ async function getPage(slug: string): Promise<Page | null> {
         "title",
         "slug",
         {
-          blocks: [
-            "id",
-            "collection",
-            "item.*",
-          ],
+          blocks: ["id", "collection", "item.*"],
         },
       ],
       limit: 1,
@@ -30,16 +27,18 @@ async function getPage(slug: string): Promise<Page | null> {
 
 function BlockView({ block }: { block: PageBlock }) {
   switch (block.collection) {
-    case "block_hero":
+    case collections.block_hero:
       return (
         <section className="space-y-3 py-12 text-center">
-          <h1 className="text-4xl font-semibold tracking-tight">{block.item.heading}</h1>
+          <h1 className="text-4xl font-semibold tracking-tight">
+            {block.item.heading}
+          </h1>
           {block.item.subheading ? (
             <p className="text-lg text-neutral-500">{block.item.subheading}</p>
           ) : null}
         </section>
       );
-    case "block_richtext":
+    case collections.block_richtext:
       return (
         <section className="mx-auto max-w-2xl py-8">
           {block.item.title ? (
@@ -53,7 +52,7 @@ function BlockView({ block }: { block: PageBlock }) {
           ) : null}
         </section>
       );
-    case "block_cta":
+    case collections.block_cta:
       return (
         <section className="flex justify-center py-8">
           <a
@@ -72,7 +71,9 @@ function BlockView({ block }: { block: PageBlock }) {
 export async function PageRenderer({ slug }: { slug: string }) {
   const page = await getPage(slug);
   if (!page) {
-    return <div className="py-10 text-center text-neutral-500">Page not found.</div>;
+    return (
+      <div className="py-10 text-center text-neutral-500">Page not found.</div>
+    );
   }
 
   const blocks = (page.blocks ?? []) as PageBlock[];

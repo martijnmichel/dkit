@@ -3,10 +3,20 @@ import * as p from "@clack/prompts";
 import pc from "picocolors";
 import {
   applyModule,
+  applyCollectionPrefixToAccess,
+  applyCollectionPrefixToFlows,
+  applyCollectionPrefixToRestSchema,
+  applyCollectionPrefixToSeed,
+  buildCollectionMap,
   createTokenClient,
+  isRestSchema,
   type ModulePayload,
 } from "@dkit/schema";
-import { DkitProjectConfigSchema, type Framework } from "@dkit/shared";
+import {
+  DkitProjectConfigSchema,
+  normalizeCollectionPrefix,
+  type Framework,
+} from "@dkit/shared";
 import { findProjectRoot } from "../lib/paths.js";
 import { getDirectusCreds } from "../lib/env.js";
 import {
@@ -16,10 +26,24 @@ import {
 } from "../lib/registry.js";
 import { parseTemplateFlag } from "../lib/templates.js";
 import {
+  normalizeBasePath,
+  routeConflictPaths,
+  suggestAlternateBasePath,
+} from "../lib/routes.js";
+import { writeDkitRuntimeConfig } from "../lib/write-config.js";
+import {
   readProjectConfig,
   writeBlockUi,
   writeModuleTypes,
+  writeProjectConfig,
 } from "../lib/write-files.js";
+
+function cancelIf<T>(value: T | symbol): asserts value is T {
+  if (p.isCancel(value)) {
+    p.cancel("Cancelled");
+    process.exit(0);
+  }
+}
 
 export function addCommand(): Command {
   return new Command("add")
@@ -35,10 +59,18 @@ export function addCommand(): Command {
       "--template <slots>",
       "Override slots: list=blog-list-cards,detail=blog-detail-minimal",
     )
+    .option("--path <basePath>", "Prefill route base path (still prompted unless --yes)")
+    .option(
+      "--prefix <prefix>",
+      "Prefill collection prefix (default dkit_; empty string = none)",
+    )
     .option("--seed", "Import seed data when present")
     .option("--dry-run", "Print plan without applying")
     .option("--force", "Overwrite existing UI files")
-    .option("--yes", "Confirm reduced-safety schema apply on Directus < 12.2")
+    .option(
+      "--yes",
+      "Non-interactive: use defaults / flags; also confirms Directus < 12.2 apply",
+    )
     .option("--framework <name>", "UI framework adapter (next|nuxt)", "next")
     .action(
       async (
@@ -48,6 +80,8 @@ export function addCommand(): Command {
           uiOnly?: boolean;
           with?: string;
           template?: string;
+          path?: string;
+          prefix?: string;
           seed?: boolean;
           dryRun?: boolean;
           force?: boolean;
@@ -65,7 +99,7 @@ export function addCommand(): Command {
         }
 
         const projectRoot = findProjectRoot();
-        const config = DkitProjectConfigSchema.parse({
+        let config = DkitProjectConfigSchema.parse({
           ...(readProjectConfig(projectRoot) ?? {}),
           framework,
         });
@@ -87,6 +121,132 @@ export function addCommand(): Command {
           `Plan: modules [${plan.modules.join(", ") || "—"}] · blocks [${plan.blocks.join(", ") || "—"}] · framework ${framework}`,
         );
 
+        // —— Collection prefix (always ask unless --yes) ——
+        const prefixDefault =
+          opts.prefix ?? config.collectionPrefix ?? "dkit_";
+        let collectionPrefix = normalizeCollectionPrefix(prefixDefault);
+        if (!opts.yes) {
+          const prefixAnswer = await p.text({
+            message: "Collection name prefix",
+            placeholder: "dkit_",
+            initialValue: collectionPrefix,
+            validate: (v) => {
+              if (v === undefined) return "Required (use empty for none)";
+              return undefined;
+            },
+          });
+          cancelIf(prefixAnswer);
+          collectionPrefix = normalizeCollectionPrefix(prefixAnswer);
+        }
+        config = {
+          ...config,
+          collectionPrefix,
+        };
+        p.log.step(
+          collectionPrefix
+            ? `Collections will be prefixed with "${collectionPrefix}" (e.g. posts → ${collectionPrefix}posts)`
+            : "No collection prefix — using logical names as-is",
+        );
+
+        // —— Route base path: ALWAYS ask when a module declares defaultBasePath and UI installs ——
+        const moduleBasePaths: Record<string, string> = {
+          ...(config.modules
+            ? Object.fromEntries(
+                Object.entries(config.modules).map(([k, v]) => [
+                  k,
+                  v.basePath ?? "",
+                ]),
+              )
+            : {}),
+        };
+
+        if (!opts.schemaOnly) {
+          for (const moduleId of plan.modules.length
+            ? plan.modules
+            : await modulesNeedingPathFromBlocks(plan.blocks, index, root)) {
+            const loaded = await loadItem(moduleId, config.registry, framework);
+            if (loaded.kind !== "module") continue;
+            const defaultPath =
+              loaded.item.manifest.defaultBasePath ??
+              config.modules?.[moduleId]?.basePath;
+            if (!defaultPath) continue;
+
+            const preferred = normalizeBasePath(
+              opts.path ??
+                config.modules?.[moduleId]?.basePath ??
+                defaultPath,
+            );
+            const conflicts = routeConflictPaths(
+              projectRoot,
+              framework,
+              preferred,
+            );
+            const suggested = suggestAlternateBasePath(
+              projectRoot,
+              framework,
+              preferred,
+            );
+
+            let basePath = preferred;
+            if (opts.yes) {
+              if (conflicts.length && !opts.path) {
+                basePath = suggested;
+                p.log.warn(
+                  `Route ${preferred} exists — using ${basePath} (--yes). Pass --path to force.`,
+                );
+              }
+            } else {
+              if (conflicts.length) {
+                p.log.warn(
+                  `Path ${preferred} already exists in this project:\n  ${conflicts.map((c) => c.replace(projectRoot + "/", "")).join("\n  ")}`,
+                );
+              }
+              const answer = await p.text({
+                message: `Base path for "${moduleId}" routes`,
+                placeholder: preferred,
+                initialValue: conflicts.length ? suggested : preferred,
+                validate: (v) => {
+                  if (!v?.trim()) return "Path is required";
+                  if (!v.trim().startsWith("/")) return "Use a path like /blog";
+                  return undefined;
+                },
+              });
+              cancelIf(answer);
+              basePath = normalizeBasePath(answer);
+              const again = routeConflictPaths(
+                projectRoot,
+                framework,
+                basePath,
+              );
+              if (again.length) {
+                const proceed = await p.confirm({
+                  message: `${basePath} still collides with existing files. Continue anyway?`,
+                  initialValue: false,
+                });
+                cancelIf(proceed);
+                if (!proceed) {
+                  p.cancel("Pick another path and re-run.");
+                  process.exit(0);
+                }
+              }
+            }
+
+            moduleBasePaths[moduleId] = basePath;
+            config = {
+              ...config,
+              modules: {
+                ...config.modules,
+                [moduleId]: {
+                  ...config.modules?.[moduleId],
+                  basePath,
+                  blocks: plan.blocks,
+                },
+              },
+            };
+            p.log.step(`Route base for ${moduleId}: ${basePath}`);
+          }
+        }
+
         const { url, token } = getDirectusCreds(projectRoot);
         const needsDirectus = plan.modules.length > 0 && !opts.uiOnly;
 
@@ -107,18 +267,44 @@ export function addCommand(): Command {
         const client =
           url && token ? createTokenClient(url, token) : null;
 
+        const allLogicalCollections = new Set<string>();
+
         for (const moduleId of plan.modules) {
           const loaded = await loadItem(moduleId, config.registry, framework);
           if (loaded.kind !== "module") continue;
           const mod = loaded.item;
+          for (const c of mod.manifest.collections) allLogicalCollections.add(c);
 
           if (!opts.uiOnly && client && url) {
+            let snapshot = mod.snapshot as ModulePayload["snapshot"];
+            let access = mod.access as ModulePayload["access"];
+            let flows = mod.flows as ModulePayload["flows"];
+            let seed = mod.seed as ModulePayload["seed"];
+
+            if (snapshot && isRestSchema(snapshot)) {
+              snapshot = applyCollectionPrefixToRestSchema(
+                snapshot,
+                collectionPrefix,
+              );
+            }
+            if (access) {
+              access = applyCollectionPrefixToAccess(access, collectionPrefix);
+            }
+            if (flows) {
+              flows = applyCollectionPrefixToFlows(flows, collectionPrefix);
+            }
+            if (seed) {
+              seed = applyCollectionPrefixToSeed(seed, collectionPrefix);
+            }
+
             const payload: ModulePayload = {
-              snapshot: mod.snapshot as ModulePayload["snapshot"],
-              access: mod.access as ModulePayload["access"],
-              flows: mod.flows as ModulePayload["flows"],
-              seed: mod.seed as ModulePayload["seed"],
-              collections: mod.manifest.collections,
+              snapshot,
+              access,
+              flows,
+              seed,
+              collections: mod.manifest.collections.map(
+                (c) => buildCollectionMap([c], collectionPrefix)[c]!,
+              ),
             };
             const result = await applyModule(client, url, payload, {
               dryRun: opts.dryRun,
@@ -135,6 +321,22 @@ export function addCommand(): Command {
           if (!opts.dryRun) {
             const types = writeModuleTypes(projectRoot, config, mod);
             for (const t of types) p.log.step(`wrote ${t}`);
+          }
+        }
+
+        // Collect collections from dependency modules when only blocks added
+        for (const blockId of plan.blocks) {
+          const be = index.items.find((i) => i.id === blockId);
+          for (const dep of be?.registryDependencies ?? []) {
+            const depEntry = index.items.find((i) => i.id === dep);
+            if (depEntry?.type === "dkit:module") {
+              const loaded = await loadItem(dep, config.registry, framework);
+              if (loaded.kind === "module") {
+                for (const c of loaded.item.manifest.collections) {
+                  allLogicalCollections.add(c);
+                }
+              }
+            }
           }
         }
 
@@ -158,7 +360,56 @@ export function addCommand(): Command {
           }
         }
 
+        if (!opts.dryRun) {
+          const collectionMap = {
+            ...(config.collections ?? {}),
+            ...buildCollectionMap(
+              [...allLogicalCollections],
+              collectionPrefix,
+            ),
+          };
+          config = { ...config, collections: collectionMap };
+          const configFile = writeDkitRuntimeConfig(
+            projectRoot,
+            config,
+            collectionMap,
+          );
+          writeProjectConfig(projectRoot, config);
+          p.log.step(`wrote ${configFile}`);
+          p.log.step(`updated dkit.json (prefix + module paths)`);
+        }
+
+        p.note(
+          [
+            collectionPrefix
+              ? `Prefix: ${collectionPrefix}`
+              : "Prefix: (none)",
+            ...Object.entries(moduleBasePaths)
+              .filter(([, v]) => v)
+              .map(([k, v]) => `Path ${k}: ${v}`),
+            "",
+            "Wire pages to these paths in your app (examples already do).",
+          ].join("\n"),
+          "Install summary",
+        );
+
         p.outro(opts.dryRun ? pc.yellow("Dry run complete") : pc.green("Done"));
       },
     );
+}
+
+async function modulesNeedingPathFromBlocks(
+  blocks: string[],
+  index: { items: Array<{ id: string; type: string; registryDependencies?: string[] }> },
+  _root: string,
+): Promise<string[]> {
+  const mods = new Set<string>();
+  for (const b of blocks) {
+    const be = index.items.find((i) => i.id === b);
+    for (const dep of be?.registryDependencies ?? []) {
+      const d = index.items.find((i) => i.id === dep);
+      if (d?.type === "dkit:module") mods.add(dep);
+    }
+  }
+  return [...mods];
 }

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { collections, moduleBasePath } from '@/lib/dkit/config'
+
 type BlogPost = {
   id: string
   title: string
@@ -9,8 +11,12 @@ type BlogPost = {
 }
 
 const props = withDefaults(defineProps<{ basePath?: string }>(), {
-  basePath: '/blog',
+  basePath: undefined,
 })
+
+const resolvedBase = computed(
+  () => props.basePath ?? moduleBasePath('blog', '/blog'),
+)
 
 const config = useRuntimeConfig()
 const { data: posts } = await useAsyncData('dkit-blog-list', async () => {
@@ -19,7 +25,7 @@ const { data: posts } = await useAsyncData('dkit-blog-list', async () => {
   const { createDirectus, rest, readItems } = await import('@directus/sdk')
   const client = createDirectus(url).with(rest())
   return client.request(
-    readItems('posts', {
+    readItems(collections.posts, {
       filter: { status: { _eq: 'published' } },
       fields: ['id', 'title', 'slug', 'excerpt', 'published_at', { author: ['name'] }],
       sort: ['-published_at'],
@@ -40,7 +46,7 @@ const { data: posts } = await useAsyncData('dkit-blog-list', async () => {
         :key="post.id"
         class="border-b border-neutral-200 pb-6 dark:border-neutral-800"
       >
-        <NuxtLink :to="`${props.basePath}/${post.slug}`" class="group block">
+        <NuxtLink :to="`${resolvedBase}/${post.slug}`" class="group block">
           <h2 class="text-xl font-medium group-hover:underline">{{ post.title }}</h2>
           <p v-if="post.excerpt" class="mt-2 text-neutral-600 dark:text-neutral-400">
             {{ post.excerpt }}

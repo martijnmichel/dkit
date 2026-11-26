@@ -1,12 +1,13 @@
 import { createDirectus, readItems, rest } from "@directus/sdk";
 import type { BlogPost } from "@/lib/dkit/blog";
+import { collections, moduleBasePath } from "@/lib/dkit/config";
 
 async function getPosts(): Promise<BlogPost[]> {
   const url = process.env.DIRECTUS_URL;
   if (!url) return [];
   const client = createDirectus(url).with(rest());
   return client.request(
-    readItems("posts", {
+    readItems(collections.posts, {
       filter: { status: { _eq: "published" } },
       fields: [
         "id",
@@ -22,7 +23,7 @@ async function getPosts(): Promise<BlogPost[]> {
 }
 
 export async function BlogListCards({
-  basePath = "/blog",
+  basePath = moduleBasePath("blog", "/blog"),
 }: {
   basePath?: string;
 }) {
@@ -40,7 +41,9 @@ export async function BlogListCards({
           >
             <h2 className="text-lg font-medium">{post.title}</h2>
             {post.excerpt ? (
-              <p className="mt-2 line-clamp-3 text-sm text-neutral-500">{post.excerpt}</p>
+              <p className="mt-2 line-clamp-3 text-sm text-neutral-500">
+                {post.excerpt}
+              </p>
             ) : null}
           </a>
         ))}

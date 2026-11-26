@@ -1,12 +1,13 @@
 import { createDirectus, readItems, rest } from "@directus/sdk";
 import type { Release } from "@/lib/dkit/changelog";
+import { collections } from "@/lib/dkit/config";
 
 async function getReleases(): Promise<Release[]> {
   const url = process.env.DIRECTUS_URL;
   if (!url) return [];
   const client = createDirectus(url).with(rest());
   return client.request(
-    readItems("releases", {
+    readItems(collections.releases, {
       fields: ["*"],
       sort: ["-released_at"],
     }),

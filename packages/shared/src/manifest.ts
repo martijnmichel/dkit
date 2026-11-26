@@ -43,6 +43,8 @@ export const ModuleManifestSchema = z.object({
    */
   templates: z.record(TemplateSlotSchema).optional(),
   collections: z.array(z.string()).default([]),
+  /** Default frontend route base (user can override when routes collide) */
+  defaultBasePath: z.string().optional(),
 });
 
 export type ModuleManifest = z.infer<typeof ModuleManifestSchema>;

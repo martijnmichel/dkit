@@ -2,6 +2,7 @@
 
 import { createDirectus, createItem, rest } from "@directus/sdk";
 import { z } from "zod";
+import { collections } from "@/lib/dkit/config";
 
 const schema = z.object({
   name: z.string().min(1).max(120),
@@ -33,7 +34,7 @@ export async function submitContactForm(
 
   try {
     const client = createDirectus(url).with(rest());
-    await client.request(createItem("form_submissions", parsed.data));
+    await client.request(createItem(collections.form_submissions, parsed.data));
     return { ok: true };
   } catch (e) {
     return {

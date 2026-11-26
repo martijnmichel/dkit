@@ -14,5 +14,6 @@
     "block_richtext",
     "block_cta",
     "pages_blocks"
-  ]
+  ],
+  "defaultBasePath": "/pages"
 }

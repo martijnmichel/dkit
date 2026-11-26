@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { collections, moduleBasePath } from '@/lib/dkit/config'
+
 type BlogPost = {
   id: string
   title: string
@@ -7,8 +9,12 @@ type BlogPost = {
 }
 
 const props = withDefaults(defineProps<{ basePath?: string }>(), {
-  basePath: '/blog',
+  basePath: undefined,
 })
+
+const resolvedBase = computed(
+  () => props.basePath ?? moduleBasePath('blog', '/blog'),
+)
 
 const config = useRuntimeConfig()
 const { data: posts } = await useAsyncData('dkit-blog-list-cards', async () => {
@@ -17,7 +23,7 @@ const { data: posts } = await useAsyncData('dkit-blog-list-cards', async () => {
   const { createDirectus, rest, readItems } = await import('@directus/sdk')
   const client = createDirectus(url).with(rest())
   return client.request(
-    readItems('posts', {
+    readItems(collections.posts, {
       filter: { status: { _eq: 'published' } },
       fields: ['id', 'title', 'slug', 'excerpt'],
       sort: ['-published_at'],
@@ -33,7 +39,7 @@ const { data: posts } = await useAsyncData('dkit-blog-list-cards', async () => {
       <NuxtLink
         v-for="post in posts || []"
         :key="post.id"
-        :to="`${props.basePath}/${post.slug}`"
+        :to="`${resolvedBase}/${post.slug}`"
         class="rounded-xl border border-neutral-200 p-5 transition hover:border-neutral-400 dark:border-neutral-800"
       >
         <h2 class="text-lg font-medium">{{ post.title }}</h2>

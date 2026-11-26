@@ -3,8 +3,11 @@
 **Install Directus modules you own** — schema, permissions, flows, and frontend UI blocks (Next.js + Nuxt) in one command.
 
 ```bash
-npx dkit init
-npx dkit add blog --seed
+# one-time: put `dkit` on your PATH from this repo
+pnpm dkit:link
+
+dkit init                 # interactive: asks URL, token, framework
+dkit add blog --seed
 ```
 
 Requires **Directus 11+** (best on **12.2+** for additive schema merge). Always back up or use a staging instance before applying modules.
@@ -44,11 +47,34 @@ dkit add blog --with blog-list-cards,blog-detail
 dkit add blog --framework nuxt
 dkit add blog --schema-only
 dkit add blog --dry-run
+dkit add blog --yes --path /blog --prefix dkit_   # CI / non-interactive
 dkit list
 dkit doctor
 ```
 
 Blog ships multiple **templates per slot** (`list`, `detail`). Defaults are used unless you pass `--template` or `--with`.
+
+Interactive `dkit add` **always asks** for:
+
+- **Collection prefix** (default `dkit_` from `dkit.json`, e.g. `posts` → `dkit_posts`)
+- **Route base path** whenever the module declares one (e.g. `/blog`) — not only on conflicts
+
+Generated `lib/dkit/config.ts` exposes `collections` and `moduleBasePath()` for UI blocks.
+
+## Local CLI
+
+```bash
+pnpm install
+pnpm dkit:link          # build + pnpm link --global → `dkit` on PATH
+dkit --help
+dkit init               # prompts for URL + token (flags only prefill)
+dkit init --yes --url … --token …   # CI / non-interactive
+
+# without global link:
+pnpm dkit --help
+```
+
+Stack: **Commander** (commands/flags) + **@clack/prompts** (interactive questions).
 
 ## Develop
 
@@ -72,9 +98,9 @@ pnpm --filter @dkit/example-next dev
 pnpm example:next:clear    # wipe generated components/dkit + lib/dkit
 pnpm example:next:reset    # clear + re-add blog
 
-# Nuxt playground (:3002)
+# Nuxt playground (:3002) — see examples/nuxt/README.md
 pnpm example:nuxt:setup
-pnpm --filter @dkit/example-nuxt dev
+pnpm example:nuxt:dev
 pnpm example:nuxt:clear
 pnpm example:nuxt:reset
 ```

@@ -8,8 +8,14 @@
   "engines": {
     "node": ">=20"
   },
+  "bin": {
+    "dkit": "./bin/dkit.mjs"
+  },
   "scripts": {
     "build": "pnpm -r --filter=./packages/* build",
+    "dkit": "node ./bin/dkit.mjs",
+    "dkit:link": "node ./scripts/link-cli.mjs",
+    "dkit:unlink": "pnpm --dir packages/cli unlink --global",
     "dev:www": "pnpm --filter @dkit/www dev",
     "typecheck": "pnpm -r --filter=./packages/* typecheck",
     "test": "pnpm -r --filter=./packages/* test",
@@ -18,10 +24,12 @@
     "directus:down": "docker compose -f docker/directus/compose.yaml down",
     "directus:reset": "docker compose -f docker/directus/compose.yaml down -v && docker compose -f docker/directus/compose.yaml up -d",
     "directus:logs": "docker compose -f docker/directus/compose.yaml logs -f",
-    "example:next:setup": "pnpm --filter dkit build && pnpm --filter @dkit/example-next exec node ../../packages/cli/dist/bin.js init --url ${DIRECTUS_URL:-http://localhost:8055} --token ${DIRECTUS_TOKEN:?set DIRECTUS_TOKEN} && pnpm --filter @dkit/example-next dkit:add-blog",
+    "example:next:setup": "pnpm --filter dkit build && pnpm --filter @dkit/example-next exec node ../../packages/cli/dist/bin.js init --yes --url ${DIRECTUS_URL:-http://localhost:8055} --token ${DIRECTUS_TOKEN:?set DIRECTUS_TOKEN} && pnpm --filter @dkit/example-next dkit:add-blog",
+    "example:next:dev": "pnpm --filter @dkit/example-next dev",
     "example:next:clear": "pnpm --filter @dkit/example-next dkit:clear",
     "example:next:reset": "pnpm example:next:clear && pnpm --filter @dkit/example-next dkit:add-blog",
-    "example:nuxt:setup": "pnpm --filter dkit build && pnpm --filter @dkit/example-nuxt exec node ../../packages/cli/dist/bin.js init --framework nuxt --url ${DIRECTUS_URL:-http://localhost:8055} --token ${DIRECTUS_TOKEN:?set DIRECTUS_TOKEN} && pnpm --filter @dkit/example-nuxt dkit:add-blog",
+    "example:nuxt:setup": "pnpm --filter dkit build && pnpm --filter @dkit/example-nuxt dkit:init && pnpm --filter @dkit/example-nuxt dkit:add-blog",
+    "example:nuxt:dev": "pnpm --filter @dkit/example-nuxt dev",
     "example:nuxt:clear": "pnpm --filter @dkit/example-nuxt dkit:clear",
     "example:nuxt:reset": "pnpm example:nuxt:clear && pnpm --filter @dkit/example-nuxt dkit:add-blog"
   },

@@ -8,5 +8,6 @@
   "dependencies": ["@directus/sdk"],
   "layers": ["schema", "access", "services", "types"],
   "defaultBlocks": ["changelog-timeline"],
-  "collections": ["releases"]
+  "collections": ["releases"],
+  "defaultBasePath": "/changelog"
 }

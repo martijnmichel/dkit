@@ -28,9 +28,10 @@
     "access": "public"
   },
   "scripts": {
-    "build": "node ./scripts/copy-registry.mjs && tsup",
+    "build": "node ./scripts/copy-registry.mjs && tsup && node ./scripts/chmod-bin.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "dev": "tsx watch src/bin.ts",
+    "link:global": "pnpm build && pnpm link --global",
     "test": "node --import tsx --test src/**/*.test.ts",
     "lint": "echo 'no lint configured'"
   },

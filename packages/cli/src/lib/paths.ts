@@ -19,12 +19,15 @@ export function findProjectRoot(cwd = process.cwd()): string {
 
 /** Bundled or monorepo registry root */
 export function getBundledRegistryRoot(): string {
+  // tsup emits a single dist/bin.js — import.meta.url is that file.
   const here = path.dirname(fileURLToPath(import.meta.url));
   const candidates = [
-    path.resolve(here, "../../vendor/registry"),
-    path.resolve(here, "../../../registry"),
+    path.resolve(here, "../vendor/registry"), // dist/ → packages/cli/vendor/registry
+    path.resolve(here, "../../vendor/registry"), // src/lib → packages/cli/vendor/registry (tsx)
+    path.resolve(here, "../../../registry"), // src/lib → packages/registry
     path.resolve(here, "../../../../packages/registry"),
     path.resolve(process.cwd(), "packages/registry"),
+    path.resolve(process.cwd(), "packages/cli/vendor/registry"),
   ];
   for (const c of candidates) {
     if (fs.existsSync(path.join(c, "registry.json"))) return c;

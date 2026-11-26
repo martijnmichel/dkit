@@ -1,12 +1,13 @@
 import { createDirectus, readItems, rest } from "@directus/sdk";
 import type { BlogPost } from "@/lib/dkit/blog";
+import { collections, moduleBasePath } from "@/lib/dkit/config";
 
 async function getPosts(): Promise<BlogPost[]> {
   const url = process.env.DIRECTUS_URL;
   if (!url) return [];
   const client = createDirectus(url).with(rest());
   return client.request(
-    readItems("posts", {
+    readItems(collections.posts, {
       filter: { status: { _eq: "published" } },
       fields: [
         "id",
@@ -22,7 +23,7 @@ async function getPosts(): Promise<BlogPost[]> {
 }
 
 export async function BlogList({
-  basePath = "/blog",
+  basePath = moduleBasePath("blog", "/blog"),
 }: {
   basePath?: string;
 }) {
@@ -36,11 +37,18 @@ export async function BlogList({
       </header>
       <ul className="space-y-6">
         {posts.map((post) => (
-          <li key={post.id} className="border-b border-neutral-200 pb-6 dark:border-neutral-800">
+          <li
+            key={post.id}
+            className="border-b border-neutral-200 pb-6 dark:border-neutral-800"
+          >
             <a href={`${basePath}/${post.slug}`} className="group block">
-              <h2 className="text-xl font-medium group-hover:underline">{post.title}</h2>
+              <h2 className="text-xl font-medium group-hover:underline">
+                {post.title}
+              </h2>
               {post.excerpt ? (
-                <p className="mt-2 text-neutral-600 dark:text-neutral-400">{post.excerpt}</p>
+                <p className="mt-2 text-neutral-600 dark:text-neutral-400">
+                  {post.excerpt}
+                </p>
               ) : null}
               <p className="mt-2 text-sm text-neutral-400">
                 {typeof post.author === "object" && post.author?.name

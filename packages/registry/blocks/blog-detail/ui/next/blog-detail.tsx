@@ -1,12 +1,13 @@
 import { createDirectus, readItems, rest } from "@directus/sdk";
 import type { BlogPost } from "@/lib/dkit/blog";
+import { collections } from "@/lib/dkit/config";
 
 async function getPost(slug: string): Promise<BlogPost | null> {
   const url = process.env.DIRECTUS_URL;
   if (!url) return null;
   const client = createDirectus(url).with(rest());
   const rows = (await client.request(
-    readItems("posts", {
+    readItems(collections.posts, {
       filter: {
         _and: [{ status: { _eq: "published" } }, { slug: { _eq: slug } }],
       },
@@ -29,7 +30,9 @@ export async function BlogDetail({ slug }: { slug: string }) {
   const post = await getPost(slug);
   if (!post) {
     return (
-      <div className="mx-auto max-w-2xl py-10 text-neutral-500">Post not found.</div>
+      <div className="mx-auto max-w-2xl py-10 text-neutral-500">
+        Post not found.
+      </div>
     );
   }
 

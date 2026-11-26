@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { collections } from '@/lib/dkit/config'
+
 type BlogPost = {
   id: string
   title: string
@@ -17,7 +19,7 @@ const { data: post } = await useAsyncData(`dkit-blog-${props.slug}`, async () =>
   const { createDirectus, rest, readItems } = await import('@directus/sdk')
   const client = createDirectus(url).with(rest())
   const rows = (await client.request(
-    readItems('posts', {
+    readItems(collections.posts, {
       filter: {
         _and: [{ status: { _eq: 'published' } }, { slug: { _eq: props.slug } }],
       },

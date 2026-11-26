@@ -49,6 +49,25 @@ export function upsertEnvLocal(
     next.push(`${key}=${value}`);
   }
   fs.writeFileSync(file, `${next.join("\n").replace(/\n+$/, "")}\n`, "utf8");
+
+  // Nuxt / generic Node often read `.env` — mirror URL (not token) there
+  if (values.DIRECTUS_URL) {
+    const envFile = path.join(projectRoot, ".env");
+    const existingEnv = fs.existsSync(envFile)
+      ? fs.readFileSync(envFile, "utf8")
+      : "";
+    const envLines = existingEnv ? existingEnv.split("\n") : [];
+    const filtered = envLines.filter(
+      (line) => !line.trim().startsWith("DIRECTUS_URL="),
+    );
+    if (filtered.length && filtered[filtered.length - 1] !== "") filtered.push("");
+    filtered.push(`DIRECTUS_URL=${values.DIRECTUS_URL}`);
+    fs.writeFileSync(
+      envFile,
+      `${filtered.join("\n").replace(/\n+$/, "")}\n`,
+      "utf8",
+    );
+  }
 }
 
 export function getDirectusCreds(projectRoot: string): {
