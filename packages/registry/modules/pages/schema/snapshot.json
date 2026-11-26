@@ -121,10 +121,12 @@
             "display": "datetime",
             "width": "half",
             "sort": 3,
+            "special": ["date-created"],
+            "readonly": false,
             "translations": [
               { "language": "en-US", "translation": "Published at" }
             ],
-            "note": "Public publish date/time",
+            "note": "Auto-filled on create; change freely for backdating or scheduling",
             "conditions": [
               {
                 "name": "Required when published",

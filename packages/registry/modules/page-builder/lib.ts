@@ -1,63 +1,81 @@
-import { createDirectus, readItems, rest } from "@directus/sdk";
+import { getDirectus, readItem, readItems } from "@/lib/dkit/client";
 import { collections } from "@/lib/dkit/config";
+import type { BuilderPage } from "./types";
 
-export type BlockHero = {
-  id: string;
-  heading: string;
-  subheading?: string | null;
-};
+export type {
+  BlockCta,
+  BlockHero,
+  BlockRichtext,
+  BuilderPage,
+  BuilderPagesBlocksRow,
+  Page,
+  PageBlock,
+} from "./types";
 
-export type BlockRichtext = {
-  id: string;
-  title?: string | null;
-  content?: string | null;
-};
+const BUILDER_LIST_FIELDS = ["id", "title", "slug"] as const;
 
-export type BlockCta = {
-  id: string;
-  label: string;
-  href: string;
-};
+const BUILDER_DETAIL_FIELDS = [
+  "id",
+  "title",
+  "slug",
+  {
+    blocks: ["id", "collection", "item.*"],
+  },
+] as const;
 
-export type PageBlock =
-  | { collection: string; item: BlockHero }
-  | { collection: string; item: BlockRichtext }
-  | { collection: string; item: BlockCta };
-
-export type BuilderPage = {
-  id: string;
-  status: "published" | "draft";
-  title: string;
-  slug: string;
-  blocks?: PageBlock[] | null;
-};
-
-/** @deprecated use BuilderPage */
-export type Page = BuilderPage;
-
-export async function getBuilderPage(slug: string): Promise<BuilderPage | null> {
-  const url = process.env.DIRECTUS_URL;
-  if (!url) return null;
+/** Published builder pages. */
+export async function getBuilderPages(): Promise<BuilderPage[]> {
+  const client = getDirectus();
+  if (!client) return [];
   try {
-    const client = createDirectus(url).with(rest());
-    const rows = (await client.request(
+    return await client.request(
+      readItems(collections.builder_pages, {
+        filter: { status: { _eq: "published" } },
+        fields: [...BUILDER_LIST_FIELDS],
+        sort: ["title"],
+      }),
+    );
+  } catch {
+    return [];
+  }
+}
+
+export async function getBuilderPageBySlug(
+  slug: string,
+): Promise<BuilderPage | null> {
+  const client = getDirectus();
+  if (!client) return null;
+  try {
+    const rows = await client.request(
       readItems(collections.builder_pages, {
         filter: {
           _and: [{ status: { _eq: "published" } }, { slug: { _eq: slug } }],
         },
-        fields: [
-          "id",
-          "title",
-          "slug",
-          {
-            blocks: ["id", "collection", "item.*"],
-          },
-        ],
+        fields: [...BUILDER_DETAIL_FIELDS],
         limit: 1,
       }),
-    )) as BuilderPage[];
+    );
     return rows[0] ?? null;
   } catch {
     return null;
   }
 }
+
+export async function getBuilderPageById(
+  id: string,
+): Promise<BuilderPage | null> {
+  const client = getDirectus();
+  if (!client) return null;
+  try {
+    return await client.request(
+      readItem(collections.builder_pages, id, {
+        fields: [...BUILDER_DETAIL_FIELDS],
+      }),
+    );
+  } catch {
+    return null;
+  }
+}
+
+/** @deprecated prefer getBuilderPageBySlug */
+export const getBuilderPage = getBuilderPageBySlug;

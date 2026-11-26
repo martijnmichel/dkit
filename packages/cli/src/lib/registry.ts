@@ -23,8 +23,10 @@ export type LoadedModule = {
   access?: unknown;
   flows?: unknown;
   seed?: unknown;
-  /** Preferred: single lib/dkit/{id}.ts source at modules/{id}/lib.ts */
+  /** Preferred: lib/dkit/{id}.ts from modules/{id}/lib.ts */
   libFile?: string;
+  /** Type-only module file → lib/dkit/{id}.types.ts (breaks client↔schema cycles) */
+  typesFile?: string;
   /** Legacy types/ folder (only used when lib.ts is absent) */
   typesFiles: string[];
 };
@@ -96,11 +98,13 @@ function loadModuleDir(dir: string): LoadedModule {
   const flowsPath = path.join(dir, "services", "flows.json");
   const seedPath = path.join(dir, "services", "seed.json");
   const libPath = path.join(dir, "lib.ts");
+  const typesPath = path.join(dir, "types.ts");
   const typesDir = path.join(dir, "types");
 
   const libFile = fs.existsSync(libPath) ? libPath : undefined;
+  const typesFile = fs.existsSync(typesPath) ? typesPath : undefined;
   const typesFiles: string[] = [];
-  if (!libFile && fs.existsSync(typesDir)) {
+  if (!libFile && !typesFile && fs.existsSync(typesDir)) {
     for (const f of fs.readdirSync(typesDir)) {
       if (f.endsWith(".ts")) typesFiles.push(path.join(typesDir, f));
     }
@@ -114,6 +118,7 @@ function loadModuleDir(dir: string): LoadedModule {
     flows: readJsonIfExists(flowsPath),
     seed: loadSeedBundle(path.join(dir, "services"), seedPath),
     libFile,
+    typesFile,
     typesFiles,
   };
 }

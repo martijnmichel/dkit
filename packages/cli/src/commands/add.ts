@@ -37,6 +37,7 @@ import {
   listBlockUiConflicts,
   readProjectConfig,
   writeBlockUi,
+  writeDkitClient,
   writeModuleLib,
   writeProjectConfig,
 } from "../lib/write-files.js";
@@ -484,8 +485,15 @@ export function addCommand(): Command {
             config,
             collectionMap,
           );
+          const { client, schema } = writeDkitClient(
+            projectRoot,
+            config,
+            collectionMap,
+          );
           writeProjectConfig(projectRoot, config);
           p.log.step(`wrote ${configFile}`);
+          p.log.step(`wrote ${client}`);
+          p.log.step(`wrote ${schema}`);
           p.log.step(`updated dkit.json (prefix + module paths)`);
         }
 

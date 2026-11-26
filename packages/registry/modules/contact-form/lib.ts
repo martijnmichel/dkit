@@ -1,23 +1,19 @@
 "use server";
 
-import { createDirectus, createItem, rest } from "@directus/sdk";
+import { createItem, getDirectus } from "@/lib/dkit/client";
 import { z } from "zod";
 import { collections } from "@/lib/dkit/config";
+import type {
+  ContactFormState,
+  FormSubmission,
+  FormSubmissionInput,
+} from "./types";
 
-export type FormSubmission = {
-  id: string;
-  status: "new" | "read" | "archived";
-  name: string;
-  email: string;
-  message: string;
-  created_at?: string | null;
-};
-
-export type FormSubmissionInput = {
-  name: string;
-  email: string;
-  message: string;
-};
+export type {
+  ContactFormState,
+  FormSubmission,
+  FormSubmissionInput,
+} from "./types";
 
 const schema = z.object({
   name: z.string().min(1).max(120),
@@ -25,21 +21,11 @@ const schema = z.object({
   message: z.string().min(1).max(5000),
 });
 
-export type ContactFormState = {
-  ok: boolean;
-  error?: string;
-};
-
-export async function submitContactForm(
-  _prev: ContactFormState,
-  formData: FormData,
-): Promise<ContactFormState> {
-  const parsed = schema.safeParse({
-    name: formData.get("name"),
-    email: formData.get("email"),
-    message: formData.get("message"),
-  });
-
+/** Create a submission (inbox). Prefer submitContactForm from UI. */
+export async function createSubmission(
+  input: FormSubmissionInput,
+): Promise<{ ok: true; id?: string } | { ok: false; error: string }> {
+  const parsed = schema.safeParse(input);
   if (!parsed.success) {
     return {
       ok: false,
@@ -47,17 +33,31 @@ export async function submitContactForm(
     };
   }
 
-  const url = process.env.DIRECTUS_URL;
-  if (!url) return { ok: false, error: "Missing DIRECTUS_URL" };
+  const client = getDirectus();
+  if (!client) return { ok: false, error: "Missing DIRECTUS_URL" };
 
   try {
-    const client = createDirectus(url).with(rest());
-    await client.request(createItem(collections.form_submissions, parsed.data));
-    return { ok: true };
+    const row = await client.request(
+      createItem(collections.form_submissions, parsed.data),
+    );
+    return { ok: true, id: (row as FormSubmission)?.id };
   } catch (e) {
     return {
       ok: false,
       error: e instanceof Error ? e.message : "Submission failed",
     };
   }
+}
+
+export async function submitContactForm(
+  _prev: ContactFormState,
+  formData: FormData,
+): Promise<ContactFormState> {
+  const result = await createSubmission({
+    name: String(formData.get("name") ?? ""),
+    email: String(formData.get("email") ?? ""),
+    message: String(formData.get("message") ?? ""),
+  });
+  if (!result.ok) return { ok: false, error: result.error };
+  return { ok: true };
 }

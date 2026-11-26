@@ -8,35 +8,9 @@ import {
 import { resolveAliasPath } from "./paths.js";
 import type { LoadedBlock, LoadedModule } from "./registry.js";
 
-export function writeClientHelper(
-  projectRoot: string,
-  config: DkitProjectConfig,
-): string {
-  const libDir = resolveAliasPath(config.aliases.lib, projectRoot);
-  fs.mkdirSync(libDir, { recursive: true });
-  const file = path.join(libDir, "client.ts");
-  if (!fs.existsSync(file)) {
-    fs.writeFileSync(
-      file,
-      `import { createDirectus, rest, readItems, createItem } from "@directus/sdk";
+export { writeClientHelper, writeDkitClient } from "./write-client.js";
 
-const url = process.env.DIRECTUS_URL;
-if (!url) {
-  throw new Error("Missing DIRECTUS_URL");
-}
-
-/** Server-side Directus client (no static admin token — use public role or server token). */
-export const directus = createDirectus(url).with(rest());
-
-export { readItems, createItem };
-`,
-      "utf8",
-    );
-  }
-  return file;
-}
-
-/** Install module lib as lib/dkit/{id}.ts (types + queries/actions). */
+/** Install module types + lib as lib/dkit/{id}.types.ts and lib/dkit/{id}.ts. */
 export function writeModuleLib(
   projectRoot: string,
   config: DkitProjectConfig,
@@ -45,16 +19,28 @@ export function writeModuleLib(
   const libDir = resolveAliasPath(config.aliases.lib, projectRoot);
   fs.mkdirSync(libDir, { recursive: true });
   const written: string[] = [];
+  const id = mod.manifest.id;
+
+  if (mod.typesFile) {
+    const dest = path.join(libDir, `${id}.types.ts`);
+    fs.copyFileSync(mod.typesFile, dest);
+    written.push(dest);
+  }
 
   if (mod.libFile) {
-    const dest = path.join(libDir, `${mod.manifest.id}.ts`);
-    fs.copyFileSync(mod.libFile, dest);
+    const dest = path.join(libDir, `${id}.ts`);
+    let source = fs.readFileSync(mod.libFile, "utf8");
+    // Registry uses ./types; installed apps resolve ./<id>.types
+    source = source
+      .replaceAll(`from "./types"`, `from "./${id}.types"`)
+      .replaceAll(`from './types'`, `from './${id}.types'`);
+    fs.writeFileSync(dest, source, "utf8");
     written.push(dest);
   }
 
   // Legacy: copy types/* into lib/dkit/{id}/ if present (prefer lib.ts)
-  if (!mod.libFile && mod.typesFiles.length) {
-    const outDir = path.join(libDir, mod.manifest.id);
+  if (!mod.libFile && !mod.typesFile && mod.typesFiles.length) {
+    const outDir = path.join(libDir, id);
     fs.mkdirSync(outDir, { recursive: true });
     for (const abs of mod.typesFiles) {
       const dest = path.join(outDir, path.basename(abs));
