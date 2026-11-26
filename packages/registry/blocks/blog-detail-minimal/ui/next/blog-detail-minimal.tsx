@@ -15,7 +15,10 @@ export async function BlogDetailMinimal({ slug }: { slug: string }) {
         </p>
       ) : null}
       {post.body ? (
-        <div dangerouslySetInnerHTML={{ __html: post.body }} />
+        <div
+          className="dkit-prose dkit-prose--compact"
+          dangerouslySetInnerHTML={{ __html: post.body }}
+        />
       ) : null}
     </article>
   );

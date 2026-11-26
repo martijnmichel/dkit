@@ -18,6 +18,10 @@ const { data: post } = await useAsyncData(`dkit-blog-min-${props.slug}`, () =>
         {{ new Date(post.published_at).toLocaleDateString() }}
       </time>
     </p>
-    <div v-if="post.body" v-html="post.body" />
+    <div
+      v-if="post.body"
+      class="dkit-prose dkit-prose--compact"
+      v-html="post.body"
+    />
   </article>
 </template>

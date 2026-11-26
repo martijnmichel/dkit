@@ -28,7 +28,8 @@ pnpm directus:reset && pnpm example:nuxt:setup
 | Path | Source |
 |------|--------|
 | `components/dkit/<module>/*.vue` | UI blocks (e.g. `blog/BlogList.vue`) |
-| `lib/dkit/<module>.ts` | Types + queries/actions |
+| `lib/dkit/<module>.ts` | Queries/actions |
+| `styles/dkit/prose.css` | Shared `.dkit-prose` rich-text styles |
 | `dkit.json` | Project config (`framework: "nuxt"`) |
 | `.env.local` / `.env` | `DIRECTUS_URL` + token |
 

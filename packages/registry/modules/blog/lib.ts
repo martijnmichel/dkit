@@ -17,6 +17,7 @@ export type {
 
 const POST_LIST_FIELDS = [
   "id",
+  "status",
   "title",
   "slug",
   "excerpt",
@@ -27,6 +28,7 @@ const POST_LIST_FIELDS = [
 
 const POST_DETAIL_FIELDS = [
   "id",
+  "status",
   "title",
   "slug",
   "body",

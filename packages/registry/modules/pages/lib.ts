@@ -6,6 +6,7 @@ export type { SitePage } from "./types";
 
 const PAGE_LIST_FIELDS = [
   "id",
+  "status",
   "title",
   "slug",
   "excerpt",
@@ -14,6 +15,7 @@ const PAGE_LIST_FIELDS = [
 
 const PAGE_DETAIL_FIELDS = [
   "id",
+  "status",
   "title",
   "slug",
   "body",

@@ -27,7 +27,7 @@ function BlockView({ block }: { block: PageBlock }) {
           ) : null}
           {(block.item as { content?: string }).content ? (
             <div
-              className="prose prose-neutral dark:prose-invert"
+              className="dkit-prose"
               dangerouslySetInnerHTML={{
                 __html: (block.item as { content?: string }).content ?? "",
               }}

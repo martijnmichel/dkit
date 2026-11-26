@@ -1,0 +1,98 @@
+/**
+ * Shared rich-text styles for dkit content modules (blog, pages, page-builder, …).
+ * Import once in your app CSS. Override tokens below to match your brand.
+ *
+ * Contract: wrap Directus HTML in an element with class `dkit-prose`
+ * (optional modifier: `dkit-prose--compact`).
+ */
+
+.dkit-prose {
+  --dkit-prose-body: #44403c;
+  --dkit-prose-heading: #1c1917;
+  --dkit-prose-muted: #78716c;
+  --dkit-prose-link: #0f766e;
+  --dkit-prose-quote-border: color-mix(in oklab, #0f766e 40%, transparent);
+
+  color: var(--dkit-prose-body);
+  font-size: 1.05rem;
+  line-height: 2;
+}
+
+.dkit-prose--compact {
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.dkit-prose :where(p) {
+  margin-bottom: 1rem;
+}
+
+.dkit-prose :where(a) {
+  color: var(--dkit-prose-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.dkit-prose :where(h2) {
+  margin-top: 2.5rem;
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  font-size: 1.5rem;
+  letter-spacing: -0.025em;
+  color: var(--dkit-prose-heading);
+}
+
+.dkit-prose :where(h3) {
+  margin-top: 2rem;
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  font-size: 1.25rem;
+  color: var(--dkit-prose-heading);
+}
+
+.dkit-prose :where(blockquote) {
+  border-left: 2px solid var(--dkit-prose-quote-border);
+  padding-left: 1rem;
+  color: var(--dkit-prose-muted);
+}
+
+.dkit-prose :where(ul) {
+  margin-bottom: 1rem;
+  padding-left: 1.25rem;
+  list-style: disc;
+}
+
+.dkit-prose :where(ol) {
+  margin-bottom: 1rem;
+  padding-left: 1.25rem;
+  list-style: decimal;
+}
+
+.dkit-prose :where(li) {
+  margin-left: 0.25rem;
+}
+
+.dkit-prose :where(img) {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+}
+
+.dkit-prose :where(pre) {
+  overflow-x: auto;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  font-size: 0.875rem;
+}
+
+.dkit-prose :where(code) {
+  font-size: 0.9em;
+}
+
+@media (prefers-color-scheme: dark) {
+  .dkit-prose {
+    --dkit-prose-body: #d6d3d1;
+    --dkit-prose-heading: #fafaf9;
+    --dkit-prose-muted: #a8a29e;
+    --dkit-prose-link: #5eead4;
+    --dkit-prose-quote-border: color-mix(in oklab, #5eead4 35%, transparent);
+  }
+}

@@ -17,6 +17,10 @@ const { data: page } = await useAsyncData(`dkit-page-min-${props.slug}`, () =>
         {{ new Date(page.published_at).toLocaleDateString() }}
       </time>
     </p>
-    <div v-if="page.body" v-html="page.body" />
+    <div
+      v-if="page.body"
+      class="dkit-prose dkit-prose--compact"
+      v-html="page.body"
+    />
   </article>
 </template>

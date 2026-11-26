@@ -12,10 +12,11 @@ export type {
   PageBlock,
 } from "./types";
 
-const BUILDER_LIST_FIELDS = ["id", "title", "slug"] as const;
+const BUILDER_LIST_FIELDS = ["id", "status", "title", "slug"] as const;
 
 const BUILDER_DETAIL_FIELDS = [
   "id",
+  "status",
   "title",
   "slug",
   {
