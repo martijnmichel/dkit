@@ -41,7 +41,11 @@ import {
   writeModuleLib,
   writeProjectConfig,
 } from "../lib/write-files.js";
-import { joinModulePath, writeModuleSlugRoute } from "../lib/write-routes.js";
+import {
+  joinModulePath,
+  writeModuleFormRoute,
+  writeModuleSlugRoute,
+} from "../lib/write-routes.js";
 import { writeModuleUiEntry } from "../lib/write-ui-entry.js";
 import { DKIT_PROSE_REL, writeSharedProse } from "../lib/write-prose.js";
 
@@ -220,12 +224,13 @@ export function addCommand(): Command {
                 );
               }
               const answer = await p.text({
-                message: `Base path for "${moduleId}" routes`,
+                message: `Base path for "${moduleId}" page`,
                 placeholder: preferred,
                 initialValue: conflicts.length ? suggested : preferred,
                 validate: (v) => {
                   if (!v?.trim()) return "Path is required";
-                  if (!v.trim().startsWith("/")) return "Use a path like /blog";
+                  if (!v.trim().startsWith("/"))
+                    return "Use a path like /contact";
                   return undefined;
                 },
               });
@@ -468,14 +473,25 @@ export function addCommand(): Command {
             );
             p.log.step(`wrote ${entry}`);
 
-            const hasDetail = forModule.some(
-              (b) => (b.manifest.slot ?? "") === "detail",
+            const slots = new Set(
+              forModule.map((b) => b.manifest.slot).filter(Boolean),
             );
             const basePath =
               moduleBasePaths[moduleId] ??
               config.modules?.[moduleId]?.basePath;
-            if (hasDetail && basePath) {
+            if (basePath && slots.has("detail")) {
               const route = writeModuleSlugRoute(
+                projectRoot,
+                config,
+                moduleId,
+                basePath,
+                overwriteUi,
+              );
+              if (route.written) p.log.step(`wrote ${route.written}`);
+              if (route.skipped) p.log.info(`skipped ${route.skipped}`);
+              if (route.note) p.log.info(route.note);
+            } else if (basePath && slots.has("form")) {
+              const route = writeModuleFormRoute(
                 projectRoot,
                 config,
                 moduleId,
@@ -523,14 +539,23 @@ export function addCommand(): Command {
             ...Object.entries(moduleBasePaths)
               .filter(([, v]) => v)
               .map(([k, v]) => {
-                const url =
-                  v === "/"
+                const mods = installedBlocks.filter((b) =>
+                  (b.manifest.registryDependencies ?? []).includes(k),
+                );
+                const slots = new Set(
+                  mods.map((b) => b.manifest.slot).filter(Boolean),
+                );
+                const url = slots.has("form")
+                  ? v === "/"
+                    ? "/"
+                    : v
+                  : v === "/"
                     ? "/{slug}"
                     : `${joinModulePath(v, "{slug}")}`;
                 return `Path ${k}: ${v}  →  ${url}`;
               }),
             "",
-            "Detail routes are scaffolded when missing (re-run with UI overwrite to replace).",
+            "Routes are scaffolded when missing (re-run with --force to replace).",
           ].join("\n"),
           "Install summary",
         );

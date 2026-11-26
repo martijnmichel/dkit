@@ -11,4 +11,5 @@
 
 ## Product copy
 
-Never leave agent planning language, “planned”, “status notes”, or “ask if you want X next” in user-facing UI or docs.
+- Never leave agent planning language, “planned”, “status notes”, or “ask if you want X next” in user-facing UI or docs.
+- **Installed UI** (registry blocks, scaffolded pages) is seen by the **site visitor**, not the developer. No Directus/inbox/CLI/setup notes in that copy — write normal product/site text.

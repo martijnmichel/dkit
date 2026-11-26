@@ -18,10 +18,7 @@ export function ContactForm() {
 
   return (
     <form action={action}>
-      <p>
-        Messages are stored in your Directus inbox. Email notify is optional if
-        Directus mail is configured.
-      </p>
+      <p>Send a message and we&apos;ll get back to you.</p>
       <p>
         <label htmlFor="name">Name</label>
         <br />

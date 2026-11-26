@@ -315,13 +315,12 @@ async function applyFlows(
     params: { limit: -1, fields: ["id", "name"] },
   });
   const list = Array.isArray(existing) ? existing : (existing.data ?? []);
-  const names = new Set(list.map((f) => f.name));
+  const byName = new Map(list.map((f) => [f.name, f.id]));
 
   for (const flow of flows.flows ?? []) {
-    if (names.has(flow.name)) {
-      throw new Error(
-        `Flow "${flow.name}" already exists. Remove it or rename, then re-run.`,
-      );
+    if (byName.has(flow.name)) {
+      log(`→ Reusing existing flow ${flow.name}`);
+      continue;
     }
     const { id: _id, ...rest } = flow;
     await http(client, { path: "/flows", method: "POST", body: rest });

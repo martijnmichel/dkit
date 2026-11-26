@@ -29,7 +29,7 @@ const { data: posts } = await useAsyncData('dkit-blog-list', () => getPosts())
         Blog
       </h1>
       <p class="mt-4 max-w-md text-base leading-relaxed text-muted-foreground">
-        Published posts from your Directus project — newest first.
+        Newest posts first.
       </p>
     </header>
 
@@ -37,7 +37,7 @@ const { data: posts } = await useAsyncData('dkit-blog-list', () => getPosts())
       v-if="!(posts && posts.length)"
       class="rounded-xl border border-dashed border-border bg-muted/40 px-6 py-10 text-center text-muted-foreground"
     >
-      No published posts yet. Add one in Directus and refresh.
+      No posts yet.
     </p>
 
     <ul v-else class="space-y-1">

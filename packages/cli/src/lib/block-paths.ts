@@ -1,9 +1,16 @@
 import path from "node:path";
 import type { Framework } from "@dkit/shared";
 
-/** blog-list → BlogList */
+/**
+ * Component export name for a block id.
+ * blog-list → BlogList, contact-form-ui → ContactForm (strip trailing -ui)
+ */
 export function blockExportName(blockId: string): string {
-  return blockId
+  let id = blockId;
+  if (id.endsWith("-ui") && id !== "ui") {
+    id = id.slice(0, -3);
+  }
+  return id
     .split("-")
     .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))

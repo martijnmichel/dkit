@@ -24,13 +24,13 @@ export async function BlogList({
           Blog
         </h1>
         <p className="mt-4 max-w-md text-base leading-relaxed text-muted-foreground">
-          Published posts from your Directus project — newest first.
+          Newest posts first.
         </p>
       </header>
 
       {posts.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border bg-muted/40 px-6 py-10 text-center text-muted-foreground">
-          No published posts yet. Add one in Directus and refresh.
+          No posts yet.
         </p>
       ) : (
         <ul className="space-y-1">
