@@ -1,15 +1,11 @@
 <script setup lang="ts">
-import { collections, moduleBasePath } from '@/lib/dkit/config'
-
-type BlogPost = {
-  id: string
-  title: string
-  slug: string
-  excerpt?: string | null
-  published_at?: string | null
-  featured_image?: string | { id: string } | null
-  author?: { name?: string; avatar?: string | { id: string } | null } | string | null
-}
+import {
+  authorAvatarUrl,
+  authorName,
+  featuredImageUrl,
+  getPosts,
+} from '@/lib/dkit/blog'
+import { joinModulePath, moduleBasePath } from '@/lib/dkit/config'
 
 const props = withDefaults(defineProps<{ basePath?: string }>(), {
   basePath: undefined,
@@ -19,47 +15,7 @@ const resolvedBase = computed(
   () => props.basePath ?? moduleBasePath('blog', '/blog'),
 )
 
-const config = useRuntimeConfig()
-const directusUrl = (config.public.directusUrl as string | undefined)?.replace(/\/$/, '')
-
-function fileId(value: string | { id: string } | null | undefined) {
-  if (!value) return null
-  return typeof value === 'string' ? value : value.id
-}
-
-function assetUrl(value: string | { id: string } | null | undefined) {
-  const id = fileId(value)
-  return id && directusUrl ? `${directusUrl}/assets/${id}` : null
-}
-
-function authorOf(post: BlogPost) {
-  return typeof post.author === 'object' && post.author?.name ? post.author : null
-}
-
-const { data: posts } = await useAsyncData('dkit-blog-list-cards', async () => {
-  if (!directusUrl) return [] as BlogPost[]
-  try {
-    const { createDirectus, rest, readItems } = await import('@directus/sdk')
-    const client = createDirectus(directusUrl).with(rest())
-    return (await client.request(
-      readItems(collections.posts, {
-        filter: { status: { _eq: 'published' } },
-        fields: [
-          'id',
-          'title',
-          'slug',
-          'excerpt',
-          'published_at',
-          'featured_image',
-          { author: ['name', 'avatar'] },
-        ],
-        sort: ['-published_at'],
-      }),
-    )) as BlogPost[]
-  } catch {
-    return [] as BlogPost[]
-  }
-})
+const { data: posts } = await useAsyncData('dkit-blog-list-cards', () => getPosts())
 </script>
 
 <template>
@@ -71,7 +27,9 @@ const { data: posts } = await useAsyncData('dkit-blog-list-cards', async () => {
       <h1 class="font-serif text-4xl tracking-tight text-stone-900 sm:text-5xl dark:text-stone-50">
         Blog
       </h1>
-      <p class="mt-4 text-stone-500 dark:text-stone-400">Browse posts in a card grid.</p>
+      <p class="mt-4 text-stone-500 dark:text-stone-400">
+        Browse posts in a card grid.
+      </p>
     </header>
 
     <p
@@ -85,12 +43,12 @@ const { data: posts } = await useAsyncData('dkit-blog-list-cards', async () => {
       <NuxtLink
         v-for="post in posts"
         :key="post.id"
-        :to="`${resolvedBase}/${post.slug}`"
+        :to="joinModulePath(resolvedBase, post.slug)"
         class="group relative flex flex-col overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-[0_1px_0_rgba(28,25,23,0.04)] transition hover:-translate-y-0.5 hover:border-teal-700/30 hover:shadow-md dark:border-stone-800 dark:bg-stone-950"
       >
         <img
-          v-if="assetUrl(post.featured_image)"
-          :src="assetUrl(post.featured_image)!"
+          v-if="featuredImageUrl(post)"
+          :src="featuredImageUrl(post)!"
           alt=""
           class="aspect-[16/9] w-full object-cover"
         />
@@ -125,16 +83,16 @@ const { data: posts } = await useAsyncData('dkit-blog-list-cards', async () => {
           <span v-else class="flex-1" />
           <div class="mt-6 flex items-center justify-between gap-3">
             <span
-              v-if="authorOf(post)"
+              v-if="authorName(post)"
               class="inline-flex items-center gap-2 text-xs text-stone-500"
             >
               <img
-                v-if="assetUrl(authorOf(post)!.avatar)"
-                :src="assetUrl(authorOf(post)!.avatar)!"
+                v-if="authorAvatarUrl(post)"
+                :src="authorAvatarUrl(post)!"
                 alt=""
                 class="h-6 w-6 rounded-full object-cover ring-1 ring-stone-200 dark:ring-stone-700"
               />
-              {{ authorOf(post)!.name }}
+              {{ authorName(post) }}
             </span>
             <span v-else />
             <span class="text-sm font-medium text-teal-800 dark:text-teal-300">

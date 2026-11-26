@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import {
   submitContactForm,
   type ContactFormState,
-} from "./actions";
+} from "@/lib/dkit/contact-form";
 
 const initial: ContactFormState = { ok: false };
 

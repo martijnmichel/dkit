@@ -1,12 +1,7 @@
 name: Deploy www image
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "apps/www/**"
-      - "packages/registry/**"
-      - ".github/workflows/deploy-www.yml"
+  workflow_dispatch:
 
 jobs:
   docker:

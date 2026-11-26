@@ -1,14 +1,6 @@
 <script setup lang="ts">
-import { collections, moduleBasePath } from '@/lib/dkit/config'
-
-type SitePage = {
-  id: string
-  title: string
-  slug: string
-  excerpt?: string | null
-  body?: string | null
-  published_at?: string | null
-}
+import { getPage } from '@/lib/dkit/pages'
+import { moduleBasePath } from '@/lib/dkit/config'
 
 const props = withDefaults(defineProps<{ slug: string; basePath?: string }>(), {
   basePath: undefined,
@@ -18,35 +10,16 @@ const resolvedBase = computed(
   () => props.basePath ?? moduleBasePath('pages', '/pages'),
 )
 
-const config = useRuntimeConfig()
-const directusUrl = (config.public.directusUrl as string | undefined)?.replace(/\/$/, '')
-
-const { data: page } = await useAsyncData(`dkit-page-${props.slug}`, async () => {
-  if (!directusUrl) return null
-  try {
-    const { createDirectus, rest, readItems } = await import('@directus/sdk')
-    const client = createDirectus(directusUrl).with(rest())
-    const rows = (await client.request(
-      readItems(collections.pages, {
-        filter: {
-          _and: [{ status: { _eq: 'published' } }, { slug: { _eq: props.slug } }],
-        },
-        fields: ['id', 'title', 'slug', 'body', 'published_at', 'excerpt'],
-        limit: 1,
-      }),
-    )) as SitePage[]
-    return rows[0] ?? null
-  } catch {
-    return null
-  }
-})
+const { data: page } = await useAsyncData(`dkit-page-${props.slug}`, () =>
+  getPage(props.slug),
+)
 </script>
 
 <template>
   <div v-if="!page" class="mx-auto max-w-2xl px-6 py-20 text-center text-stone-500">
     <p class="font-serif text-2xl text-stone-800 dark:text-stone-200">Page not found</p>
     <NuxtLink
-      :to="resolvedBase"
+      :to="resolvedBase === '/' ? '/' : resolvedBase"
       class="mt-4 inline-block text-sm text-teal-800 underline-offset-4 hover:underline dark:text-teal-300"
     >
       ← Back
@@ -81,7 +54,7 @@ const { data: page } = await useAsyncData(`dkit-page-${props.slug}`, async () =>
 
     <div
       v-if="page.body"
-      class="mt-10 space-y-4 text-[1.05rem] leading-8 text-stone-700 dark:text-stone-300"
+      class="mt-10 space-y-4 text-[1.05rem] leading-8 text-stone-700 [&_a]:text-teal-800 [&_a]:underline [&_a]:underline-offset-2 [&_blockquote]:border-l-2 [&_blockquote]:border-teal-700/40 [&_blockquote]:pl-4 [&_blockquote]:text-stone-500 [&_h2]:mt-10 [&_h2]:font-serif [&_h2]:text-2xl [&_h2]:tracking-tight [&_h2]:text-stone-900 [&_h3]:mt-8 [&_h3]:font-serif [&_h3]:text-xl [&_li]:ml-5 [&_li]:list-disc [&_p]:mb-4 dark:text-stone-300 dark:[&_a]:text-teal-300 dark:[&_h2]:text-stone-50"
       v-html="page.body"
     />
   </article>

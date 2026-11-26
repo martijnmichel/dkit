@@ -48,6 +48,17 @@ export function moduleBasePath(moduleId: string, fallback = "/"): string {
   const mod = (modules as Record<string, { basePath?: string }>)[moduleId];
   return mod?.basePath ?? fallback;
 }
+
+/** Join module base + slug: "/" + "about" → "/about"; "/pages" + "about" → "/pages/about". */
+export function joinModulePath(basePath: string, ...parts: string[]): string {
+  const base = !basePath || basePath === "/" ? "" : basePath.replace(/\\/$/, "");
+  const rest = parts
+    .map((p) => p.replace(/^\\/+|\\/+$/g, ""))
+    .filter(Boolean)
+    .join("/");
+  const joined = (base + "/" + rest).replace(/\\/{2,}/g, "/");
+  return joined.startsWith("/") ? joined : "/" + joined;
+}
 `;
 
   fs.writeFileSync(file, contents, "utf8");

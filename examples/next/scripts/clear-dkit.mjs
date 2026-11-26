@@ -16,11 +16,11 @@ for (const target of targets) {
   console.log(`removed ${path.relative(root, target)}`);
 }
 
-// Restore stub entry so Next can always resolve @/lib/dkit/entries/blog
-const stubDir = path.join(root, "lib/dkit/entries");
+// Restore stub barrel so Next can always resolve @/components/dkit/blog
+const stubDir = path.join(root, "components/dkit/blog");
 fs.mkdirSync(stubDir, { recursive: true });
 fs.writeFileSync(
-  path.join(stubDir, "blog.tsx"),
+  path.join(stubDir, "index.tsx"),
   `/** Stub — run \`dkit add blog\` to generate real UI exports. */
 export const installed = false;
 export const moduleId = "blog" as const;
@@ -35,7 +35,7 @@ export function Detail(_props: { slug: string }) {
 }
 `,
 );
-console.log("restored lib/dkit/entries/blog.tsx stub");
+console.log("restored components/dkit/blog/index.tsx stub");
 
 console.log("Cleared dkit-generated files. .env.local kept (if present).");
 console.log("Re-install: pnpm dkit:add-blog   (or example:next:reset from root)");

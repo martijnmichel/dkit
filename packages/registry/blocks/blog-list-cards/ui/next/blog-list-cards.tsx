@@ -1,32 +1,10 @@
-import { createDirectus, readItems, rest } from "@directus/sdk";
-import type { BlogPost } from "@/lib/dkit/blog";
-import { directusAssetUrl, directusFileId } from "@/lib/dkit/blog";
-import { collections, moduleBasePath } from "@/lib/dkit/config";
-
-async function getPosts(): Promise<BlogPost[]> {
-  const url = process.env.DIRECTUS_URL;
-  if (!url) return [];
-  try {
-    const client = createDirectus(url).with(rest());
-    return (await client.request(
-      readItems(collections.posts, {
-        filter: { status: { _eq: "published" } },
-        fields: [
-          "id",
-          "title",
-          "slug",
-          "excerpt",
-          "published_at",
-          "featured_image",
-          { author: ["id", "name", "slug", "avatar"] },
-        ],
-        sort: ["-published_at"],
-      }),
-    )) as BlogPost[];
-  } catch {
-    return [];
-  }
-}
+import {
+  authorAvatarUrl,
+  authorName,
+  featuredImageUrl,
+  getPosts,
+} from "@/lib/dkit/blog";
+import { joinModulePath, moduleBasePath } from "@/lib/dkit/config";
 
 export async function BlogListCards({
   basePath = moduleBasePath("blog", "/blog"),
@@ -56,22 +34,13 @@ export async function BlogListCards({
       ) : (
         <div className="grid gap-5 sm:grid-cols-2">
           {posts.map((post) => {
-            const imageId = directusFileId(post.featured_image);
-            const imageUrl = imageId ? directusAssetUrl(imageId) : null;
-            const author =
-              typeof post.author === "object" && post.author?.name
-                ? post.author
-                : null;
-            const authorAvatar = author
-              ? (() => {
-                  const id = directusFileId(author.avatar);
-                  return id ? directusAssetUrl(id) : null;
-                })()
-              : null;
+            const imageUrl = featuredImageUrl(post);
+            const name = authorName(post);
+            const avatar = authorAvatarUrl(post);
             return (
               <a
                 key={post.id}
-                href={`${basePath}/${post.slug}`}
+                href={joinModulePath(basePath, post.slug)}
                 className="group relative flex flex-col overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-[0_1px_0_rgba(28,25,23,0.04)] transition hover:-translate-y-0.5 hover:border-teal-700/30 hover:shadow-md dark:border-stone-800 dark:bg-stone-950"
               >
                 {imageUrl ? (
@@ -109,17 +78,17 @@ export async function BlogListCards({
                     <span className="flex-1" />
                   )}
                   <div className="mt-6 flex items-center justify-between gap-3">
-                    {author ? (
+                    {name ? (
                       <span className="inline-flex items-center gap-2 text-xs text-stone-500">
-                        {authorAvatar ? (
+                        {avatar ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
-                            src={authorAvatar}
+                            src={avatar}
                             alt=""
                             className="h-6 w-6 rounded-full object-cover ring-1 ring-stone-200 dark:ring-stone-700"
                           />
                         ) : null}
-                        {author.name}
+                        {name}
                       </span>
                     ) : (
                       <span />

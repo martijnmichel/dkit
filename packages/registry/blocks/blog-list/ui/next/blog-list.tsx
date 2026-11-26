@@ -1,44 +1,10 @@
-import { createDirectus, readItems, rest } from "@directus/sdk";
-import type { BlogPost } from "@/lib/dkit/blog";
-import { directusAssetUrl, directusFileId } from "@/lib/dkit/blog";
-import { collections, moduleBasePath } from "@/lib/dkit/config";
-
-async function getPosts(): Promise<BlogPost[]> {
-  const url = process.env.DIRECTUS_URL;
-  if (!url) return [];
-  try {
-    const client = createDirectus(url).with(rest());
-    return (await client.request(
-      readItems(collections.posts, {
-        filter: { status: { _eq: "published" } },
-        fields: [
-          "id",
-          "title",
-          "slug",
-          "excerpt",
-          "published_at",
-          "featured_image",
-          { author: ["id", "name", "slug", "avatar"] },
-        ],
-        sort: ["-published_at"],
-      }),
-    )) as BlogPost[];
-  } catch {
-    return [];
-  }
-}
-
-function authorName(post: BlogPost): string | null {
-  return typeof post.author === "object" && post.author?.name
-    ? post.author.name
-    : null;
-}
-
-function authorAvatarUrl(post: BlogPost): string | null {
-  if (typeof post.author !== "object" || !post.author) return null;
-  const id = directusFileId(post.author.avatar);
-  return id ? directusAssetUrl(id) : null;
-}
+import {
+  authorAvatarUrl,
+  authorName,
+  featuredImageUrl,
+  getPosts,
+} from "@/lib/dkit/blog";
+import { joinModulePath, moduleBasePath } from "@/lib/dkit/config";
 
 export async function BlogList({
   basePath = moduleBasePath("blog", "/blog"),
@@ -68,12 +34,13 @@ export async function BlogList({
       ) : (
         <ul className="space-y-2">
           {posts.map((post, i) => {
-            const imageId = directusFileId(post.featured_image);
-            const imageUrl = imageId ? directusAssetUrl(imageId) : null;
+            const imageUrl = featuredImageUrl(post);
+            const avatar = authorAvatarUrl(post);
+            const name = authorName(post);
             return (
               <li key={post.id}>
                 <a
-                  href={`${basePath}/${post.slug}`}
+                  href={joinModulePath(basePath, post.slug)}
                   className="group flex gap-5 rounded-2xl px-4 py-5 transition hover:bg-stone-100/80 dark:hover:bg-stone-900/60"
                 >
                   {imageUrl ? (
@@ -98,22 +65,20 @@ export async function BlogList({
                       </span>
                     ) : null}
                     <span className="mt-3 flex flex-wrap items-center gap-x-2 text-xs text-stone-400">
-                      {authorName(post) ? (
+                      {name ? (
                         <span className="inline-flex items-center gap-1.5">
-                          {authorAvatarUrl(post) ? (
+                          {avatar ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
-                              src={authorAvatarUrl(post)!}
+                              src={avatar}
                               alt=""
                               className="h-5 w-5 rounded-full object-cover ring-1 ring-stone-200 dark:ring-stone-700"
                             />
                           ) : null}
-                          <span>{authorName(post)}</span>
+                          <span>{name}</span>
                         </span>
                       ) : null}
-                      {authorName(post) && post.published_at ? (
-                        <span aria-hidden>·</span>
-                      ) : null}
+                      {name && post.published_at ? <span aria-hidden>·</span> : null}
                       {post.published_at ? (
                         <time dateTime={post.published_at}>
                           {new Date(post.published_at).toLocaleDateString(

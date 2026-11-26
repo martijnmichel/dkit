@@ -1,5 +1,5 @@
 import { SetupHint } from "../../_components/setup-hint";
-import { Detail, installed } from "@/lib/dkit/entries/blog";
+import { Detail, installed } from "@/components/dkit/blog";
 
 export default async function BlogPostPage({
   params,

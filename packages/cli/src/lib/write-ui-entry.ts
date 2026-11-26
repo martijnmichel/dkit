@@ -1,36 +1,38 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { DkitProjectConfig, Framework } from "@dkit/shared";
+import {
+  blockExportName,
+  blockModuleId,
+  blockUiDestRel,
+  shortBlockFileBase,
+  slotExportAlias,
+} from "./block-paths.js";
 import { resolveAliasPath } from "./paths.js";
 import type { LoadedBlock } from "./registry.js";
 
-/** blog-list → BlogList */
-export function blockExportName(blockId: string): string {
-  return blockId
-    .split("-")
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join("");
-}
+export { blockExportName } from "./block-paths.js";
 
 function blockImportPath(
   config: DkitProjectConfig,
+  moduleId: string,
   blockId: string,
   framework: Framework,
   uiRelFile: string,
 ): string {
   const componentsAlias = config.aliases.components.replace(/\/$/, "");
-  const base = `${componentsAlias}/${blockId}`;
+  const destRel = blockUiDestRel(moduleId, blockId, framework, uiRelFile);
+  const base = `${componentsAlias}/${moduleId}`;
   if (framework === "nuxt") {
-    return `${base}/${path.basename(uiRelFile, path.extname(uiRelFile))}.vue`;
+    return `${base}/${path.basename(destRel, path.extname(destRel))}`;
   }
-  const file = uiRelFile.replace(/\\/g, "/");
+  const file = destRel.replace(/\\/g, "/");
   return `${base}/${file.replace(/\.tsx?$/, "")}`;
 }
 
 /**
- * Write lib/dkit/entries/{moduleId}.tsx with static re-exports of installed blocks.
- * App routes should import from here — optional template imports break Next's bundler.
+ * Write components/dkit/{moduleId}/index.{ts,tsx} — barrel re-exports for installed blocks.
+ * App routes import List / Detail from here (no lib/dkit/entries).
  */
 export function writeModuleUiEntry(
   projectRoot: string,
@@ -38,9 +40,9 @@ export function writeModuleUiEntry(
   moduleId: string,
   blocks: LoadedBlock[],
 ): string {
-  const libDir = resolveAliasPath(config.aliases.lib, projectRoot);
-  const entriesDir = path.join(libDir, "entries");
-  fs.mkdirSync(entriesDir, { recursive: true });
+  const componentsDir = resolveAliasPath(config.aliases.components, projectRoot);
+  const moduleDir = path.join(componentsDir, moduleId);
+  fs.mkdirSync(moduleDir, { recursive: true });
 
   const framework = config.framework;
   const lines: string[] = [
@@ -51,60 +53,58 @@ export function writeModuleUiEntry(
     "",
   ];
 
-  const bySlot = new Map<string, LoadedBlock>();
-  for (const block of blocks) {
-    const slot = block.manifest.slot ?? block.manifest.id;
-    bySlot.set(slot, block);
-  }
-
   for (const block of blocks) {
     const exportName = blockExportName(block.manifest.id);
     const uiFile = block.uiFiles[0]?.rel ?? `${block.manifest.id}.tsx`;
+    const owner = blockModuleId(block.manifest) ?? moduleId;
     const importPath = blockImportPath(
       config,
+      owner,
       block.manifest.id,
       framework,
       uiFile,
     );
     const slot = block.manifest.slot;
-    lines.push(
-      `export { ${exportName} } from ${JSON.stringify(importPath)};`,
-    );
-    if (slot) {
+    if (framework === "nuxt") {
+      // Vue SFCs are default-exported
       lines.push(
-        `export { ${exportName} as ${slotExportAlias(slot)} } from ${JSON.stringify(importPath)};`,
+        `export { default as ${exportName} } from ${JSON.stringify(`${importPath}.vue`)};`,
       );
+      if (slot) {
+        lines.push(
+          `export { default as ${slotExportAlias(slot)} } from ${JSON.stringify(`${importPath}.vue`)};`,
+        );
+      }
+    } else {
+      lines.push(
+        `export { ${exportName} } from ${JSON.stringify(importPath)};`,
+      );
+      if (slot) {
+        lines.push(
+          `export { ${exportName} as ${slotExportAlias(slot)} } from ${JSON.stringify(importPath)};`,
+        );
+      }
     }
-  }
-
-  // Convenience aliases when slots exist
-  if (bySlot.has("list") && !lines.some((l) => l.includes(" as List "))) {
-    // already added via slotExportAlias
   }
 
   const file =
     framework === "nuxt"
-      ? path.join(entriesDir, `${moduleId}.ts`)
-      : path.join(entriesDir, `${moduleId}.tsx`);
+      ? path.join(moduleDir, "index.ts")
+      : path.join(moduleDir, "index.tsx");
   fs.writeFileSync(file, `${lines.join("\n")}\n`, "utf8");
   return file;
 }
 
-function slotExportAlias(slot: string): string {
-  // list → List, detail → Detail
-  return slot.charAt(0).toUpperCase() + slot.slice(1);
-}
-
-/** Stub entry used by example apps before `dkit add` */
+/** Stub barrel used by example apps before `dkit add` */
 export function writeModuleUiEntryStub(
   projectRoot: string,
   config: DkitProjectConfig,
   moduleId: string,
 ): string {
-  const libDir = resolveAliasPath(config.aliases.lib, projectRoot);
-  const entriesDir = path.join(libDir, "entries");
-  fs.mkdirSync(entriesDir, { recursive: true });
-  const file = path.join(entriesDir, `${moduleId}.tsx`);
+  const componentsDir = resolveAliasPath(config.aliases.components, projectRoot);
+  const moduleDir = path.join(componentsDir, moduleId);
+  fs.mkdirSync(moduleDir, { recursive: true });
+  const file = path.join(moduleDir, "index.tsx");
   fs.writeFileSync(
     file,
     `/** Stub — run \`dkit add ${moduleId}\` to generate real UI exports. */
@@ -124,3 +124,10 @@ export function Detail(_props: { slug: string }) {
   );
   return file;
 }
+
+/** Path hint for docs / clear scripts */
+export function moduleUiBarrelHint(moduleId: string, shortExample = "list"): string {
+  return `components/dkit/${moduleId}/${shortExample}`;
+}
+
+export { shortBlockFileBase };

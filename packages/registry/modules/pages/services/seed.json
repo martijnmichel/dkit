@@ -1,0 +1,24 @@
+{
+  "items": {
+    "pages": [
+      {
+        "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "status": "published",
+        "title": "About",
+        "slug": "about",
+        "excerpt": "Who we are and what this site is for.",
+        "body": "<p>This page was seeded by <strong>dkit add pages --seed</strong>.</p><p>Edit it in Directus under <em>Site → Pages</em>, or create more pages with their own slugs.</p>",
+        "published_at": "2026-01-15T10:00:00.000Z"
+      },
+      {
+        "id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        "status": "published",
+        "title": "Hello",
+        "slug": "hello",
+        "excerpt": "A simple welcome page.",
+        "body": "<h2>Welcome</h2><p>With base path <code>/</code>, this page is at <code>/hello</code>. With <code>/pages</code>, it is at <code>/pages/hello</code>.</p>",
+        "published_at": "2026-01-15T11:00:00.000Z"
+      }
+    ]
+  }
+}

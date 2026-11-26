@@ -1,17 +1,12 @@
 <script setup lang="ts">
-import { collections, moduleBasePath } from '@/lib/dkit/config'
-
-type BlogCategory = { id: string; title?: string; slug?: string }
-type BlogPost = {
-  id: string
-  title: string
-  slug: string
-  body?: string | null
-  published_at?: string | null
-  featured_image?: string | { id: string } | null
-  author?: { name?: string; avatar?: string | { id: string } | null } | string | null
-  categories?: Array<BlogCategory | { categories_id?: BlogCategory | string | null }> | null
-}
+import {
+  authorAvatarUrl,
+  authorName,
+  featuredImageUrl,
+  getPost,
+  normalizeCategories,
+} from '@/lib/dkit/blog'
+import { moduleBasePath } from '@/lib/dkit/config'
 
 const props = withDefaults(defineProps<{ slug: string; basePath?: string }>(), {
   basePath: undefined,
@@ -21,77 +16,23 @@ const resolvedBase = computed(
   () => props.basePath ?? moduleBasePath('blog', '/blog'),
 )
 
-const config = useRuntimeConfig()
-const directusUrl = (config.public.directusUrl as string | undefined)?.replace(/\/$/, '')
-
-const { data: post } = await useAsyncData(`dkit-blog-${props.slug}`, async () => {
-  if (!directusUrl) return null
-  try {
-    const { createDirectus, rest, readItems } = await import('@directus/sdk')
-    const client = createDirectus(directusUrl).with(rest())
-    const rows = (await client.request(
-      readItems(collections.posts, {
-        filter: {
-          _and: [{ status: { _eq: 'published' } }, { slug: { _eq: props.slug } }],
-        },
-        fields: [
-          'id',
-          'title',
-          'slug',
-          'body',
-          'published_at',
-          'featured_image',
-          { author: ['name', 'avatar'] },
-          { categories: ['id', { categories_id: ['id', 'title', 'slug'] }] },
-        ],
-        limit: 1,
-      }),
-    )) as BlogPost[]
-    return rows[0] ?? null
-  } catch {
-    return null
-  }
-})
-
-const author = computed(() =>
-  post.value && typeof post.value.author === 'object' && post.value.author?.name
-    ? post.value.author
-    : null,
+const { data: post } = await useAsyncData(`dkit-blog-${props.slug}`, () =>
+  getPost(props.slug),
 )
 
-const authorAvatarUrl = computed(() => {
-  const avatar = author.value?.avatar
-  if (!avatar || !directusUrl) return null
-  const id = typeof avatar === 'string' ? avatar : avatar.id
-  return id ? `${directusUrl}/assets/${id}` : null
-})
-
-const categories = computed(() => {
-  const raw = post.value?.categories ?? []
-  const out: BlogCategory[] = []
-  for (const item of raw) {
-    if (!item || typeof item !== 'object') continue
-    if ('title' in item && 'id' in item) {
-      out.push(item as BlogCategory)
-      continue
-    }
-    const related = (item as { categories_id?: BlogCategory | string | null }).categories_id
-    if (related && typeof related === 'object' && 'id' in related) out.push(related)
-  }
-  return out
-})
-
-const imageUrl = computed(() => {
-  const value = post.value?.featured_image
-  if (!value || !directusUrl) return null
-  const id = typeof value === 'string' ? value : value.id
-  return id ? `${directusUrl}/assets/${id}` : null
-})
+const categories = computed(() =>
+  post.value ? normalizeCategories(post.value.categories) : [],
+)
 </script>
 
 <template>
-  <div v-if="!post" class="mx-auto max-w-2xl px-6 py-20 text-center text-stone-500">
-    <p class="font-serif text-2xl text-stone-800 dark:text-stone-200">Post not found</p>
+  <div
+    v-if="!post"
+    class="mx-auto max-w-2xl px-6 py-20 text-center text-stone-500"
+  >
+    <p class="font-serif text-2xl text-stone-800 dark:text-stone-200">
+      Post not found
+    </p>
     <NuxtLink
       :to="resolvedBase"
       class="mt-4 inline-block text-sm text-teal-800 underline-offset-4 hover:underline dark:text-teal-300"
@@ -109,8 +50,8 @@ const imageUrl = computed(() => {
     </NuxtLink>
 
     <img
-      v-if="imageUrl"
-      :src="imageUrl"
+      v-if="featuredImageUrl(post)"
+      :src="featuredImageUrl(post)!"
       alt=""
       class="mb-10 aspect-[16/9] w-full rounded-3xl object-cover ring-1 ring-stone-200 dark:ring-stone-800"
     />
@@ -130,18 +71,18 @@ const imageUrl = computed(() => {
       </h1>
       <div class="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-stone-500">
         <span
-          v-if="author"
+          v-if="authorName(post)"
           class="inline-flex items-center gap-2 font-medium text-stone-700 dark:text-stone-300"
         >
           <img
-            v-if="authorAvatarUrl"
-            :src="authorAvatarUrl"
+            v-if="authorAvatarUrl(post)"
+            :src="authorAvatarUrl(post)!"
             alt=""
             class="h-7 w-7 rounded-full object-cover ring-1 ring-stone-200 dark:ring-stone-700"
           />
-          {{ author.name }}
+          {{ authorName(post) }}
         </span>
-        <span v-if="author && post.published_at" aria-hidden>·</span>
+        <span v-if="authorName(post) && post.published_at" aria-hidden>·</span>
         <time v-if="post.published_at" :datetime="post.published_at">
           {{
             new Date(post.published_at).toLocaleDateString(undefined, {
@@ -156,7 +97,7 @@ const imageUrl = computed(() => {
 
     <div
       v-if="post.body"
-      class="mt-10 space-y-4 text-[1.05rem] leading-8 text-stone-700 dark:text-stone-300"
+      class="mt-10 space-y-4 text-[1.05rem] leading-8 text-stone-700 [&_a]:text-teal-800 [&_a]:underline [&_a]:underline-offset-2 [&_blockquote]:border-l-2 [&_blockquote]:border-teal-700/40 [&_blockquote]:pl-4 [&_blockquote]:text-stone-500 [&_h2]:mt-10 [&_h2]:font-serif [&_h2]:text-2xl [&_h2]:tracking-tight [&_h2]:text-stone-900 [&_h3]:mt-8 [&_h3]:font-serif [&_h3]:text-xl [&_li]:ml-5 [&_li]:list-disc [&_p]:mb-4 dark:text-stone-300 dark:[&_a]:text-teal-300 dark:[&_h2]:text-stone-50"
       v-html="post.body"
     />
   </article>

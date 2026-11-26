@@ -1,6 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { DkitProjectConfig } from "@dkit/shared";
+import {
+  blockModuleId,
+  blockUiDestRel,
+} from "./block-paths.js";
 import { resolveAliasPath } from "./paths.js";
 import type { LoadedBlock, LoadedModule } from "./registry.js";
 
@@ -32,35 +36,60 @@ export { readItems, createItem };
   return file;
 }
 
-export function writeModuleTypes(
+/** Install module lib as lib/dkit/{id}.ts (types + queries/actions). */
+export function writeModuleLib(
   projectRoot: string,
   config: DkitProjectConfig,
   mod: LoadedModule,
 ): string[] {
   const libDir = resolveAliasPath(config.aliases.lib, projectRoot);
-  const outDir = path.join(libDir, mod.manifest.id);
-  fs.mkdirSync(outDir, { recursive: true });
+  fs.mkdirSync(libDir, { recursive: true });
   const written: string[] = [];
-  for (const abs of mod.typesFiles) {
-    const dest = path.join(outDir, path.basename(abs));
-    fs.copyFileSync(abs, dest);
+
+  if (mod.libFile) {
+    const dest = path.join(libDir, `${mod.manifest.id}.ts`);
+    fs.copyFileSync(mod.libFile, dest);
     written.push(dest);
   }
+
+  // Legacy: copy types/* into lib/dkit/{id}/ if present (prefer lib.ts)
+  if (!mod.libFile && mod.typesFiles.length) {
+    const outDir = path.join(libDir, mod.manifest.id);
+    fs.mkdirSync(outDir, { recursive: true });
+    for (const abs of mod.typesFiles) {
+      const dest = path.join(outDir, path.basename(abs));
+      fs.copyFileSync(abs, dest);
+      written.push(dest);
+    }
+  }
+
   return written;
+}
+
+/** @deprecated use writeModuleLib */
+export const writeModuleTypes = writeModuleLib;
+
+function componentsRoot(
+  projectRoot: string,
+  config: DkitProjectConfig,
+): string {
+  return resolveAliasPath(
+    config.framework === "nuxt" && !config.aliases.components.includes("nuxt")
+      ? (config.aliases.components || "@/components/dkit")
+      : config.aliases.components,
+    projectRoot,
+  );
 }
 
 function blockUiOutDir(
   projectRoot: string,
   config: DkitProjectConfig,
   block: LoadedBlock,
-): string {
-  const componentsDir = resolveAliasPath(
-    config.framework === "nuxt" && !config.aliases.components.includes("nuxt")
-      ? (config.aliases.components || "@/components/dkit")
-      : config.aliases.components,
-    projectRoot,
-  );
-  return path.join(componentsDir, block.manifest.id);
+): { outDir: string; moduleId: string } {
+  const moduleId =
+    blockModuleId(block.manifest) ?? block.manifest.id;
+  const outDir = path.join(componentsRoot(projectRoot, config), moduleId);
+  return { outDir, moduleId };
 }
 
 /** Dest paths that already exist for this block (relative to project root). */
@@ -69,10 +98,16 @@ export function listBlockUiConflicts(
   config: DkitProjectConfig,
   block: LoadedBlock,
 ): string[] {
-  const outDir = blockUiOutDir(projectRoot, config, block);
+  const { outDir, moduleId } = blockUiOutDir(projectRoot, config, block);
   const conflicts: string[] = [];
   for (const file of block.uiFiles) {
-    const dest = path.join(outDir, file.rel);
+    const rel = blockUiDestRel(
+      moduleId,
+      block.manifest.id,
+      config.framework,
+      file.rel,
+    );
+    const dest = path.join(outDir, rel);
     if (fs.existsSync(dest)) {
       conflicts.push(path.relative(projectRoot, dest) || dest);
     }
@@ -86,12 +121,18 @@ export function writeBlockUi(
   block: LoadedBlock,
   overwrite: boolean,
 ): { written: string[]; skipped: string[] } {
-  const outDir = blockUiOutDir(projectRoot, config, block);
+  const { outDir, moduleId } = blockUiOutDir(projectRoot, config, block);
   fs.mkdirSync(outDir, { recursive: true });
   const written: string[] = [];
   const skipped: string[] = [];
   for (const file of block.uiFiles) {
-    const dest = path.join(outDir, file.rel);
+    const rel = blockUiDestRel(
+      moduleId,
+      block.manifest.id,
+      config.framework,
+      file.rel,
+    );
+    const dest = path.join(outDir, rel);
     fs.mkdirSync(path.dirname(dest), { recursive: true });
     if (fs.existsSync(dest) && !overwrite) {
       skipped.push(dest);

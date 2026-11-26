@@ -1,26 +1,5 @@
-import { createDirectus, readItems, rest } from "@directus/sdk";
-import type { SitePage } from "@/lib/dkit/pages";
-import { collections, moduleBasePath } from "@/lib/dkit/config";
-
-async function getPage(slug: string): Promise<SitePage | null> {
-  const url = process.env.DIRECTUS_URL;
-  if (!url) return null;
-  try {
-    const client = createDirectus(url).with(rest());
-    const rows = (await client.request(
-      readItems(collections.pages, {
-        filter: {
-          _and: [{ status: { _eq: "published" } }, { slug: { _eq: slug } }],
-        },
-        fields: ["id", "title", "slug", "body", "published_at", "excerpt"],
-        limit: 1,
-      }),
-    )) as SitePage[];
-    return rows[0] ?? null;
-  } catch {
-    return null;
-  }
-}
+import { getPage } from "@/lib/dkit/pages";
+import { moduleBasePath } from "@/lib/dkit/config";
 
 export async function PageDetail({
   slug,
@@ -37,7 +16,7 @@ export async function PageDetail({
           Page not found
         </p>
         <a
-          href={basePath}
+          href={basePath === "/" ? "/" : basePath}
           className="mt-4 inline-block text-sm text-teal-800 underline-offset-4 hover:underline dark:text-teal-300"
         >
           ← Back

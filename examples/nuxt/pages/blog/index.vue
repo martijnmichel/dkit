@@ -2,8 +2,8 @@
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 
-const listPath = join(process.cwd(), 'components/dkit/blog-list/BlogList.vue')
-const cardsPath = join(process.cwd(), 'components/dkit/blog-list-cards/BlogListCards.vue')
+const listPath = join(process.cwd(), 'components/dkit/blog/BlogList.vue')
+const cardsPath = join(process.cwd(), 'components/dkit/blog/BlogListCards.vue')
 
 const hasList = import.meta.server ? existsSync(listPath) : false
 const hasCards = import.meta.server ? existsSync(cardsPath) : false

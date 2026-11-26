@@ -1,29 +1,6 @@
-import { createDirectus, readItems, rest } from "@directus/sdk";
-import type { Page, PageBlock } from "@/lib/dkit/page-builder";
+import type { PageBlock } from "@/lib/dkit/page-builder";
+import { getBuilderPage } from "@/lib/dkit/page-builder";
 import { collections } from "@/lib/dkit/config";
-
-async function getPage(slug: string): Promise<Page | null> {
-  const url = process.env.DIRECTUS_URL;
-  if (!url) return null;
-  const client = createDirectus(url).with(rest());
-  const rows = (await client.request(
-    readItems(collections.builder_pages, {
-      filter: {
-        _and: [{ status: { _eq: "published" } }, { slug: { _eq: slug } }],
-      },
-      fields: [
-        "id",
-        "title",
-        "slug",
-        {
-          blocks: ["id", "collection", "item.*"],
-        },
-      ],
-      limit: 1,
-    }),
-  )) as Page[];
-  return rows[0] ?? null;
-}
 
 function BlockView({ block }: { block: PageBlock }) {
   switch (block.collection) {
@@ -31,23 +8,29 @@ function BlockView({ block }: { block: PageBlock }) {
       return (
         <section className="space-y-3 py-12 text-center">
           <h1 className="text-4xl font-semibold tracking-tight">
-            {block.item.heading}
+            {(block.item as { heading?: string }).heading}
           </h1>
-          {block.item.subheading ? (
-            <p className="text-lg text-neutral-500">{block.item.subheading}</p>
+          {(block.item as { subheading?: string }).subheading ? (
+            <p className="text-lg text-neutral-500">
+              {(block.item as { subheading?: string }).subheading}
+            </p>
           ) : null}
         </section>
       );
     case collections.block_richtext:
       return (
         <section className="mx-auto max-w-2xl py-8">
-          {block.item.title ? (
-            <h2 className="mb-4 text-2xl font-medium">{block.item.title}</h2>
+          {(block.item as { title?: string }).title ? (
+            <h2 className="mb-4 text-2xl font-medium">
+              {(block.item as { title?: string }).title}
+            </h2>
           ) : null}
-          {block.item.content ? (
+          {(block.item as { content?: string }).content ? (
             <div
               className="prose prose-neutral dark:prose-invert"
-              dangerouslySetInnerHTML={{ __html: block.item.content }}
+              dangerouslySetInnerHTML={{
+                __html: (block.item as { content?: string }).content ?? "",
+              }}
             />
           ) : null}
         </section>
@@ -56,10 +39,10 @@ function BlockView({ block }: { block: PageBlock }) {
       return (
         <section className="flex justify-center py-8">
           <a
-            href={block.item.href}
+            href={(block.item as { href?: string }).href}
             className="rounded-md bg-neutral-900 px-5 py-2.5 text-sm font-medium text-white dark:bg-neutral-100 dark:text-neutral-900"
           >
-            {block.item.label}
+            {(block.item as { label?: string }).label}
           </a>
         </section>
       );
@@ -69,7 +52,7 @@ function BlockView({ block }: { block: PageBlock }) {
 }
 
 export async function PageRenderer({ slug }: { slug: string }) {
-  const page = await getPage(slug);
+  const page = await getBuilderPage(slug);
   if (!page) {
     return (
       <div className="py-10 text-center text-neutral-500">Page not found.</div>

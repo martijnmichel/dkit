@@ -1,15 +1,11 @@
 <script setup lang="ts">
-import { collections, moduleBasePath } from '@/lib/dkit/config'
-
-type BlogPost = {
-  id: string
-  title: string
-  slug: string
-  excerpt?: string | null
-  published_at?: string | null
-  featured_image?: string | { id: string } | null
-  author?: { name?: string; avatar?: string | { id: string } | null } | string | null
-}
+import {
+  authorAvatarUrl,
+  authorName,
+  featuredImageUrl,
+  getPosts,
+} from '@/lib/dkit/blog'
+import { joinModulePath, moduleBasePath } from '@/lib/dkit/config'
 
 const props = withDefaults(defineProps<{ basePath?: string }>(), {
   basePath: undefined,
@@ -19,54 +15,7 @@ const resolvedBase = computed(
   () => props.basePath ?? moduleBasePath('blog', '/blog'),
 )
 
-const config = useRuntimeConfig()
-const directusUrl = (config.public.directusUrl as string | undefined)?.replace(/\/$/, '')
-
-function fileId(value: BlogPost['featured_image']) {
-  if (!value) return null
-  return typeof value === 'string' ? value : value.id
-}
-
-function assetUrl(post: BlogPost) {
-  const id = fileId(post.featured_image)
-  return id && directusUrl ? `${directusUrl}/assets/${id}` : null
-}
-
-const { data: posts } = await useAsyncData('dkit-blog-list', async () => {
-  if (!directusUrl) return [] as BlogPost[]
-  try {
-    const { createDirectus, rest, readItems } = await import('@directus/sdk')
-    const client = createDirectus(directusUrl).with(rest())
-    return (await client.request(
-      readItems(collections.posts, {
-        filter: { status: { _eq: 'published' } },
-        fields: [
-          'id',
-          'title',
-          'slug',
-          'excerpt',
-          'published_at',
-          'featured_image',
-          { author: ['name', 'avatar'] },
-        ],
-        sort: ['-published_at'],
-      }),
-    )) as BlogPost[]
-  } catch {
-    return [] as BlogPost[]
-  }
-})
-
-function authorName(post: BlogPost) {
-  return typeof post.author === 'object' && post.author?.name ? post.author.name : null
-}
-
-function authorAvatarUrl(post: BlogPost) {
-  if (typeof post.author !== 'object' || !post.author?.avatar || !directusUrl) return null
-  const id =
-    typeof post.author.avatar === 'string' ? post.author.avatar : post.author.avatar.id
-  return id ? `${directusUrl}/assets/${id}` : null
-}
+const { data: posts } = await useAsyncData('dkit-blog-list', () => getPosts())
 </script>
 
 <template>
@@ -93,12 +42,12 @@ function authorAvatarUrl(post: BlogPost) {
     <ul v-else class="space-y-2">
       <li v-for="(post, i) in posts" :key="post.id">
         <NuxtLink
-          :to="`${resolvedBase}/${post.slug}`"
+          :to="joinModulePath(resolvedBase, post.slug)"
           class="group flex gap-5 rounded-2xl px-4 py-5 transition hover:bg-stone-100/80 dark:hover:bg-stone-900/60"
         >
           <img
-            v-if="assetUrl(post)"
-            :src="assetUrl(post)!"
+            v-if="featuredImageUrl(post)"
+            :src="featuredImageUrl(post)!"
             alt=""
             class="mt-0.5 h-16 w-16 shrink-0 rounded-xl object-cover ring-1 ring-stone-200 dark:ring-stone-700"
           />

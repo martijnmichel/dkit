@@ -4,6 +4,21 @@ import { createDirectus, createItem, rest } from "@directus/sdk";
 import { z } from "zod";
 import { collections } from "@/lib/dkit/config";
 
+export type FormSubmission = {
+  id: string;
+  status: "new" | "read" | "archived";
+  name: string;
+  email: string;
+  message: string;
+  created_at?: string | null;
+};
+
+export type FormSubmissionInput = {
+  name: string;
+  email: string;
+  message: string;
+};
+
 const schema = z.object({
   name: z.string().min(1).max(120),
   email: z.string().email().max(200),
@@ -26,7 +41,10 @@ export async function submitContactForm(
   });
 
   if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Invalid input",
+    };
   }
 
   const url = process.env.DIRECTUS_URL;

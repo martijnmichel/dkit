@@ -5,10 +5,10 @@ import { join } from 'node:path'
 const route = useRoute()
 const slug = computed(() => String(route.params.slug))
 
-const full = join(process.cwd(), 'components/dkit/blog-detail/BlogDetail.vue')
+const full = join(process.cwd(), 'components/dkit/blog/BlogDetail.vue')
 const minimal = join(
   process.cwd(),
-  'components/dkit/blog-detail-minimal/BlogDetailMinimal.vue',
+  'components/dkit/blog/BlogDetailMinimal.vue',
 )
 
 const hasFull = import.meta.server ? existsSync(full) : false

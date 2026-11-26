@@ -1,32 +1,11 @@
 <script setup lang="ts">
-import { collections } from '@/lib/dkit/config'
-
-type SitePage = {
-  id: string
-  title: string
-  body?: string | null
-  published_at?: string | null
-}
+import { getPage } from '@/lib/dkit/pages'
 
 const props = defineProps<{ slug: string }>()
-const config = useRuntimeConfig()
-const directusUrl = (config.public.directusUrl as string | undefined)?.replace(/\/$/, '')
 
-const { data: page } = await useAsyncData(`dkit-page-min-${props.slug}`, async () => {
-  if (!directusUrl) return null
-  const { createDirectus, rest, readItems } = await import('@directus/sdk')
-  const client = createDirectus(directusUrl).with(rest())
-  const rows = (await client.request(
-    readItems(collections.pages, {
-      filter: {
-        _and: [{ status: { _eq: 'published' } }, { slug: { _eq: props.slug } }],
-      },
-      fields: ['id', 'title', 'body', 'published_at'],
-      limit: 1,
-    }),
-  )) as SitePage[]
-  return rows[0] ?? null
-})
+const { data: page } = await useAsyncData(`dkit-page-min-${props.slug}`, () =>
+  getPage(props.slug),
+)
 </script>
 
 <template>

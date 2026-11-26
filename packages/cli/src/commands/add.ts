@@ -37,9 +37,10 @@ import {
   listBlockUiConflicts,
   readProjectConfig,
   writeBlockUi,
-  writeModuleTypes,
+  writeModuleLib,
   writeProjectConfig,
 } from "../lib/write-files.js";
+import { joinModulePath, writeModuleSlugRoute } from "../lib/write-routes.js";
 import { writeModuleUiEntry } from "../lib/write-ui-entry.js";
 
 function cancelIf<T>(value: T | symbol): asserts value is T {
@@ -381,8 +382,8 @@ export function addCommand(): Command {
           }
 
           if (!opts.dryRun) {
-            const types = writeModuleTypes(projectRoot, config, mod);
-            for (const t of types) p.log.step(`wrote ${t}`);
+            const libs = writeModuleLib(projectRoot, config, mod);
+            for (const t of libs) p.log.step(`wrote ${t}`);
           }
         }
 
@@ -447,6 +448,25 @@ export function addCommand(): Command {
               forModule,
             );
             p.log.step(`wrote ${entry}`);
+
+            const hasDetail = forModule.some(
+              (b) => (b.manifest.slot ?? "") === "detail",
+            );
+            const basePath =
+              moduleBasePaths[moduleId] ??
+              config.modules?.[moduleId]?.basePath;
+            if (hasDetail && basePath) {
+              const route = writeModuleSlugRoute(
+                projectRoot,
+                config,
+                moduleId,
+                basePath,
+                overwriteUi,
+              );
+              if (route.written) p.log.step(`wrote ${route.written}`);
+              if (route.skipped) p.log.info(`skipped ${route.skipped}`);
+              if (route.note) p.log.info(route.note);
+            }
           }
         }
 
@@ -476,9 +496,15 @@ export function addCommand(): Command {
               : "Prefix: (none)",
             ...Object.entries(moduleBasePaths)
               .filter(([, v]) => v)
-              .map(([k, v]) => `Path ${k}: ${v}`),
+              .map(([k, v]) => {
+                const url =
+                  v === "/"
+                    ? "/{slug}"
+                    : `${joinModulePath(v, "{slug}")}`;
+                return `Path ${k}: ${v}  →  ${url}`;
+              }),
             "",
-            "Wire pages to these paths in your app (examples already do).",
+            "Detail routes are scaffolded when missing (re-run with UI overwrite to replace).",
           ].join("\n"),
           "Install summary",
         );
