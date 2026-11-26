@@ -89,9 +89,9 @@ export function initCommand(): Command {
 
         const url = await p.text({
           message: "Directus URL",
-          placeholder: "http://localhost:8055",
+          placeholder: "http://localhost:8010",
           initialValue:
-            opts.url ?? existing.url ?? "http://localhost:8055",
+            opts.url ?? existing.url ?? "http://localhost:8010",
           validate: (v) => (!v?.trim() ? "URL is required" : undefined),
         });
         cancelIf(url);

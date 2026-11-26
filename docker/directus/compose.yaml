@@ -19,7 +19,7 @@ services:
   directus:
     image: directus/directus:12.2
     ports:
-      - "8055:8055"
+      - "8010:8055"
     volumes:
       - directus_uploads:/directus/uploads
     depends_on:
@@ -40,7 +40,7 @@ services:
       REDIS: "redis://cache:6379"
       ADMIN_EMAIL: "admin@example.com"
       ADMIN_PASSWORD: "dkit-admin"
-      PUBLIC_URL: "http://localhost:8055"
+      PUBLIC_URL: "http://localhost:8010"
       WEBSOCKETS_ENABLED: "true"
 
   # Optional: docker compose --profile v11 up
@@ -48,7 +48,7 @@ services:
     profiles: ["v11"]
     image: directus/directus:11.3
     ports:
-      - "8056:8055"
+      - "8011:8055"
     volumes:
       - directus11_uploads:/directus/uploads
     depends_on:
@@ -64,7 +64,7 @@ services:
       DB_PASSWORD: "directus"
       ADMIN_EMAIL: "admin@example.com"
       ADMIN_PASSWORD: "dkit-admin"
-      PUBLIC_URL: "http://localhost:8056"
+      PUBLIC_URL: "http://localhost:8011"
 
 volumes:
   directus_pg:

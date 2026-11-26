@@ -3,7 +3,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   runtimeConfig: {
     public: {
-      directusUrl: process.env.DIRECTUS_URL || "http://localhost:8055",
+      directusUrl: process.env.DIRECTUS_URL || "http://localhost:8010",
     },
   },
   alias: {

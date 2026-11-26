@@ -26,7 +26,7 @@ Requires **Directus 11+** (best on **12.2+** for additive schema merge). Always 
 ## Local Directus
 
 ```bash
-pnpm directus:up      # http://localhost:8055
+pnpm directus:up      # http://localhost:8010 (v11 profile → :8011)
 # admin@example.com / dkit-admin
 pnpm directus:reset   # wipe volumes + restart
 ```
@@ -34,7 +34,7 @@ pnpm directus:reset   # wipe volumes + restart
 Create a **static admin token** in Directus (User → Token), then in a Next.js app:
 
 ```bash
-npx dkit init --url http://localhost:8055 --token <token>
+npx dkit init --url http://localhost:8010 --token <token>
 npx dkit add blog --seed
 ```
 

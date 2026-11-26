@@ -58,7 +58,7 @@ export function doctorCommand(): Command {
         checks.push({
           ok: false,
           label:
-            "Tip: pnpm directus:up (in the dkit repo) starts a local Directus on :8055",
+            "Tip: pnpm directus:up (in the dkit repo) starts a local Directus on :8010 (v11 → :8011)",
         });
       }
 
