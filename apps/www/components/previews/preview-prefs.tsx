@@ -164,9 +164,8 @@ export function ModuleSandpackPreviews({
       <PreviewControls />
 
       <p className="text-sm text-muted-foreground">
-        Prefs saved in <code className="font-mono">localStorage</code>
-        {" · "}
-        live preview powered by{" "}
+        Your framework and UI kit choice is remembered in this browser. Previews
+        run in{" "}
         <a
           href="https://sandpack.codesandbox.io/"
           className="text-primary underline-offset-4 hover:underline"
@@ -182,7 +181,8 @@ export function ModuleSandpackPreviews({
       <div className={ready ? "space-y-8" : "space-y-8 opacity-80"}>
         {visible.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            No blocks for this UI kit.
+            No blocks match this UI kit. Try shadcn, or install with{" "}
+            <code className="font-mono">--template</code> for other options.
           </p>
         ) : (
           visible.map((project) => (

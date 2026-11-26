@@ -2,7 +2,7 @@
   "type": "dkit:block",
   "id": "blog-list-cards",
   "title": "Blog list (cards)",
-  "description": "Card grid (Tailwind) with date, excerpt, and hover accent",
+  "description": "Card grid of posts with date, excerpt, and hover accent",
   "version": "0.1.0",
   "frameworks": ["next", "nuxt"],
   "slot": "list",

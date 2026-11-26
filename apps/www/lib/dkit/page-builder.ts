@@ -14,7 +14,7 @@ export type {
   PageBlock,
 } from "../../../../packages/registry/modules/page-builder/types";
 
-/** Inline fixture — page-builder has no seed.json yet. */
+/** Sample page for directory previews until the module ships seed.json. */
 const FIXTURE: BuilderPage = {
   id: "preview-builder",
   status: "published",
@@ -26,16 +26,16 @@ const FIXTURE: BuilderPage = {
       item: {
         id: "1",
         heading: "Composable blocks",
-        subheading: "Preview fixture for the page-builder module",
+        subheading: "M2A sections from the page-builder module",
       },
     },
     {
       collection: collections.block_richtext,
       item: {
         id: "2",
-        title: "About this preview",
+        title: "What you get",
         content:
-          "<p>This module has no seed file yet. The directory shows a small fixture so the renderer is visible.</p>",
+          "<p>Install this module to create pages from hero, rich text, and CTA blocks in Directus. Use the renderer UI in your Next.js app to output the composed page.</p><p>Confirm block order, publishing, and public read access after <code>dkit add page-builder</code>.</p>",
       },
     },
     {

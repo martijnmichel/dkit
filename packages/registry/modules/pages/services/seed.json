@@ -7,7 +7,7 @@
         "title": "Sample: About",
         "slug": "about",
         "excerpt": "Demo page — verify slug routes and .dkit-prose rendering.",
-        "body": "<p>This is <strong>sample seed data</strong> from the pages module. Rewrite or remove it in Directus when you add real pages.</p><h2>What to verify</h2><p>Open this slug in your app (for example <code>/about</code> or <code>/pages/about</code>, depending on the base path you chose at install).</p><blockquote><p>Seed pages exist so developers can smoke-test install, not as production copy.</p></blockquote><h3>Exercises</h3><ul><li>Detail UI loads title and body</li><li>WYSIWYG HTML picks up <code>.dkit-prose</code></li><li>Unpublished drafts stay hidden from the public role</li></ul><h3>Next steps</h3><ol><li>Edit this page in <em>Site → Pages</em></li><li>Create another page with a new slug</li><li>Wire routes to <code>getPageBySlug</code></li></ol><p>Replace all sample content before launch.</p>",
+        "body": "<p>This is <strong>sample seed data</strong> from the pages module. Rewrite or remove it in Directus when you add real pages.</p><h2>What to verify</h2><p>Open this slug in your app (for example <code>/about</code> or <code>/pages/about</code>, depending on the base path you chose at install).</p><blockquote><p>Use this page to smoke-test install — then replace it with your own content before launch.</p></blockquote><h3>Exercises</h3><ul><li>Detail UI loads title and body</li><li>WYSIWYG HTML picks up <code>.dkit-prose</code></li><li>Unpublished drafts stay hidden from the public role</li></ul><h3>Next steps</h3><ol><li>Edit this page in <em>Site → Pages</em></li><li>Create another page with a new slug</li><li>Wire routes to <code>getPageBySlug</code></li></ol><p>Replace all sample content before launch.</p>",
         "published_at": "2026-01-15T10:00:00.000Z"
       },
       {
@@ -16,7 +16,7 @@
         "title": "Sample: Hello",
         "slug": "hello",
         "excerpt": "Second demo page for base-path and multi-page checks.",
-        "body": "<h2>Hello</h2><p>Second sample page so you can click between slugs. With base path <code>/</code> this is <code>/hello</code>; with <code>/pages</code> it is <code>/pages/hello</code>.</p><h3>Included markup</h3><ul><li>Headings</li><li>Inline <code>code</code> for paths</li><li>A short list</li></ul><blockquote><p>Prefer instructional sample copy over filler or first-person brand voice.</p></blockquote><p>Delete when you no longer need the demo.</p>",
+        "body": "<h2>Hello</h2><p>Second sample page so you can click between slugs. With base path <code>/</code> this is <code>/hello</code>; with <code>/pages</code> it is <code>/pages/hello</code>.</p><h3>Included markup</h3><ul><li>Headings</li><li>Inline <code>code</code> for paths</li><li>A short list</li></ul><blockquote><p>Confirm both sample slugs resolve, then delete the demos when you no longer need them.</p></blockquote><p>Delete when you no longer need the demo.</p>",
         "published_at": "2026-01-15T11:00:00.000Z"
       }
     ]

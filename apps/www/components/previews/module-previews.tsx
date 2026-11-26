@@ -19,18 +19,19 @@ export async function ModuleBlockPreviews({
   if (!blocks.length) {
     return (
       <p className="text-sm text-muted-foreground">
-        This module has no UI blocks in the registry.
+        This module has no UI blocks yet. You can still install schema and
+        access with <code className="font-mono">dkit add {moduleId} --schema-only</code>.
       </p>
     );
   }
 
   const seedHint =
     moduleId === "blog" || moduleId === "pages"
-      ? "Fed by module seed data (same JSON as dkit add --seed)."
+      ? "Preview data comes from the module seed — the same JSON as dkit add --seed."
       : moduleId === "page-builder"
-        ? "Fed by a small directory fixture."
+        ? "Preview uses a small sample page so you can inspect the M2A renderer."
         : moduleId === "contact-form"
-          ? "Submit is mocked inside the sandbox."
+          ? "Submit in the sandbox is local — nothing is sent to Directus."
           : null;
 
   const projects = buildModuleSandpackProjects(blocks);
@@ -38,7 +39,8 @@ export async function ModuleBlockPreviews({
   if (!projects.length) {
     return (
       <p className="text-sm text-muted-foreground">
-        Sandpack projects are not wired for these blocks yet.
+        Live preview is not available for these blocks yet. Install them with{" "}
+        <code className="font-mono">dkit add</code> to try them in your app.
       </p>
     );
   }
@@ -50,7 +52,7 @@ export async function ModuleBlockPreviews({
   );
 }
 
-/** Used by demo slug routes so list → detail links work outside Sandpack. */
+/** Seeded demo routes under /modules/[id]/demo/[slug]. */
 export async function ModuleDetailPreview({
   moduleId,
   slug,
@@ -73,6 +75,8 @@ export async function ModuleDetailPreview({
     return <PageDetail slug={slug} />;
   }
   return (
-    <p className="p-8 text-muted-foreground">No detail preview for this module.</p>
+    <p className="p-8 text-muted-foreground">
+      No detail demo for this module.
+    </p>
   );
 }

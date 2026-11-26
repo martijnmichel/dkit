@@ -24,7 +24,7 @@ export async function BlogList({
           Blog
         </h1>
         <p className="mt-4 max-w-md text-base leading-relaxed text-muted-foreground">
-          Stories and notes from Directus — newest first.
+          Published posts from your Directus project — newest first.
         </p>
       </header>
 

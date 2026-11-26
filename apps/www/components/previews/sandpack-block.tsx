@@ -37,7 +37,9 @@ export function SandpackBlockPreview({
   if (!resolved.files) {
     return (
       <p className="p-6 text-sm text-muted-foreground">
-        No Sandpack project for <code className="font-mono">{project.blockId}</code>.
+        No live preview for{" "}
+        <code className="font-mono">{project.blockId}</code> yet. Install the
+        block with <code className="font-mono">dkit add</code> to use it locally.
       </p>
     );
   }
@@ -51,21 +53,17 @@ export function SandpackBlockPreview({
         <p className="text-xs text-muted-foreground">
           {resolved.missingPreferred ? (
             <>
-              No {framework} UI for this block — showing{" "}
-              <span className="font-medium text-foreground">
-                {resolved.actualFramework}
-              </span>
-              .
+              This block ships {resolved.actualFramework} UI only — showing that
+              variant.
             </>
           ) : (
             <>
-              Live via Sandpack (
+              Live sandbox ·{" "}
               <span className="font-medium text-foreground">
                 {resolved.actualFramework === "nuxt"
-                  ? "Vite + Vue · shadcn-vue tokens"
-                  : "Vite + React · shadcn tokens"}
+                  ? "Nuxt / Vue · shadcn-vue tokens"
+                  : "Next / React · shadcn tokens"}
               </span>
-              )
             </>
           )}
         </p>

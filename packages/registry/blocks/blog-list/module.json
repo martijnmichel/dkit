@@ -2,7 +2,7 @@
   "type": "dkit:block",
   "id": "blog-list",
   "title": "Blog list",
-  "description": "Editorial stacked list (Tailwind) — numbered rows, hover affordances",
+  "description": "Stacked post list with optional thumbnails — uses shadcn theme tokens",
   "version": "0.1.0",
   "frameworks": ["next", "nuxt"],
   "slot": "list",

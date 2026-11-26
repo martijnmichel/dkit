@@ -2,7 +2,7 @@
   "type": "dkit:block",
   "id": "page-detail",
   "title": "Page detail",
-  "description": "Styled WYSIWYG page view (Tailwind)",
+  "description": "WYSIWYG page view with title, excerpt, and body",
   "version": "0.1.0",
   "frameworks": ["next", "nuxt"],
   "registryDependencies": ["pages"],

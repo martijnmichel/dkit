@@ -130,8 +130,8 @@ const SAMPLE = {
   title: "Sample composed page",
   status: "published",
   blocks: [
-    { collection: "block_hero", item: { heading: "Built with dkit", subheading: "Composable Directus pages" } },
-    { collection: "block_richtext", item: { title: "About this preview", content: "<p>This is a directory fixture for the page-builder module.</p>" } },
+    { collection: "block_hero", item: { heading: "Composable blocks", subheading: "M2A sections from the page-builder module" } },
+    { collection: "block_richtext", item: { title: "What you get", content: "<p>Install this module to create pages from hero, rich text, and CTA blocks in Directus. Use the renderer UI in your Next.js app to output the composed page.</p>" } },
     { collection: "block_cta", item: { label: "Browse modules", href: "/modules" } },
   ],
 };

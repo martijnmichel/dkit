@@ -152,17 +152,22 @@ export function SchemaReference({
 
   return (
     <div className="space-y-8">
-      <section>
-        <h2 className="text-xl font-semibold tracking-tight">Schema</h2>
-        <p className="text-muted mt-1 text-sm">
-          From the module <code className="font-mono">snapshot.json</code>
+      <section id="schema" className="scroll-mt-24">
+        <h2 className="text-xl font-semibold tracking-tight text-foreground">
+          Schema
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Collections and fields from this module&apos;s{" "}
+          <code className="font-mono">snapshot.json</code>
           {schema?.format ? (
             <>
               {" "}
               (<code className="font-mono">{schema.format}</code>)
             </>
           ) : null}
-          . Collection names are logical; your prefix is applied at install.
+          . Names below are logical;{" "}
+          <code className="font-mono">dkit add</code> applies your collection
+          prefix.
         </p>
       </section>
 
@@ -234,7 +239,7 @@ export function SchemaReference({
         </section>
       ) : null}
 
-      <section className="card">
+      <section id="access" className="card scroll-mt-24">
         <h3 className="font-medium">Access</h3>
         <ul className="mt-4 space-y-2 text-sm">
           {(access?.policies ?? []).map((p) => (
@@ -257,7 +262,7 @@ export function SchemaReference({
       </section>
 
       {(flows?.flows?.length ?? 0) > 0 ? (
-        <section className="card">
+        <section id="flows" className="card scroll-mt-24">
           <h3 className="font-medium">Flows</h3>
           <ul className="mt-4 space-y-2 text-sm">
             {flows!.flows!.map((f) => (
@@ -278,9 +283,10 @@ export function SchemaReference({
         </section>
       ) : null}
 
-      <p className="text-sm text-muted">
-        Requires Directus 11+ (best on 12.2+). Back up or use a staging instance
-        before <code className="font-mono">dkit add</code>.
+      <p className="text-sm text-muted-foreground">
+        Requires Directus 11+ (12.2+ recommended). Prefer a staging project
+        before running <code className="font-mono">dkit add</code> against
+        production.
       </p>
     </div>
   );

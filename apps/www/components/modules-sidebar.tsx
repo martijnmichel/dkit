@@ -26,7 +26,7 @@ export function ModulesSidebar({ modules }: { modules: ModuleNavItem[] }) {
           Modules
         </a>
         <p className="mt-1 text-xs text-muted-foreground">
-          Schema · access · UI blocks
+          Schema, access, and UI for your app
         </p>
       </div>
       <nav className="flex-1 overflow-y-auto px-2 py-3" aria-label="Modules">

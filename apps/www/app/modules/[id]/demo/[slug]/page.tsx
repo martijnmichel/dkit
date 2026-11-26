@@ -34,15 +34,18 @@ export default async function ModuleDemoSlugPage({
   if (id !== "blog" && id !== "pages") notFound();
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
-      <p className="mb-4 text-sm text-stone-500">
-        <a href={`/modules/${id}/`} className="underline-offset-2 hover:underline">
+    <div className="px-6 py-8 lg:px-10">
+      <p className="mb-4 text-sm text-muted-foreground">
+        <a
+          href={`/modules/${id}/`}
+          className="underline-offset-2 hover:underline"
+        >
           ← {meta.item.title}
         </a>
         <span className="mx-2">·</span>
-        Seeded demo route
+        Sample detail route (seed data)
       </p>
-      <div className="overflow-hidden rounded-2xl border border-stone-200 bg-[var(--color-paper,#f7f4ef)] dark:border-stone-800">
+      <div className="overflow-hidden rounded-xl border border-border bg-background">
         <ModuleDetailPreview moduleId={id} slug={slug} />
       </div>
     </div>

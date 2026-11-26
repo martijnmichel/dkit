@@ -29,7 +29,7 @@ const { data: posts } = await useAsyncData('dkit-blog-list', () => getPosts())
         Blog
       </h1>
       <p class="mt-4 max-w-md text-base leading-relaxed text-muted-foreground">
-        Stories and notes from Directus — newest first.
+        Published posts from your Directus project — newest first.
       </p>
     </header>
 

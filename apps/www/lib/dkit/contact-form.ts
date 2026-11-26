@@ -18,7 +18,7 @@ export type ContactFormState = {
   error?: string;
 };
 
-/** Directory preview — mocked success (no Directus). */
+/** Preview helper — always succeeds (no Directus round-trip). */
 export async function createSubmission(
   _input: FormSubmissionInput,
 ): Promise<{ ok: true; id?: string } | { ok: false; error: string }> {

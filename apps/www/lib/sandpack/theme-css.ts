@@ -6,18 +6,18 @@ export const SANDPACK_THEME_CSS = `
   --foreground: oklch(0.2 0.01 60);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.2 0.01 60);
-  --primary: oklch(0.45 0.1 175);
-  --primary-foreground: oklch(0.98 0.01 175);
+  --primary: oklch(0.72 0.2 155);
+  --primary-foreground: oklch(0.18 0.04 155);
   --secondary: oklch(0.96 0.005 90);
   --secondary-foreground: oklch(0.25 0.01 60);
   --muted: oklch(0.95 0.005 90);
   --muted-foreground: oklch(0.5 0.015 60);
-  --accent: oklch(0.95 0.01 175);
-  --accent-foreground: oklch(0.3 0.05 175);
+  --accent: oklch(0.94 0.04 155);
+  --accent-foreground: oklch(0.28 0.08 155);
   --destructive: oklch(0.55 0.2 25);
   --border: oklch(0.9 0.005 90);
   --input: oklch(0.9 0.005 90);
-  --ring: oklch(0.45 0.1 175);
+  --ring: oklch(0.72 0.2 155);
 }
 @theme inline {
   --color-background: var(--background);

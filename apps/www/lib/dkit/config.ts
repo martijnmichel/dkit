@@ -1,4 +1,4 @@
-/** Preview config — logical names equal physical (no prefix in directory demos). */
+/** Directory config — logical collection names (no install prefix). */
 export const collectionPrefix = "" as const;
 
 export const collections = {
