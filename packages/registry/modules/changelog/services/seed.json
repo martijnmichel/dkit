@@ -1,0 +1,24 @@
+{
+  "items": {
+    "releases": [
+      {
+        "id": "44444444-4444-4444-8444-444444444444",
+        "status": "shipped",
+        "version": "0.1.0",
+        "title": "dkit MVP",
+        "body": "<p>Schema + UI modules installer.</p>",
+        "tags": ["cli", "directus"],
+        "released_at": "2026-03-01T00:00:00.000Z"
+      },
+      {
+        "id": "55555555-5555-4555-8555-555555555555",
+        "status": "planned",
+        "version": "0.2.0",
+        "title": "More frameworks",
+        "body": "<p>Nuxt adapter on the roadmap.</p>",
+        "tags": ["nuxt"],
+        "released_at": null
+      }
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "@dkit/registry",
+  "version": "0.1.0",
+  "private": true,
+  "description": "dkit module and block registry source",
+  "scripts": {
+    "build": "echo 'registry is source-only'",
+    "typecheck": "echo 'ok'",
+    "test": "echo 'ok'",
+    "lint": "echo 'ok'"
+  }
+}

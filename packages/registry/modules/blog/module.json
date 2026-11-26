@@ -1,0 +1,12 @@
+{
+  "type": "dkit:module",
+  "id": "blog",
+  "title": "Blog & Authors",
+  "description": "Posts, authors, and categories with M2O/M2M relations",
+  "version": "0.1.0",
+  "directus": { "min": "11.0.0" },
+  "dependencies": ["@directus/sdk"],
+  "layers": ["schema", "access", "services", "types"],
+  "defaultBlocks": ["blog-list", "blog-detail"],
+  "collections": ["authors", "categories", "posts", "posts_categories"]
+}

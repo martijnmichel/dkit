@@ -1,0 +1,25 @@
+{
+  "policies": [
+    {
+      "name": "dkit Contact Form Public Create",
+      "icon": "edit",
+      "description": "Public can create form submissions only",
+      "admin_access": false,
+      "app_access": false
+    }
+  ],
+  "permissions": [
+    {
+      "policy": "dkit Contact Form Public Create",
+      "collection": "form_submissions",
+      "action": "create",
+      "fields": ["name", "email", "message"]
+    }
+  ],
+  "access": [
+    {
+      "role": "$public",
+      "policy": "dkit Contact Form Public Create"
+    }
+  ]
+}

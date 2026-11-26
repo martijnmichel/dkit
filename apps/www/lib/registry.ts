@@ -1,0 +1,62 @@
+import fs from "node:fs";
+import path from "node:path";
+
+export type RegistryItem = {
+  id: string;
+  type: "dkit:module" | "dkit:block";
+  title: string;
+  description: string;
+  version: string;
+  path: string;
+  defaultBlocks?: string[];
+  registryDependencies?: string[];
+};
+
+export type RegistryIndex = {
+  name: string;
+  homepage?: string;
+  version?: string;
+  items: RegistryItem[];
+};
+
+function registryRoot(): string {
+  const candidates = [
+    path.join(process.cwd(), "public/r"),
+    path.join(process.cwd(), "../../packages/registry"),
+  ];
+  for (const c of candidates) {
+    if (fs.existsSync(path.join(c, "registry.json"))) return c;
+  }
+  return candidates[1]!;
+}
+
+export function getRegistry(): RegistryIndex {
+  const root = registryRoot();
+  return JSON.parse(
+    fs.readFileSync(path.join(root, "registry.json"), "utf8"),
+  ) as RegistryIndex;
+}
+
+export function getModuleMeta(id: string) {
+  const root = registryRoot();
+  const index = getRegistry();
+  const item = index.items.find((i) => i.id === id);
+  if (!item) return null;
+
+  const dir = path.join(root, item.path);
+  const manifest = JSON.parse(
+    fs.readFileSync(path.join(dir, "module.json"), "utf8"),
+  ) as Record<string, unknown>;
+
+  let schema: unknown;
+  let access: unknown;
+  let flows: unknown;
+  const schemaPath = path.join(dir, "schema/snapshot.json");
+  const accessPath = path.join(dir, "access/policies.json");
+  const flowsPath = path.join(dir, "services/flows.json");
+  if (fs.existsSync(schemaPath)) schema = JSON.parse(fs.readFileSync(schemaPath, "utf8"));
+  if (fs.existsSync(accessPath)) access = JSON.parse(fs.readFileSync(accessPath, "utf8"));
+  if (fs.existsSync(flowsPath)) flows = JSON.parse(fs.readFileSync(flowsPath, "utf8"));
+
+  return { item, manifest, schema, access, flows };
+}

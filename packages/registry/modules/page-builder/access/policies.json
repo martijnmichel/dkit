@@ -1,0 +1,45 @@
+{
+  "policies": [
+    {
+      "name": "dkit Pages Public Read",
+      "icon": "public",
+      "description": "Public read for published pages and blocks",
+      "admin_access": false,
+      "app_access": false
+    }
+  ],
+  "permissions": [
+    {
+      "policy": "dkit Pages Public Read",
+      "collection": "pages",
+      "action": "read",
+      "fields": ["*"],
+      "permissions": { "status": { "_eq": "published" } }
+    },
+    {
+      "policy": "dkit Pages Public Read",
+      "collection": "block_hero",
+      "action": "read",
+      "fields": ["*"]
+    },
+    {
+      "policy": "dkit Pages Public Read",
+      "collection": "block_richtext",
+      "action": "read",
+      "fields": ["*"]
+    },
+    {
+      "policy": "dkit Pages Public Read",
+      "collection": "block_cta",
+      "action": "read",
+      "fields": ["*"]
+    },
+    {
+      "policy": "dkit Pages Public Read",
+      "collection": "pages_blocks",
+      "action": "read",
+      "fields": ["*"]
+    }
+  ],
+  "access": [{ "role": "$public", "policy": "dkit Pages Public Read" }]
+}

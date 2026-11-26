@@ -1,0 +1,8 @@
+# Example deploy on Ubuntu VPS (put Traefik/Caddy in front for TLS)
+services:
+  www:
+    image: ghcr.io/martijnmichel/dkit-www:latest
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    # labels for Traefik / Caddy as needed

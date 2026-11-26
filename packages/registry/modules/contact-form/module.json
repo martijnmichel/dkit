@@ -1,0 +1,12 @@
+{
+  "type": "dkit:module",
+  "id": "contact-form",
+  "title": "Lead Capture Form",
+  "description": "Write-only submissions + email notification flow",
+  "version": "0.1.0",
+  "directus": { "min": "11.0.0" },
+  "dependencies": ["@directus/sdk", "zod"],
+  "layers": ["schema", "access", "services", "types"],
+  "defaultBlocks": ["contact-form-ui"],
+  "collections": ["form_submissions"]
+}

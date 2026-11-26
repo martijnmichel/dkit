@@ -1,0 +1,11 @@
+{
+  "type": "dkit:block",
+  "id": "page-renderer",
+  "title": "Page renderer",
+  "description": "Dynamic M2A block renderer",
+  "version": "0.1.0",
+  "frameworks": ["next"],
+  "registryDependencies": ["page-builder"],
+  "dependencies": ["@directus/sdk"],
+  "layers": ["ui"]
+}

@@ -1,0 +1,11 @@
+{
+  "type": "dkit:block",
+  "id": "contact-form-ui",
+  "title": "Contact form UI",
+  "description": "Validated Next.js Server Action form",
+  "version": "0.1.0",
+  "frameworks": ["next"],
+  "registryDependencies": ["contact-form"],
+  "dependencies": ["@directus/sdk", "zod"],
+  "layers": ["ui"]
+}

@@ -1,0 +1,11 @@
+{
+  "type": "dkit:block",
+  "id": "blog-detail",
+  "title": "Blog detail",
+  "description": "Single post page with rich text",
+  "version": "0.1.0",
+  "frameworks": ["next"],
+  "registryDependencies": ["blog"],
+  "dependencies": ["@directus/sdk"],
+  "layers": ["ui"]
+}

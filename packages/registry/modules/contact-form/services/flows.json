@@ -1,0 +1,18 @@
+{
+  "flows": [
+    {
+      "name": "dkit Contact Form Notify",
+      "icon": "mail",
+      "description": "Placeholder notification flow on form_submissions create. Configure an email operation in Directus (SMTP) after install.",
+      "status": "active",
+      "trigger": "event",
+      "accountability": "all",
+      "options": {
+        "type": "action",
+        "scope": ["items.create"],
+        "collections": ["form_submissions"]
+      }
+    }
+  ],
+  "operations": []
+}

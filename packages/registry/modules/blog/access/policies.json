@@ -1,0 +1,45 @@
+{
+  "policies": [
+    {
+      "name": "dkit Blog Public Read",
+      "icon": "public",
+      "description": "Public read access for blog collections",
+      "admin_access": false,
+      "app_access": false
+    }
+  ],
+  "permissions": [
+    {
+      "policy": "dkit Blog Public Read",
+      "collection": "posts",
+      "action": "read",
+      "fields": ["*"],
+      "permissions": { "status": { "_eq": "published" } }
+    },
+    {
+      "policy": "dkit Blog Public Read",
+      "collection": "authors",
+      "action": "read",
+      "fields": ["*"],
+      "permissions": { "status": { "_eq": "published" } }
+    },
+    {
+      "policy": "dkit Blog Public Read",
+      "collection": "categories",
+      "action": "read",
+      "fields": ["*"]
+    },
+    {
+      "policy": "dkit Blog Public Read",
+      "collection": "posts_categories",
+      "action": "read",
+      "fields": ["*"]
+    }
+  ],
+  "access": [
+    {
+      "role": "$public",
+      "policy": "dkit Blog Public Read"
+    }
+  ]
+}

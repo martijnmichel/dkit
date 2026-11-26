@@ -1,0 +1,25 @@
+{
+  "name": "dkit-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Install Directus modules — schema, permissions, flows, and frontend code you own",
+  "license": "MIT",
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "pnpm -r --filter=./packages/* build",
+    "dev:www": "pnpm --filter @dkit/www dev",
+    "typecheck": "pnpm -r --filter=./packages/* typecheck",
+    "test": "pnpm -r --filter=./packages/* test",
+    "lint": "pnpm -r --filter=./packages/* lint",
+    "directus:up": "docker compose -f docker/directus/compose.yaml up -d",
+    "directus:down": "docker compose -f docker/directus/compose.yaml down",
+    "directus:reset": "docker compose -f docker/directus/compose.yaml down -v && docker compose -f docker/directus/compose.yaml up -d",
+    "directus:logs": "docker compose -f docker/directus/compose.yaml logs -f"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

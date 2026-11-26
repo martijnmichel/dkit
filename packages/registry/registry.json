@@ -1,0 +1,88 @@
+{
+  "name": "dkit",
+  "homepage": "https://github.com/martijnmichel/dkit",
+  "version": "0.1.0",
+  "items": [
+    {
+      "id": "blog",
+      "type": "dkit:module",
+      "title": "Blog & Authors",
+      "description": "Posts, authors, and categories with M2O/M2M relations",
+      "version": "0.1.0",
+      "path": "modules/blog",
+      "defaultBlocks": ["blog-list", "blog-detail"]
+    },
+    {
+      "id": "blog-list",
+      "type": "dkit:block",
+      "title": "Blog list",
+      "description": "Index of published posts",
+      "version": "0.1.0",
+      "path": "blocks/blog-list",
+      "registryDependencies": ["blog"]
+    },
+    {
+      "id": "blog-detail",
+      "type": "dkit:block",
+      "title": "Blog detail",
+      "description": "Single post page with rich text",
+      "version": "0.1.0",
+      "path": "blocks/blog-detail",
+      "registryDependencies": ["blog"]
+    },
+    {
+      "id": "contact-form",
+      "type": "dkit:module",
+      "title": "Lead Capture Form",
+      "description": "Write-only submissions + email notification flow",
+      "version": "0.1.0",
+      "path": "modules/contact-form",
+      "defaultBlocks": ["contact-form-ui"]
+    },
+    {
+      "id": "contact-form-ui",
+      "type": "dkit:block",
+      "title": "Contact form UI",
+      "description": "Validated Next.js Server Action form",
+      "version": "0.1.0",
+      "path": "blocks/contact-form-ui",
+      "registryDependencies": ["contact-form"]
+    },
+    {
+      "id": "changelog",
+      "type": "dkit:module",
+      "title": "Changelog / Roadmap",
+      "description": "Releases with status and tags",
+      "version": "0.1.0",
+      "path": "modules/changelog",
+      "defaultBlocks": ["changelog-timeline"]
+    },
+    {
+      "id": "changelog-timeline",
+      "type": "dkit:block",
+      "title": "Changelog timeline",
+      "description": "Timeline UI with status badges",
+      "version": "0.1.0",
+      "path": "blocks/changelog-timeline",
+      "registryDependencies": ["changelog"]
+    },
+    {
+      "id": "page-builder",
+      "type": "dkit:module",
+      "title": "Dynamic Page Builder",
+      "description": "Pages with M2A content blocks",
+      "version": "0.1.0",
+      "path": "modules/page-builder",
+      "defaultBlocks": ["page-renderer"]
+    },
+    {
+      "id": "page-renderer",
+      "type": "dkit:block",
+      "title": "Page renderer",
+      "description": "Dynamic M2A block renderer",
+      "version": "0.1.0",
+      "path": "blocks/page-renderer",
+      "registryDependencies": ["page-builder"]
+    }
+  ]
+}

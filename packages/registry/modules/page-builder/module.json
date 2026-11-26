@@ -1,0 +1,18 @@
+{
+  "type": "dkit:module",
+  "id": "page-builder",
+  "title": "Dynamic Page Builder",
+  "description": "Pages with M2A content blocks",
+  "version": "0.1.0",
+  "directus": { "min": "11.0.0" },
+  "dependencies": ["@directus/sdk"],
+  "layers": ["schema", "access", "services", "types"],
+  "defaultBlocks": ["page-renderer"],
+  "collections": [
+    "pages",
+    "block_hero",
+    "block_richtext",
+    "block_cta",
+    "pages_blocks"
+  ]
+}
