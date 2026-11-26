@@ -17,3 +17,6 @@ docker/directus/extensions
 packages/cli/vendor
 apps/www/public/r
 apps/www/out
+
+# Cursor local / plans (not for the public repo)
+.cursor/
