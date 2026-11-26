@@ -19,6 +19,7 @@ import {
 } from "@dkit/shared";
 import { findProjectRoot } from "../lib/paths.js";
 import { getDirectusCreds } from "../lib/env.js";
+import { detectFramework } from "../lib/framework.js";
 import {
   loadItem,
   loadRegistryIndex,
@@ -71,7 +72,7 @@ export function addCommand(): Command {
       "--yes",
       "Non-interactive: use defaults / flags; also confirms Directus < 12.2 apply",
     )
-    .option("--framework <name>", "UI framework adapter (next|nuxt)", "next")
+    .option("--framework <name>", "UI framework adapter (next|nuxt); default: dkit.json or auto-detect")
     .action(
       async (
         id: string,
@@ -90,17 +91,25 @@ export function addCommand(): Command {
         },
       ) => {
         p.intro(pc.bgCyan(pc.black(" dkit add ")));
-        const framework = (opts.framework ?? "next") as Framework;
+        const projectRoot = findProjectRoot();
+        const existingConfig = readProjectConfig(projectRoot);
+        const detected = detectFramework(projectRoot).framework;
+        const framework = (opts.framework ??
+          existingConfig?.framework ??
+          detected ??
+          "next") as Framework;
         if (framework !== "next" && framework !== "nuxt") {
           p.cancel(
             `Framework "${framework}" is not published yet. Use next or nuxt.`,
           );
           process.exit(1);
         }
+        if (!opts.framework && !existingConfig?.framework && detected) {
+          p.log.step(`Detected framework: ${framework}`);
+        }
 
-        const projectRoot = findProjectRoot();
         let config = DkitProjectConfigSchema.parse({
-          ...(readProjectConfig(projectRoot) ?? {}),
+          ...(existingConfig ?? {}),
           framework,
         });
 
@@ -306,16 +315,27 @@ export function addCommand(): Command {
                 (c) => buildCollectionMap([c], collectionPrefix)[c]!,
               ),
             };
-            const result = await applyModule(client, url, payload, {
-              dryRun: opts.dryRun,
-              seed: opts.seed,
-              confirmReducedSafety: opts.yes,
-              onLog: (m) => p.log.step(m),
-            });
-            if (opts.dryRun) {
-              for (const line of result.dryRunPlan) p.log.info(line);
+            try {
+              const result = await applyModule(client, url, payload, {
+                dryRun: opts.dryRun,
+                seed: opts.seed,
+                confirmReducedSafety: opts.yes,
+                onLog: (m) => p.log.step(m),
+              });
+              if (opts.dryRun) {
+                for (const line of result.dryRunPlan) p.log.info(line);
+              }
+              for (const w of result.warnings) p.log.warn(w);
+            } catch (e) {
+              const msg =
+                e instanceof Error
+                  ? e.message
+                  : typeof e === "object" && e && "errors" in e
+                    ? JSON.stringify(e)
+                    : String(e);
+              p.cancel(`Directus apply failed: ${msg}`);
+              process.exit(1);
             }
-            for (const w of result.warnings) p.log.warn(w);
           }
 
           if (!opts.dryRun) {

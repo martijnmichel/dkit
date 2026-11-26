@@ -1,5 +1,6 @@
 import { compareSemver, majorVersion } from "@dkit/shared";
 import type { DkitDirectusClient } from "./client.js";
+import { http } from "./http.js";
 
 export type DirectusVersionInfo = {
   version: string;
@@ -26,24 +27,43 @@ export async function detectDirectusVersion(
   };
 }
 
+function pickVersion(body: unknown): string | null {
+  if (!body || typeof body !== "object") return null;
+  const root = body as Record<string, unknown>;
+  const data = (root.data ?? root) as Record<string, unknown>;
+  const candidates = [
+    data.version,
+    root.version,
+    typeof data.directus === "string" ? data.directus : (data.directus as { version?: string } | undefined)?.version,
+    typeof root.directus === "string" ? root.directus : (root.directus as { version?: string } | undefined)?.version,
+    (data.project as { version?: string } | undefined)?.version,
+  ];
+  for (const c of candidates) {
+    if (typeof c === "string" && /^\d+\.\d+/.test(c)) return c;
+  }
+  return null;
+}
+
 async function fetchServerVersion(
   client: DkitDirectusClient,
   url: string,
 ): Promise<string> {
-  // Prefer public server info
+  // Authenticated server info (version is often omitted on the public response)
+  try {
+    const body = await http(client, { path: "/server/info", method: "GET" });
+    const v = pickVersion(body);
+    if (v) return v;
+  } catch {
+    // fall through
+  }
+
+  // Public fetch
   try {
     const res = await fetch(new URL("/server/info", url).toString(), {
       headers: { Accept: "application/json" },
     });
     if (res.ok) {
-      const body = (await res.json()) as {
-        data?: { directus?: { version?: string }; project?: { version?: string } };
-        directus?: { version?: string };
-      };
-      const v =
-        body.data?.directus?.version ??
-        body.directus?.version ??
-        body.data?.project?.version;
+      const v = pickVersion(await res.json());
       if (v) return v;
     }
   } catch {
@@ -52,11 +72,10 @@ async function fetchServerVersion(
 
   // Fallback: schema snapshot often includes directus version for admins
   try {
-    const snap = await client.request(() => ({
+    const snap = await http(client, {
       path: "/schema/snapshot",
       method: "GET",
-      params: {},
-    }));
+    });
     const version =
       (snap as { directus?: string })?.directus ??
       (snap as { data?: { directus?: string } })?.data?.directus;

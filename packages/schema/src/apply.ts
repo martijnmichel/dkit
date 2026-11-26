@@ -3,6 +3,12 @@ import { detectDirectusVersion } from "./version.js";
 import { stripDeleteOperations, summarizeDiff } from "./strip-deletes.js";
 import { applyRestSchema, isRestSchema, type RestSchema } from "./apply-rest.js";
 import { http } from "./http.js";
+import {
+  isCustomPermissionRulesRestricted,
+  permissionHasCustomRules,
+  toCoreFlatPermission,
+  toError,
+} from "./errors.js";
 import type {
   ApplyOptions,
   ApplyResult,
@@ -171,12 +177,13 @@ async function applyAccess(
 
   if (options.dryRun) return { applied: false, lines };
 
+  // fields must be a comma string — array form can return an incomplete policy list on Directus 12
   const existing = await http<
     { data?: Array<{ id: string; name: string }> } | Array<{ id: string; name: string }>
   >(client, {
     path: "/policies",
     method: "GET",
-    params: { limit: -1, fields: ["id", "name"] },
+    params: { limit: -1, fields: "id,name" },
   });
 
   const list = Array.isArray(existing) ? existing : (existing.data ?? []);
@@ -186,9 +193,9 @@ async function applyAccess(
   for (const policy of policies) {
     const existingId = byName.get(policy.name);
     if (existingId) {
-      throw new Error(
-        `Policy "${policy.name}" already exists (id ${existingId}). Rename or remove it, then re-run.`,
-      );
+      log(`→ Reusing existing policy ${policy.name}`);
+      policyIds.set(policy.name, existingId);
+      continue;
     }
     log(`→ Creating policy ${policy.name}…`);
     const created = await http<{ data?: { id: string }; id?: string }>(client, {
@@ -199,7 +206,10 @@ async function applyAccess(
     const id = created.data?.id ?? created.id;
     if (!id) throw new Error(`Failed to create policy ${policy.name}`);
     policyIds.set(policy.name, id);
+    byName.set(policy.name, id);
   }
+
+  let warnedCoreFlat = false;
 
   for (const perm of permissions) {
     const policyRef = perm.policy;
@@ -213,56 +223,71 @@ async function applyAccess(
       );
     }
     const { policy: _p, ...rest } = perm;
-    await http(client, {
-      path: "/permissions",
-      method: "POST",
-      body: { ...rest, policy: policyId },
-    });
-  }
+    const body = { ...rest, policy: policyId };
 
-  const publicRoleId = await findPublicRoleId(client);
+    try {
+      await http(client, {
+        path: "/permissions",
+        method: "POST",
+        body,
+      });
+    } catch (err) {
+      if (
+        isCustomPermissionRulesRestricted(err) ||
+        permissionHasCustomRules(rest as Record<string, unknown>)
+      ) {
+        if (!warnedCoreFlat) {
+          log(
+            "⚠ Directus Core blocks custom permission rules (row filters / field subsets). Using flat fields:['*'] — UI should filter published status. Add a Directus license for server-side filters.",
+          );
+          warnedCoreFlat = true;
+        }
+        try {
+          await http(client, {
+            path: "/permissions",
+            method: "POST",
+            body: toCoreFlatPermission(body as Record<string, unknown>),
+          });
+        } catch (flatErr) {
+          throw toError(
+            flatErr,
+            `Failed to create flat permission on ${perm.collection}/${perm.action}`,
+          );
+        }
+        continue;
+      }
+      throw toError(
+        err,
+        `Failed to create permission on ${perm.collection}/${perm.action}`,
+      );
+    }
+  }
 
   for (const row of access.access ?? []) {
     const policyId =
       policyIds.get(row.policy) ?? byName.get(row.policy) ?? row.policy;
-    let role = row.role;
-    if (role === "$public") {
-      if (!publicRoleId) {
-        log(
-          '⚠ Could not resolve Public role for access "$public". Attach the policy manually in Directus.',
-        );
+    // Directus 12: public = access row with role=null + user=null (no Public role entity)
+    const role = row.role === "$public" ? null : (row.role ?? null);
+    const user = row.role === "$public" ? null : (row.user ?? null);
+    try {
+      await http(client, {
+        path: "/access",
+        method: "POST",
+        body: { role, user, policy: policyId, sort: row.sort ?? null },
+      });
+    } catch (err) {
+      // Already linked is fine on re-run
+      const msg = toError(err).message.toLowerCase();
+      if (msg.includes("unique") || msg.includes("already")) {
+        log(`→ Access link already exists for ${row.policy}`);
         continue;
       }
-      role = publicRoleId;
+      throw toError(err, `Failed to link access for policy ${row.policy}`);
     }
-    await http(client, {
-      path: "/access",
-      method: "POST",
-      body: { ...row, role, policy: policyId },
-    });
   }
 
   log("✓ Access policies applied");
   return { applied: true, lines };
-}
-
-async function findPublicRoleId(
-  client: DkitDirectusClient,
-): Promise<string | null> {
-  try {
-    const res = await http<
-      Array<{ id: string; name: string }> | { data?: Array<{ id: string; name: string }> }
-    >(client, {
-      path: "/roles",
-      method: "GET",
-      params: { limit: -1, fields: ["id", "name"] },
-    });
-    const list = Array.isArray(res) ? res : (res.data ?? []);
-    const pub = list.find((r) => r.name.toLowerCase() === "public");
-    return pub?.id ?? null;
-  } catch {
-    return null;
-  }
 }
 
 async function applyFlows(

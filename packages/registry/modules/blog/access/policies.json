@@ -3,7 +3,7 @@
     {
       "name": "dkit Blog Public Read",
       "icon": "public",
-      "description": "Public read access for blog collections",
+      "description": "Public read for blog collections (flat rules — Core-compatible). UI filters published status.",
       "admin_access": false,
       "app_access": false
     }
@@ -13,15 +13,13 @@
       "policy": "dkit Blog Public Read",
       "collection": "posts",
       "action": "read",
-      "fields": ["*"],
-      "permissions": { "status": { "_eq": "published" } }
+      "fields": ["*"]
     },
     {
       "policy": "dkit Blog Public Read",
       "collection": "authors",
       "action": "read",
-      "fields": ["*"],
-      "permissions": { "status": { "_eq": "published" } }
+      "fields": ["*"]
     },
     {
       "policy": "dkit Blog Public Read",

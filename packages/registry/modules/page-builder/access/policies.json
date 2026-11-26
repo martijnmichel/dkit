@@ -3,7 +3,7 @@
     {
       "name": "dkit Pages Public Read",
       "icon": "public",
-      "description": "Public read for published pages and blocks",
+      "description": "Public read for pages and blocks (flat rules — Core-compatible). UI filters published status.",
       "admin_access": false,
       "app_access": false
     }
@@ -13,8 +13,7 @@
       "policy": "dkit Pages Public Read",
       "collection": "pages",
       "action": "read",
-      "fields": ["*"],
-      "permissions": { "status": { "_eq": "published" } }
+      "fields": ["*"]
     },
     {
       "policy": "dkit Pages Public Read",

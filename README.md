@@ -6,11 +6,15 @@
 # one-time: put `dkit` on your PATH from this repo
 pnpm dkit:link
 
-dkit init                 # interactive: asks URL, token, framework
+dkit init                 # auto-detects Next/Nuxt (or scaffolds if folder is empty)
 dkit add blog --seed
 ```
 
+`dkit init` detects the framework from `package.json` / config files. In an empty folder it asks Next vs Nuxt and runs `create-next-app` or `nuxi init` with defaults.
+
 Requires **Directus 11+** (best on **12.2+** for additive schema merge). Always back up or use a staging instance before applying modules.
+
+**Directus 12 Core (no license):** public permissions use flat rules (`fields: ["*"]`). Row filters / field subsets need a Directus license; UI blocks already filter `status = published` in queries.
 
 ## Packages
 

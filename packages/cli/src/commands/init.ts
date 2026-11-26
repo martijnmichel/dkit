@@ -7,10 +7,15 @@ import {
   DEFAULT_PROJECT_CONFIG,
   DkitProjectConfigSchema,
   normalizeCollectionPrefix,
+  type Framework,
 } from "@dkit/shared";
 import { createAuthClient, createTokenClient } from "@dkit/schema";
-import { findProjectRoot } from "../lib/paths.js";
 import { getDirectusCreds, upsertEnvLocal } from "../lib/env.js";
+import {
+  detectFramework,
+  isScaffoldableDir,
+} from "../lib/framework.js";
+import { scaffoldFrameworkApp } from "../lib/scaffold.js";
 import {
   ensurePackageDependency,
   writeClientHelper,
@@ -24,12 +29,24 @@ function cancelIf(value: unknown): asserts value is string {
   }
 }
 
+function cancelIfAny(value: unknown): asserts value is Exclude<typeof value, symbol> {
+  if (p.isCancel(value)) {
+    p.cancel("Cancelled");
+    process.exit(0);
+  }
+}
+
 export function initCommand(): Command {
   return new Command("init")
-    .description("Initialize dkit (interactive). Flags only prefill answers.")
+    .description(
+      "Initialize dkit. Auto-detects Next/Nuxt, or scaffolds a new app if the folder is empty.",
+    )
     .option("--url <url>", "Prefill Directus URL")
-    .option("--token <token>", "Prefill static admin token (skips token prompt with --yes)")
-    .option("--framework <name>", "Prefill framework (next|nuxt)")
+    .option(
+      "--token <token>",
+      "Prefill static admin token (skips token prompt with --yes)",
+    )
+    .option("--framework <name>", "Force framework (next|nuxt); skips detect")
     .option("--yes", "Non-interactive: require --url and --token (CI)")
     .action(
       async (opts: {
@@ -39,12 +56,21 @@ export function initCommand(): Command {
         yes?: boolean;
       }) => {
         p.intro(pc.bgCyan(pc.black(" dkit init ")));
-        const projectRoot = findProjectRoot();
+
+        // Prefer cwd so empty folders don't resolve to a parent monorepo
+        let projectRoot = process.cwd();
         const existing = getDirectusCreds(projectRoot);
+
+        // —— Framework: detect, scaffold, or ask ——
+        const framework = await resolveFramework(projectRoot, opts);
+        // Scaffold may have created package.json in place
+        projectRoot = process.cwd();
 
         const pkgPath = path.join(projectRoot, "package.json");
         if (!fs.existsSync(pkgPath)) {
-          p.cancel("No package.json found. Run inside a Next.js or Nuxt project.");
+          p.cancel(
+            "No package.json found. Scaffold a Next/Nuxt app first, or run init in a project folder.",
+          );
           process.exit(1);
         }
 
@@ -67,26 +93,13 @@ export function initCommand(): Command {
             projectRoot,
             url,
             token,
-            framework: opts.framework === "nuxt" ? "nuxt" : "next",
+            framework,
             collectionPrefix: "dkit_",
           });
           return;
         }
 
-        // —— Interactive wizard (always ask; flags/env are defaults) ——
-        const frameworkPick = await p.select({
-          message: "Which frontend framework?",
-          options: [
-            { value: "next", label: "Next.js (App Router)" },
-            { value: "nuxt", label: "Nuxt 3" },
-          ],
-          initialValue:
-            opts.framework === "nuxt"
-              ? "nuxt"
-              : ("next" as "next" | "nuxt"),
-        });
-        cancelIf(frameworkPick);
-
+        // —— Interactive wizard ——
         const url = await p.text({
           message: "Directus URL",
           placeholder: "http://localhost:8010",
@@ -154,10 +167,7 @@ export function initCommand(): Command {
               : "Use existing DIRECTUS_TOKEN from env / .env.local?",
             initialValue: true,
           });
-          if (p.isCancel(reuse)) {
-            p.cancel("Cancelled");
-            process.exit(0);
-          }
+          cancelIfAny(reuse);
           if (reuse) finalToken = knownToken;
         }
         if (!finalToken) {
@@ -184,20 +194,119 @@ export function initCommand(): Command {
           projectRoot,
           url: url.trim(),
           token: finalToken,
-          framework: frameworkPick,
+          framework,
           collectionPrefix: normalizeCollectionPrefix(prefixAnswer),
         });
       },
     );
 }
 
+async function resolveFramework(
+  projectRoot: string,
+  opts: { framework?: string; yes?: boolean },
+): Promise<"next" | "nuxt"> {
+  const forced = parseFrameworkFlag(opts.framework);
+  if (forced) {
+    p.log.step(`Framework: ${forced} (--framework)`);
+    if (
+      isScaffoldableDir(projectRoot) &&
+      !fs.existsSync(path.join(projectRoot, "package.json"))
+    ) {
+      await runScaffold(projectRoot, forced, opts.yes);
+    }
+    return forced;
+  }
+
+  const detected = detectFramework(projectRoot);
+  if (detected.framework === "next" || detected.framework === "nuxt") {
+    p.log.step(
+      `Detected ${detected.framework} (${detected.reasons.join(", ")})`,
+    );
+    return detected.framework;
+  }
+
+  // Empty / scaffoldable folder → ask + create
+  if (isScaffoldableDir(projectRoot)) {
+    if (opts.yes) {
+      p.cancel(
+        "Empty project: pass --framework next|nuxt with --yes to scaffold, or create the app first.",
+      );
+      process.exit(1);
+    }
+
+    p.log.info("No Next.js or Nuxt app detected — this folder looks empty.");
+    const pick = await p.select({
+      message: "Create a new project with which framework?",
+      options: [
+        { value: "next", label: "Next.js (create-next-app defaults)" },
+        { value: "nuxt", label: "Nuxt 3 (nuxi init defaults)" },
+      ],
+      initialValue: "next" as "next" | "nuxt",
+    });
+    cancelIf(pick);
+    await runScaffold(projectRoot, pick, false);
+    return pick;
+  }
+
+  // Existing non-empty project without clear framework
+  if (opts.yes) {
+    p.log.warn("Could not detect framework — defaulting to next. Pass --framework to override.");
+    return "next";
+  }
+
+  const pick = await p.select({
+    message: "Which frontend framework? (could not auto-detect)",
+    options: [
+      { value: "next", label: "Next.js (App Router)" },
+      { value: "nuxt", label: "Nuxt 3" },
+    ],
+    initialValue: "next" as "next" | "nuxt",
+  });
+  cancelIf(pick);
+  return pick;
+}
+
+async function runScaffold(
+  projectRoot: string,
+  framework: "next" | "nuxt",
+  quiet?: boolean,
+): Promise<void> {
+  if (!quiet) {
+    p.log.step(
+      framework === "next"
+        ? "Running create-next-app with defaults…"
+        : "Running nuxi init with defaults…",
+    );
+  }
+  const result = scaffoldFrameworkApp(projectRoot, framework);
+  if (!result.ok) {
+    p.cancel(result.error ?? "Scaffold failed");
+    process.exit(1);
+  }
+  p.log.success(
+    framework === "next" ? "Next.js project created" : "Nuxt project created",
+  );
+}
+
+function parseFrameworkFlag(value?: string): "next" | "nuxt" | null {
+  if (!value) return null;
+  if (value === "next" || value === "nuxt") return value;
+  p.cancel(`Unknown framework "${value}". Use next or nuxt.`);
+  process.exit(1);
+}
+
 async function finishInit(args: {
   projectRoot: string;
   url: string;
   token: string;
-  framework: "next" | "nuxt";
+  framework: Framework;
   collectionPrefix: string;
 }): Promise<void> {
+  if (args.framework !== "next" && args.framework !== "nuxt") {
+    p.cancel(`Framework "${args.framework}" is not supported yet.`);
+    process.exit(1);
+  }
+
   const spin = p.spinner();
   spin.start("Checking Directus credentials…");
   const client = createTokenClient(args.url, args.token);
