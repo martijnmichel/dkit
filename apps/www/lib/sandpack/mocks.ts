@@ -83,7 +83,7 @@ export function normalizeCategories(raw: any): any[] {
   return Array.isArray(raw) ? raw.filter((c) => c && typeof c === "object" && "id" in c) : [];
 }
 
-export async function getBlogPosts(options: { status?: string | null; limit?: number; category?: string } = {}) {
+export function getBlogPosts(options: { status?: string | null; limit?: number; category?: string } = {}) {
   const status = options.status === null ? null : (options.status ?? "published");
   let rows = (SEED.items?.posts ?? []).map(hydrate);
   if (status !== null) rows = rows.filter((r: any) => r.status === status);
@@ -96,7 +96,7 @@ export async function getBlogPosts(options: { status?: string | null; limit?: nu
   if (options.limit != null) rows = rows.slice(0, options.limit);
   return rows;
 }
-export async function getBlogPostBySlug(slug: string, options: { status?: string | null } = {}) {
+export function getBlogPostBySlug(slug: string, options: { status?: string | null } = {}) {
   const status = options.status === null ? null : (options.status ?? "published");
   const row = (SEED.items?.posts ?? []).find((r: any) => {
     if (r.slug !== slug) return false;
@@ -105,35 +105,35 @@ export async function getBlogPostBySlug(slug: string, options: { status?: string
   });
   return row ? hydrate(row) : null;
 }
-export async function getBlogPostById(id: string) {
+export function getBlogPostById(id: string) {
   const row = (SEED.items?.posts ?? []).find((r: any) => String(r.id) === id);
   return row ? hydrate(row) : null;
 }
-export async function getBlogAuthors(options: { status?: string | null; limit?: number } = {}) {
+export function getBlogAuthors(options: { status?: string | null; limit?: number } = {}) {
   const status = options.status === null ? null : (options.status ?? "published");
   let rows = [...(SEED.items?.authors ?? [])];
   if (status !== null) rows = rows.filter((r: any) => r.status === status);
   if (options.limit != null) rows = rows.slice(0, options.limit);
   return rows;
 }
-export async function getBlogAuthorBySlug(slug: string) {
+export function getBlogAuthorBySlug(slug: string) {
   return (SEED.items?.authors ?? []).find((r: any) => r.status === "published" && r.slug === slug) ?? null;
 }
-export async function getBlogAuthorById(id: string) {
+export function getBlogAuthorById(id: string) {
   return authorsById().get(id) ?? null;
 }
-export async function getBlogCategories(options: { limit?: number } = {}) {
+export function getBlogCategories(options: { limit?: number } = {}) {
   let rows = [...(SEED.items?.categories ?? [])];
   if (options.limit != null) rows = rows.slice(0, options.limit);
   return rows;
 }
-export async function getBlogCategoryBySlug(slug: string) {
+export function getBlogCategoryBySlug(slug: string) {
   return (SEED.items?.categories ?? []).find((r: any) => r.slug === slug) ?? null;
 }
-export async function getBlogCategoryById(id: string) {
+export function getBlogCategoryById(id: string) {
   return categoriesById().get(id) ?? null;
 }
-export async function getBlogPostsByCategorySlug(categorySlug: string, options: { limit?: number } = {}) {
+export function getBlogPostsByCategorySlug(categorySlug: string, options: { limit?: number } = {}) {
   return getBlogPosts({ ...options, category: categorySlug });
 }
 `;
@@ -148,7 +148,7 @@ function pages() {
   return (SEED.items?.pages ?? []) as any[];
 }
 
-export async function getPages(options: { status?: string | null; limit?: number } = {}) {
+export function getPages(options: { status?: string | null; limit?: number } = {}) {
   const status = options.status === null ? null : (options.status ?? "published");
   let rows = pages();
   if (status !== null) rows = rows.filter((p) => p.status === status);
@@ -156,7 +156,7 @@ export async function getPages(options: { status?: string | null; limit?: number
   if (options.limit != null) rows = rows.slice(0, options.limit);
   return rows;
 }
-export async function getPageBySlug(slug: string, options: { status?: string | null } = {}) {
+export function getPageBySlug(slug: string, options: { status?: string | null } = {}) {
   const status = options.status === null ? null : (options.status ?? "published");
   return pages().find((p) => {
     if (p.slug !== slug) return false;
@@ -164,7 +164,7 @@ export async function getPageBySlug(slug: string, options: { status?: string | n
     return p.status === status;
   }) ?? null;
 }
-export async function getPageById(id: string) {
+export function getPageById(id: string) {
   return pages().find((p) => p.id === id) ?? null;
 }
 `;
@@ -173,7 +173,12 @@ export async function getPageById(id: string) {
 export function buildContactMockSource(): string {
   return `export type ContactFormState = { ok: boolean; error?: string };
 
-export async function createContactSubmission() {
+export async function createContactSubmission(_input?: {
+  name: string;
+  email: string;
+  message: string;
+}) {
+  await new Promise((r) => setTimeout(r, 400));
   return { ok: true as const, id: "preview" };
 }
 export async function submitContactForm(
@@ -199,18 +204,18 @@ const SAMPLE = {
   status: "published",
   blocks: [
     { collection: "block_hero", item: { heading: "Composable blocks", subheading: "M2A sections from the page-builder module" } },
-    { collection: "block_richtext", item: { title: "What you get", content: "<p>Install this module to create pages from hero, rich text, and CTA blocks in Directus. Use the renderer UI in your Next.js app to output the composed page.</p>" } },
+    { collection: "block_richtext", item: { title: "What you get", content: "<p>Install this module to create pages from hero, rich text, and CTA blocks in Directus. Use the renderer UI in your Next or Nuxt app to output the composed page.</p>" } },
     { collection: "block_cta", item: { label: "Browse modules", href: "/docs/modules/" } },
   ],
 };
 
-export async function getPageBuilderPages() {
+export function getPageBuilderPages() {
   return [SAMPLE];
 }
-export async function getPageBuilderPageBySlug(slug: string) {
+export function getPageBuilderPageBySlug(slug: string) {
   return slug === "sample" ? SAMPLE : null;
 }
-export async function getPageBuilderPageById(id: string) {
+export function getPageBuilderPageById(id: string) {
   return id === SAMPLE.id ? SAMPLE : null;
 }
 `;

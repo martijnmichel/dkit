@@ -70,7 +70,7 @@ export function trackCliEvent(
     type: "event",
     payload: {
       website: websiteId(),
-      hostname: "cli.dkit.dev",
+      hostname: "cli.dkit.run",
       language: Intl.DateTimeFormat().resolvedOptions().locale || "en-US",
       url: `/cli/${eventName}`,
       title: `dkit ${eventName}`,

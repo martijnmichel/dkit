@@ -6,8 +6,8 @@ Shared component sources injected into Sandpack so block previews resolve `@/com
 
 ```
 ui-kits/{kit}/{framework}/
-  # next (React): button.tsx, input.tsx, utils.ts, …
-  # nuxt (Vue):   Button.vue, Input.vue, … (add when shadcn-vue previews land)
+  # next (React): button.tsx, … — lightweight stand-ins for Sandpack
+  # nuxt (Vue):   button/, … — lightweight stand-ins (no reka-ui) for Sandpack
 ```
 
 www site chrome under `apps/www/components/ui` is separate and can diverge.

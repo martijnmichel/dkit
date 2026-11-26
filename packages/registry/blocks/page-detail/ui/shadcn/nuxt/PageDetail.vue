@@ -2,7 +2,7 @@
 import { getPageBySlug } from '@/lib/dkit/pages'
 import { moduleBasePath } from '@/lib/dkit/config'
 
-/** Styled with shadcn-vue theme tokens — inherits your app theme. */
+/** Uses your project's shadcn-vue theme (same layout as Next shadcn page). */
 const props = withDefaults(defineProps<{ slug: string; basePath?: string }>(), {
   basePath: undefined,
 })

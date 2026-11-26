@@ -12,7 +12,10 @@ import {
   THEME_PRESETS,
   withSandpackThemeCss,
 } from "@/lib/sandpack/themes";
-import { SANDPACK_SHADCN_DEPENDENCIES } from "@/lib/sandpack/ui-kit-deps";
+import {
+  SANDPACK_SHADCN_DEPENDENCIES,
+  SANDPACK_SHADCN_VUE_DEPENDENCIES,
+} from "@/lib/sandpack/ui-kit-deps";
 import type { BlockSandpackProject } from "@/lib/sandpack/types";
 import { resolveProjectUiKit } from "@/lib/sandpack/types";
 import {
@@ -99,6 +102,7 @@ function SandpackStage({
       options={{
         recompileMode: "delayed",
         recompileDelay: 400,
+        bundlerTimeOut: 120_000,
         externalResources: [
           "https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4",
         ],
@@ -108,9 +112,10 @@ function SandpackStage({
           ...(resolved.actualFramework === "nuxt"
             ? {}
             : { react: "^19.0.0", "react-dom": "^19.0.0" }),
-          ...(resolved.actualKit === "shadcn" &&
-          resolved.actualFramework === "next"
-            ? SANDPACK_SHADCN_DEPENDENCIES
+          ...(resolved.actualKit === "shadcn"
+            ? resolved.actualFramework === "nuxt"
+              ? SANDPACK_SHADCN_VUE_DEPENDENCIES
+              : SANDPACK_SHADCN_DEPENDENCIES
             : {}),
         },
       }}

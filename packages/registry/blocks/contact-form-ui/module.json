@@ -2,10 +2,11 @@
   "type": "dkit:block",
   "id": "contact-form-ui",
   "title": "Contact form UI",
-  "description": "Validated Next.js Server Action form",
+  "description": "Validated contact form (Next Server Action / Nuxt client submit)",
   "version": "0.1.0",
   "frameworks": [
-    "next"
+    "next",
+    "nuxt"
   ],
   "uiKits": [
     "shadcn",

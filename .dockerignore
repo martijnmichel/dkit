@@ -1,0 +1,14 @@
+.git
+.cursor
+.github
+**/node_modules
+**/.next
+**/out
+**/dist
+**/coverage
+examples
+docker
+deploy
+.env
+.env.*
+**/.DS_Store

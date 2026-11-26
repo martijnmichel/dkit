@@ -7,7 +7,7 @@ npx dkit init
 npx dkit add blog --seed
 ```
 
-See the [repository README](https://github.com/martijnmichel/dkit) for full docs.
+Docs: [dkit.run](https://dkit.run)
 
 ## Telemetry
 

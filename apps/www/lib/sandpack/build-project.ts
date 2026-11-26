@@ -3,6 +3,7 @@ import path from "node:path";
 import { registryRoot } from "@/lib/registry";
 import type { PreviewFramework, PreviewUiKit } from "@/lib/preview-prefs";
 import { SANDPACK_THEME_CSS } from "@/lib/sandpack/theme-css";
+import { withSandpackIndexTheme } from "@/lib/sandpack/themes";
 import type {
   BlockSandpackProject,
   KitVariantFiles,
@@ -70,12 +71,14 @@ const BLOCK_META: Record<
     module: "contact-form",
     uiKits: ["shadcn", "minimal"],
     nextFile: "contact-form.tsx",
+    nuxtFile: "ContactForm.vue",
     exportName: "ContactForm",
   },
   "page-renderer": {
     module: "page-builder",
     uiKits: ["shadcn", "minimal"],
     nextFile: "page-renderer.tsx",
+    nuxtFile: "PageRenderer.vue",
     exportName: "PageRenderer",
     props: { slug: '"sample"' },
   },
@@ -127,15 +130,28 @@ function sharedLibFiles(
   return files;
 }
 
-function ensureVueAutoImports(vueSource: string): string {
-  let src = vueSource;
+/**
+ * Sandpack is a Vite SPA — not Nuxt. Top-level `await useAsyncData` needs
+ * Suspense and can leave the preview hanging (and confuse Next's error overlay).
+ * Preview mocks are sync, so drop `await` and use a sync shim.
+ */
+function prepareVueBlockForSandpack(vueSource: string): string {
+  let src = vueSource.replace(/\bawait\s+useAsyncData\b/g, "useAsyncData");
   const injections: string[] = [];
 
   if (src.includes("useAsyncData") && !src.includes("nuxt-shims")) {
     injections.push("import { useAsyncData } from '@/nuxt-shims'");
   }
+
+  const vueImports: string[] = [];
+  if (/\bref\b/.test(src) && !/import\s*{[^}]*\bref\b/.test(src)) {
+    vueImports.push("ref");
+  }
   if (/\bcomputed\b/.test(src) && !/import\s*{[^}]*\bcomputed\b/.test(src)) {
-    injections.push("import { computed } from 'vue'");
+    vueImports.push("computed");
+  }
+  if (vueImports.length) {
+    injections.push(`import { ${vueImports.join(", ")} } from 'vue'`);
   }
 
   if (!injections.length) return src;
@@ -188,7 +204,7 @@ export default function App() {
     "/components/Block.tsx": component,
     "/App.tsx": isClientOnly ? appClient : appAsync,
     "/styles.css": SANDPACK_THEME_CSS,
-    "/index.html": `<!doctype html>
+    "/index.html": withSandpackIndexTheme(`<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -201,7 +217,7 @@ export default function App() {
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>
-`,
+`),
     "/vite.config.ts": `import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
@@ -225,7 +241,7 @@ function buildNuxtProject(
   const raw = readUiFile(blockId, kit, "nuxt", meta.nuxtFile);
   if (!raw) return null;
 
-  const component = ensureVueAutoImports(rewriteImports(raw));
+  const component = prepareVueBlockForSandpack(rewriteImports(raw));
   const propsLine = meta.props
     ? Object.entries(meta.props)
         .map(([k, v]) => `${k}=${v}`)
@@ -238,12 +254,18 @@ function buildNuxtProject(
     "/src/components/Block.vue": component,
     "/src/nuxt-shims.ts": `import { ref, type Ref } from "vue";
 
-export async function useAsyncData<T>(
+/** Sync stand-in for Nuxt useAsyncData — preview mocks resolve immediately. */
+export function useAsyncData<T>(
   _key: string,
-  handler: () => Promise<T> | T,
-): Promise<{ data: Ref<T | null> }> {
+  handler: () => T,
+): { data: Ref<T | null> } {
   const data = ref(null) as Ref<T | null>;
-  data.value = ((await handler()) as T) ?? null;
+  try {
+    data.value = handler() ?? null;
+  } catch (e) {
+    console.error("[dkit preview useAsyncData]", e);
+    data.value = null;
+  }
   return { data };
 }
 `,
@@ -271,7 +293,7 @@ const app = createApp(App);
 app.component("NuxtLink", NuxtLink);
 app.mount("#app");
 `,
-    "/index.html": `<!doctype html>
+    "/index.html": withSandpackIndexTheme(`<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -284,7 +306,7 @@ app.mount("#app");
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
-`,
+`),
     "/vite.config.ts": `import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import path from "path";

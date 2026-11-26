@@ -5,7 +5,8 @@
   "description": "Dynamic M2A block renderer",
   "version": "0.1.0",
   "frameworks": [
-    "next"
+    "next",
+    "nuxt"
   ],
   "uiKits": [
     "shadcn",

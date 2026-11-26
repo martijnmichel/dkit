@@ -2,6 +2,8 @@
 
 MCP server for discovering dkit modules and drafting `dkit add` commands. Uses the same registry as the CLI. Does not apply Directus schema — that stays on the CLI with an admin token.
 
+Docs: [dkit.run](https://dkit.run)
+
 ## Tools
 
 | Tool | Purpose |

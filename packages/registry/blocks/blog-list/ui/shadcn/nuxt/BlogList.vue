@@ -7,7 +7,7 @@ import {
 } from '@/lib/dkit/blog'
 import { joinModulePath, moduleBasePath } from '@/lib/dkit/config'
 
-/** Styled with shadcn-vue theme tokens — inherits your app theme. */
+/** Uses your project's shadcn-vue theme (same layout as Next shadcn list). */
 const props = withDefaults(defineProps<{ basePath?: string }>(), {
   basePath: undefined,
 })

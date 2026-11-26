@@ -112,8 +112,13 @@ export const THEME_OPTIONS = (
   label: THEME_PRESETS[id].label,
 }));
 
-/** Aliases Tailwind v4 / CDN expects — set on :root so they work without @theme processing. */
-const COLOR_ALIASES = `
+/**
+ * Maps semantic tokens → Tailwind v4 `--color-*` theme keys.
+ * Must live in `<style type="text/tailwindcss">` for @tailwindcss/browser.
+ */
+/** `@theme inline` keeps utilities as `var(--primary)` so theme switches update fills. */
+const TAILWIND_THEME_MAP = `
+@theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -135,11 +140,6 @@ const COLOR_ALIASES = `
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
-`.trim();
-
-const THEME_BLOCK = `
-@theme {
-${COLOR_ALIASES}
 }
 `.trim();
 
@@ -200,46 +200,69 @@ function tokensToCss(tokens: ThemeTokens): string {
     .join("\n");
 }
 
-/** Full Sandpack styles.css for a shadcn theme preset. */
+const MINIMAL_TOKENS: ThemeTokens = {
+  "--radius": "0.5rem",
+  "--background": "#ffffff",
+  "--foreground": "#18181b",
+  "--card": "#ffffff",
+  "--card-foreground": "#18181b",
+  "--popover": "#ffffff",
+  "--popover-foreground": "#18181b",
+  "--primary": "#18181b",
+  "--primary-foreground": "#fafafa",
+  "--secondary": "#f4f4f5",
+  "--secondary-foreground": "#18181b",
+  "--muted": "#f4f4f5",
+  "--muted-foreground": "#71717a",
+  "--accent": "#f4f4f5",
+  "--accent-foreground": "#18181b",
+  "--destructive": "#dc2626",
+  "--border": "#e4e4e7",
+  "--input": "#e4e4e7",
+  "--ring": "#a1a1aa",
+};
+
+function rootBlock(tokens: ThemeTokens): string {
+  return `:root {\n${tokensToCss(tokens)}\n}`;
+}
+
+/** Vite-imported styles.css — semantic tokens + chrome (not @theme). */
 export function buildSandpackThemeCss(theme: PreviewTheme): string {
   const preset = THEME_PRESETS[theme] ?? THEME_PRESETS.dkit;
-  return [
-    `:root {\n${tokensToCss(preset.tokens)}\n${COLOR_ALIASES}\n}`,
-    THEME_BLOCK,
-    CHROME_CSS,
-  ].join("\n");
+  return [rootBlock(preset.tokens), CHROME_CSS].join("\n");
 }
 
-/** Minimal kit: no brand tokens beyond readable prose. */
 export function buildSandpackMinimalCss(): string {
-  return [
-    `:root {
-  --radius: 0.5rem;
-  --background: #ffffff;
-  --foreground: #18181b;
-  --card: #ffffff;
-  --card-foreground: #18181b;
-  --popover: #ffffff;
-  --popover-foreground: #18181b;
-  --primary: #18181b;
-  --primary-foreground: #fafafa;
-  --secondary: #f4f4f5;
-  --secondary-foreground: #18181b;
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
-  --accent: #f4f4f5;
-  --accent-foreground: #18181b;
-  --destructive: #dc2626;
-  --border: #e4e4e7;
-  --input: #e4e4e7;
-  --ring: #a1a1aa;
-${COLOR_ALIASES}
-}`,
-    THEME_BLOCK,
-    CHROME_CSS,
-  ].join("\n");
+  return [rootBlock(MINIMAL_TOKENS), CHROME_CSS].join("\n");
 }
 
+/**
+ * Content for `<style type="text/tailwindcss">`.
+ * @tailwindcss/browser only processes @theme from this type — regular CSS
+ * imports never register bg-primary / text-muted-foreground / etc.
+ */
+export function buildSandpackTailwindThemeStyle(): string {
+  return TAILWIND_THEME_MAP;
+}
+
+const THEME_STYLE_START = "<!-- dkit-theme-start -->";
+const THEME_STYLE_END = "<!-- dkit-theme-end -->";
+
+/** Inject Play-CDN theme bridge into Sandpack index.html. */
+export function withSandpackIndexTheme(html: string): string {
+  if (html.includes(THEME_STYLE_START)) return html;
+  const block = `${THEME_STYLE_START}
+<style type="text/tailwindcss">
+${buildSandpackTailwindThemeStyle()}
+</style>
+${THEME_STYLE_END}`;
+  if (html.includes("</head>")) {
+    return html.replace("</head>", `  ${block}\n  </head>`);
+  }
+  return `${block}\n${html}`;
+}
+
+/** Swap styles.css (+ ensure index.html has the Tailwind @theme bridge). */
 export function withSandpackThemeCss(
   files: Record<string, string>,
   css: string,
@@ -247,5 +270,8 @@ export function withSandpackThemeCss(
   const next = { ...files };
   if ("/styles.css" in next) next["/styles.css"] = css;
   if ("/src/styles.css" in next) next["/src/styles.css"] = css;
+  if ("/index.html" in next) {
+    next["/index.html"] = withSandpackIndexTheme(next["/index.html"]!);
+  }
   return next;
 }

@@ -4,6 +4,7 @@
   "description": "Install Directus modules — schema, permissions, flows, and frontend code you own",
   "license": "MIT",
   "type": "module",
+  "homepage": "https://dkit.run",
   "bin": {
     "dkit": "./dist/bin.js"
   },

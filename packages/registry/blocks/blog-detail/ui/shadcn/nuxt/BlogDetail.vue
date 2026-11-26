@@ -7,8 +7,10 @@ import {
   normalizeCategories,
 } from '@/lib/dkit/blog'
 import { moduleBasePath } from '@/lib/dkit/config'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 
-/** Styled with shadcn-vue theme tokens — inherits your app theme. */
+/** Uses your project's shadcn-vue components. */
 const props = withDefaults(defineProps<{ slug: string; basePath?: string }>(), {
   basePath: undefined,
 })
@@ -32,21 +34,26 @@ const categories = computed(() =>
     class="mx-auto max-w-2xl px-6 py-20 text-center text-muted-foreground"
   >
     <p class="text-2xl font-semibold text-foreground">Post not found</p>
-    <NuxtLink
-      :to="resolvedBase"
-      class="mt-4 inline-block text-sm text-primary underline-offset-4 hover:underline"
+    <Button
+      as-child
+      variant="link"
+      class="mt-4"
     >
-      ← Back to blog
-    </NuxtLink>
+      <NuxtLink :to="resolvedBase">← Back to blog</NuxtLink>
+    </Button>
   </div>
 
-  <article v-else class="mx-auto max-w-2xl px-6 py-16 sm:py-20">
-    <NuxtLink
-      :to="resolvedBase"
-      class="mb-10 inline-flex items-center gap-2 text-sm text-muted-foreground no-underline transition-colors hover:text-primary"
+  <article
+    v-else
+    class="mx-auto max-w-2xl px-6 py-16 sm:py-20"
+  >
+    <Button
+      as-child
+      variant="ghost"
+      class="mb-10 px-0"
     >
-      ← All posts
-    </NuxtLink>
+      <NuxtLink :to="resolvedBase">← All posts</NuxtLink>
+    </Button>
 
     <img
       v-if="featuredImageUrl(post)"
@@ -56,14 +63,17 @@ const categories = computed(() =>
     />
 
     <header class="border-b border-border pb-10">
-      <div v-if="categories.length" class="mb-4 flex flex-wrap gap-2">
-        <span
+      <div
+        v-if="categories.length"
+        class="mb-4 flex flex-wrap gap-2"
+      >
+        <Badge
           v-for="c in categories"
           :key="c.id"
-          class="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary"
+          variant="secondary"
         >
           {{ c.title ?? c.slug }}
-        </span>
+        </Badge>
       </div>
       <h1 class="text-4xl font-semibold leading-[1.15] tracking-tight text-foreground sm:text-5xl">
         {{ post.title }}
@@ -82,7 +92,10 @@ const categories = computed(() =>
           {{ authorName(post) }}
         </span>
         <span v-if="authorName(post) && post.published_at" aria-hidden>·</span>
-        <time v-if="post.published_at" :datetime="post.published_at">
+        <time
+          v-if="post.published_at"
+          :datetime="post.published_at"
+        >
           {{
             new Date(post.published_at).toLocaleDateString(undefined, {
               year: 'numeric',

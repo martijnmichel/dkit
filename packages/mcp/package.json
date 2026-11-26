@@ -4,6 +4,7 @@
   "description": "MCP server for discovering dkit modules and drafting install commands",
   "license": "MIT",
   "type": "module",
+  "homepage": "https://dkit.run",
   "bin": {
     "dkit-mcp": "./dist/bin.js"
   },

@@ -18,6 +18,7 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://dkit.run"),
   title: "dkit — The foundation for Directus modules you own",
   description:
     "Composable schema, access, services, and UI for Next.js and Nuxt. Install Directus modules into your repo as code you own.",

@@ -1,6 +1,6 @@
 {
   "name": "dkit",
-  "homepage": "https://github.com/martijnmichel/dkit",
+  "homepage": "https://dkit.run",
   "version": "0.1.0",
   "items": [
     {
@@ -98,12 +98,12 @@
       "id": "contact-form-ui",
       "type": "dkit:block",
       "title": "Contact form UI",
-      "description": "Validated Next.js Server Action form",
+      "description": "Validated contact form (Next Server Action / Nuxt client submit)",
       "version": "0.1.0",
       "path": "blocks/contact-form-ui",
       "registryDependencies": ["contact-form"],
       "slot": "form",
-      "frameworks": ["next"],
+      "frameworks": ["next", "nuxt"],
       "uiKits": ["shadcn", "minimal"]
     },
     {
@@ -124,7 +124,7 @@
       "path": "blocks/page-renderer",
       "registryDependencies": ["page-builder"],
       "slot": "renderer",
-      "frameworks": ["next"],
+      "frameworks": ["next", "nuxt"],
       "uiKits": ["shadcn", "minimal"]
     }
   ]

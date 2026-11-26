@@ -22,8 +22,8 @@ export function DkitLogo({
 
 export function DkitWordmark({
   className,
-  markClassName = "h-7 w-auto text-primary",
-  textClassName = "text-lg font-semibold tracking-tight text-foreground",
+  markClassName = "block h-6 w-auto text-primary",
+  textClassName = "text-lg font-semibold leading-none tracking-tight text-foreground",
 }: {
   className?: string;
   markClassName?: string;
@@ -33,7 +33,7 @@ export function DkitWordmark({
     <span
       className={
         className ??
-        "inline-flex items-center gap-2.5 no-underline hover:no-underline"
+        "inline-flex items-center gap-2.5 leading-none no-underline hover:no-underline"
       }
     >
       <DkitLogo className={markClassName} />

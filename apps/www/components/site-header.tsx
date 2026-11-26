@@ -6,7 +6,10 @@ export function SiteHeader() {
   return (
     <header className="border-b border-border bg-background">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-6">
-        <a href="/" className="no-underline hover:no-underline">
+        <a
+          href="/"
+          className="inline-flex items-center no-underline hover:no-underline"
+        >
           <DkitWordmark />
         </a>
         <nav className="flex items-center gap-1">

@@ -6,8 +6,16 @@ import {
   getBlogPosts,
 } from '@/lib/dkit/blog'
 import { joinModulePath, moduleBasePath } from '@/lib/dkit/config'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 
-/** Styled with shadcn-vue theme tokens — inherits your app theme. */
+/** Uses your project's shadcn-vue components. */
 const props = withDefaults(defineProps<{ basePath?: string }>(), {
   basePath: undefined,
 })
@@ -35,52 +43,52 @@ const { data: posts } = await useAsyncData('dkit-blog-list-cards', () => getBlog
       v-if="!(posts && posts.length)"
       class="rounded-xl border border-dashed border-border px-6 py-12 text-center text-muted-foreground"
     >
-      No published posts yet.
+      No posts yet.
     </p>
 
-    <div v-else class="grid gap-5 sm:grid-cols-2">
+    <div
+      v-else
+      class="grid gap-5 sm:grid-cols-2"
+    >
       <NuxtLink
         v-for="post in posts"
         :key="post.id"
         :to="joinModulePath(resolvedBase, post.slug)"
-        class="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
+        class="group block no-underline transition hover:-translate-y-0.5"
       >
-        <img
-          v-if="featuredImageUrl(post)"
-          :src="featuredImageUrl(post)!"
-          alt=""
-          class="aspect-[16/9] w-full object-cover"
-        />
-        <div
-          v-else
-          class="aspect-[16/9] w-full bg-muted"
-        />
-        <div class="flex flex-1 flex-col p-6">
-          <div class="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-primary transition group-hover:scale-x-100" />
-          <time
-            v-if="post.published_at"
-            :datetime="post.published_at"
-            class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
-          >
-            {{
-              new Date(post.published_at).toLocaleDateString(undefined, {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-              })
-            }}
-          </time>
-          <h2 class="mt-3 text-2xl font-semibold tracking-tight text-foreground transition-colors group-hover:text-primary">
-            {{ post.title }}
-          </h2>
-          <p
-            v-if="post.excerpt"
-            class="mt-3 line-clamp-3 flex-1 text-sm leading-relaxed text-muted-foreground"
-          >
-            {{ post.excerpt }}
-          </p>
-          <span v-else class="flex-1" />
-          <div class="mt-6 flex items-center justify-between gap-3">
+        <Card class="h-full overflow-hidden pt-0 pb-6 shadow-sm transition group-hover:border-primary/40 group-hover:shadow-md">
+          <img
+            v-if="featuredImageUrl(post)"
+            :src="featuredImageUrl(post)!"
+            alt=""
+            class="aspect-[16/9] w-full object-cover"
+          />
+          <div
+            v-else
+            class="aspect-[16/9] w-full bg-muted"
+          />
+          <CardHeader>
+            <CardDescription v-if="post.published_at">
+              <time :datetime="post.published_at">
+                {{
+                  new Date(post.published_at).toLocaleDateString(undefined, {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })
+                }}
+              </time>
+            </CardDescription>
+            <CardTitle class="text-2xl transition-colors group-hover:text-primary">
+              {{ post.title }}
+            </CardTitle>
+          </CardHeader>
+          <CardContent v-if="post.excerpt">
+            <p class="line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+              {{ post.excerpt }}
+            </p>
+          </CardContent>
+          <CardFooter class="justify-between gap-3">
             <span
               v-if="authorName(post)"
               class="inline-flex items-center gap-2 text-xs text-muted-foreground"
@@ -97,8 +105,8 @@ const { data: posts } = await useAsyncData('dkit-blog-list-cards', () => getBlog
             <span class="text-sm font-medium text-primary">
               Read article →
             </span>
-          </div>
-        </div>
+          </CardFooter>
+        </Card>
       </NuxtLink>
     </div>
   </div>

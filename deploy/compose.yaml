@@ -1,8 +1,12 @@
-# Example deploy on Ubuntu VPS (put Traefik/Caddy in front for TLS)
+# Production-style deploy for https://dkit.run
+# Pull a published image, or build locally first:
+#   docker compose -f docker/www/compose.yaml build
+#   docker tag dkit-www:local ghcr.io/martijnmichel/dkit-www:latest
+#
+# Put Caddy/Traefik/Cloudflare in front for TLS → this container :80
 services:
   www:
     image: ghcr.io/martijnmichel/dkit-www:latest
     restart: unless-stopped
     ports:
-      - "8080:80"
-    # labels for Traefik / Caddy as needed
+      - "${DKIT_WWW_PORT:-8080}:80"

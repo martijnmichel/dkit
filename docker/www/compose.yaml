@@ -1,0 +1,13 @@
+# Docs site (static export + nginx) — https://dkit.run
+# From repo root:
+#   docker compose -f docker/www/compose.yaml up --build
+#   open http://localhost:3080
+services:
+  www:
+    build:
+      context: ../..
+      dockerfile: apps/www/Dockerfile
+    image: dkit-www:local
+    ports:
+      - "${DKIT_WWW_PORT:-3080}:80"
+    restart: unless-stopped
