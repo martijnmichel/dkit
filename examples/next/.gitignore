@@ -4,3 +4,11 @@ node_modules
 components/dkit
 lib/dkit
 dkit.json
+
+# Scaffolded by `dkit add` (keep hand-written app/blog/**)
+# [slug] must be escaped — bare [slug] is a gitignore character class
+app/[[]slug[]]/
+app/pages/
+app/composed/
+app/contact/
+app/contact-form/

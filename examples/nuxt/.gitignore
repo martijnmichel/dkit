@@ -5,3 +5,11 @@ node_modules
 components/dkit
 lib/dkit
 dkit.json
+
+# Scaffolded by `dkit add` (keep hand-written pages/blog/**)
+# [slug] must be escaped — bare [slug] is a gitignore character class
+pages/[[]slug[]].vue
+pages/pages/
+pages/composed/
+pages/contact/
+pages/contact-form/

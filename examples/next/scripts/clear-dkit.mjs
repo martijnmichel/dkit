@@ -8,6 +8,12 @@ const targets = [
   path.join(root, "components/dkit"),
   path.join(root, "lib/dkit"),
   path.join(root, "dkit.json"),
+  // Generated slug routes (not the hand-written app/blog/**)
+  path.join(root, "app/[slug]"),
+  path.join(root, "app/pages"),
+  path.join(root, "app/composed"),
+  path.join(root, "app/contact"),
+  path.join(root, "app/contact-form"),
 ];
 
 for (const target of targets) {
