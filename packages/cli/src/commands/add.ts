@@ -43,6 +43,7 @@ import {
 } from "../lib/write-files.js";
 import { joinModulePath, writeModuleSlugRoute } from "../lib/write-routes.js";
 import { writeModuleUiEntry } from "../lib/write-ui-entry.js";
+import { DKIT_PROSE_REL, writeSharedProse } from "../lib/write-prose.js";
 
 function cancelIf<T>(value: T | symbol): asserts value is T {
   if (p.isCancel(value)) {
@@ -407,6 +408,18 @@ export function addCommand(): Command {
         const installedBlocks: LoadedBlock[] = [...pendingBlocks];
 
         if (!opts.schemaOnly) {
+          if (!opts.dryRun && pendingBlocks.length) {
+            const prose = writeSharedProse(projectRoot, true);
+            if (prose.written) {
+              p.log.step(`wrote ${prose.written}`);
+              p.log.info(
+                `Import once: @import "../${DKIT_PROSE_REL.replace(/\\/g, "/")}"; (adjust path) — use class "dkit-prose" on rich text`,
+              );
+            }
+          } else if (opts.dryRun && pendingBlocks.length) {
+            p.log.info(`ui: would write ${DKIT_PROSE_REL}`);
+          }
+
           for (const block of pendingBlocks) {
             if (opts.dryRun) {
               p.log.info(
