@@ -24,16 +24,6 @@ export default function GettingStartedPage() {
             A <strong>static admin token</strong> from Directus (User → Token)
           </li>
         </ul>
-        <p>
-          Prefer a staging Directus project. Schema apply needs a static admin
-          token — browser OAuth for Directus MCP cannot authorize Admin API
-          schema changes.
-        </p>
-        <p>
-          Directus 12 Core (no license) uses flat public permissions. Row
-          filters / field subsets need a Directus license; installed UI blocks
-          still filter published content in their own queries.
-        </p>
       </DocsSection>
 
       <DocsSection id="init" title="Init your app">
