@@ -4,10 +4,22 @@
   "title": "Page detail",
   "description": "WYSIWYG page view with title, excerpt, and body",
   "version": "0.1.0",
-  "frameworks": ["next", "nuxt"],
-  "uiKits": ["shadcn", "minimal"],
+  "frameworks": [
+    "next",
+    "nuxt"
+  ],
+  "uiKits": [
+    "shadcn",
+    "minimal"
+  ],
   "slot": "detail",
-  "registryDependencies": ["pages"],
-  "dependencies": ["@directus/sdk"],
-  "layers": ["ui"]
+  "registryDependencies": [
+    "pages"
+  ],
+  "dependencies": [
+    "@directus/sdk"
+  ],
+  "layers": [
+    "ui"
+  ]
 }

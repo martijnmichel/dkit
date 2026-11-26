@@ -4,10 +4,22 @@
   "title": "Blog list (cards)",
   "description": "Card grid of posts with date, excerpt, and hover accent",
   "version": "0.1.0",
-  "frameworks": ["next", "nuxt"],
-  "uiKits": ["shadcn"],
+  "frameworks": [
+    "next",
+    "nuxt"
+  ],
+  "uiKits": [
+    "shadcn",
+    "minimal"
+  ],
   "slot": "list",
-  "registryDependencies": ["blog"],
-  "dependencies": ["@directus/sdk"],
-  "layers": ["ui"]
+  "registryDependencies": [
+    "blog"
+  ],
+  "dependencies": [
+    "@directus/sdk"
+  ],
+  "layers": [
+    "ui"
+  ]
 }

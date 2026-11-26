@@ -1,4 +1,4 @@
-import { DkitWordmark } from "@/components/dkit-logo";
+import { SiteFooter, SiteHeader } from "@/components/site-header";
 import type { Metadata } from "next";
 import { JetBrains_Mono, Source_Sans_3 } from "next/font/google";
 import "./globals.css";
@@ -29,34 +29,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${sans.variable} ${mono.variable}`}>
       <body className="bg-background font-sans text-foreground antialiased">
-        <header className="border-b border-border bg-background">
-          <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-            <a href="/" className="no-underline hover:no-underline">
-              <DkitWordmark />
-            </a>
-            <nav className="flex gap-4 text-sm text-muted-foreground">
-              <a
-                href="/modules/"
-                className="hover:text-foreground hover:no-underline"
-              >
-                Modules
-              </a>
-              <a
-                href="https://github.com/martijnmichel/dkit"
-                className="hover:text-foreground hover:no-underline"
-              >
-                GitHub
-              </a>
-            </nav>
-          </div>
-        </header>
+        <SiteHeader />
         <main>{children}</main>
-        <footer className="mt-20 border-t border-border bg-background">
-          <div className="mx-auto max-w-7xl px-6 py-8 text-sm text-muted-foreground">
-            MIT · Directus 11+ (12.2+ recommended) · Use a staging project before
-            applying modules to production
-          </div>
-        </footer>
+        <SiteFooter />
       </body>
     </html>
   );

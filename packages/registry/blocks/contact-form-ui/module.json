@@ -4,10 +4,21 @@
   "title": "Contact form UI",
   "description": "Validated Next.js Server Action form",
   "version": "0.1.0",
-  "frameworks": ["next"],
-  "uiKits": ["shadcn"],
+  "frameworks": [
+    "next"
+  ],
+  "uiKits": [
+    "shadcn",
+    "minimal"
+  ],
   "slot": "form",
-  "registryDependencies": ["contact-form"],
-  "dependencies": ["@directus/sdk"],
-  "layers": ["ui"]
+  "registryDependencies": [
+    "contact-form"
+  ],
+  "dependencies": [
+    "@directus/sdk"
+  ],
+  "layers": [
+    "ui"
+  ]
 }

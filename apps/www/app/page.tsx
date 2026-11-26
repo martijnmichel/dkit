@@ -1,4 +1,12 @@
 import { DkitLogo } from "@/components/dkit-logo";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export default function HomePage() {
   return (
@@ -17,19 +25,16 @@ export default function HomePage() {
           Next.js or Nuxt app — owned source in your repo, not a locked package.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
-          <a className="btn" href="/modules/">
-            Browse modules
-          </a>
-          <a
-            className="inline-flex items-center justify-center rounded-[calc(var(--radius)-2px)] border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground no-underline hover:bg-muted/60 hover:no-underline"
-            href="https://github.com/martijnmichel/dkit"
-          >
-            GitHub
-          </a>
+          <Button asChild>
+            <a href="/modules/">Browse modules</a>
+          </Button>
+          <Button asChild variant="outline">
+            <a href="https://github.com/martijnmichel/dkit">GitHub</a>
+          </Button>
         </div>
         <pre className="code mt-10">{`npx dkit init
 npx dkit add blog --seed`}</pre>
-        <section className="mt-16 grid grid-3">
+        <section className="mt-16 grid grid-cols-1 gap-4 sm:grid-cols-3">
           {[
             [
               "Schema + access",
@@ -44,10 +49,14 @@ npx dkit add blog --seed`}</pre>
               "Unbundled React or Vue blocks written into your codebase — restyle or replace freely.",
             ],
           ].map(([title, body]) => (
-            <div key={title} className="card">
-              <h2 className="font-medium text-foreground">{title}</h2>
-              <p className="mt-2 text-sm text-muted-foreground">{body}</p>
-            </div>
+            <Card key={title}>
+              <CardHeader className="pb-0">
+                <CardTitle className="text-base">{title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>{body}</CardDescription>
+              </CardContent>
+            </Card>
           ))}
         </section>
       </div>

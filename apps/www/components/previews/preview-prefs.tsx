@@ -6,10 +6,54 @@ import {
   usePreviewPrefs,
 } from "@/components/previews/preview-prefs-context";
 import { PreviewSelectBar } from "@/components/previews/preview-select-bar";
-import { SandpackBlockPreview } from "@/components/previews/sandpack-block";
+import {
+  BlockPreviewActions,
+  SandpackBlockPreview,
+} from "@/components/previews/sandpack-block";
 import type { BlockSandpackProject } from "@/lib/sandpack/types";
+import { useCallback, useState } from "react";
 
 export { PreviewPrefsProvider, usePreviewPrefs };
+
+function ModuleBlockCard({ project }: { project: BlockSandpackProject }) {
+  const { prefs } = usePreviewPrefs();
+  const [showCode, setShowCode] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const onExpandedChange = useCallback((next: boolean) => {
+    setExpanded(next);
+  }, []);
+
+  return (
+    <BlockFrame
+      title={project.blockId}
+      description={project.description}
+      actions={
+        <BlockPreviewActions
+          showCode={showCode}
+          onToggleCode={() => setShowCode((v) => !v)}
+          onExpand={() => setExpanded(true)}
+        />
+      }
+      toolbar={
+        <PreviewSelectBar
+          idPrefix={`block-${project.blockId}`}
+          availableFrameworks={project.frameworks}
+          availableUiKits={project.uiKits}
+        />
+      }
+    >
+      <SandpackBlockPreview
+        project={project}
+        framework={prefs.framework}
+        uiKit={prefs.ui}
+        theme={prefs.theme}
+        showCode={showCode}
+        expanded={expanded}
+        onExpandedChange={onExpandedChange}
+      />
+    </BlockFrame>
+  );
+}
 
 export function ModuleSandpackPreviews({
   seedHint,
@@ -18,7 +62,7 @@ export function ModuleSandpackPreviews({
   seedHint?: string | null;
   projects: BlockSandpackProject[];
 }) {
-  const { prefs, ready } = usePreviewPrefs();
+  const { ready } = usePreviewPrefs();
 
   return (
     <div className={ready ? "space-y-8" : "space-y-8 opacity-80"}>
@@ -31,27 +75,7 @@ export function ModuleSandpackPreviews({
         </p>
       ) : (
         projects.map((project) => (
-          <BlockFrame
-            key={project.blockId}
-            title={project.blockId}
-            description={project.description}
-            toolbar={
-              <PreviewSelectBar
-                idPrefix={`block-${project.blockId}`}
-                availableFrameworks={project.frameworks}
-                availableUiKits={project.uiKits}
-              />
-            }
-          >
-            <div className="p-3">
-              <SandpackBlockPreview
-                project={project}
-                framework={prefs.framework}
-                uiKit={prefs.ui}
-                theme={prefs.theme}
-              />
-            </div>
-          </BlockFrame>
+          <ModuleBlockCard key={project.blockId} project={project} />
         ))
       )}
     </div>

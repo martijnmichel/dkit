@@ -17,18 +17,18 @@ export const THEME_PRESETS: Record<
       "--card-foreground": "#0a0a0a",
       "--popover": "#ffffff",
       "--popover-foreground": "#0a0a0a",
-      "--primary": "oklch(0.72 0.2 155)",
-      "--primary-foreground": "oklch(0.18 0.04 155)",
+      "--primary": "#00c769",
+      "--primary-foreground": "#042a16",
       "--secondary": "#f4f4f5",
       "--secondary-foreground": "#18181b",
       "--muted": "#f4f4f5",
       "--muted-foreground": "#52525b",
-      "--accent": "oklch(0.95 0.04 155)",
-      "--accent-foreground": "oklch(0.28 0.08 155)",
+      "--accent": "#e6faf0",
+      "--accent-foreground": "#0a5c35",
       "--destructive": "oklch(0.55 0.2 25)",
       "--border": "#e4e4e7",
       "--input": "#e4e4e7",
-      "--ring": "oklch(0.72 0.2 155)",
+      "--ring": "#00c769",
     },
   },
   neutral: {
@@ -112,8 +112,8 @@ export const THEME_OPTIONS = (
   label: THEME_PRESETS[id].label,
 }));
 
-const THEME_INLINE = `
-@theme inline {
+/** Aliases Tailwind v4 / CDN expects — set on :root so they work without @theme processing. */
+const COLOR_ALIASES = `
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -135,10 +135,18 @@ const THEME_INLINE = `
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
+`.trim();
+
+const THEME_BLOCK = `
+@theme {
+${COLOR_ALIASES}
 }
 `.trim();
 
 const CHROME_CSS = `
+*, *::before, *::after {
+  border-color: var(--border);
+}
 html, body, #root, #app {
   margin: 0;
   min-height: 100%;
@@ -178,8 +186,8 @@ function tokensToCss(tokens: ThemeTokens): string {
 export function buildSandpackThemeCss(theme: PreviewTheme): string {
   const preset = THEME_PRESETS[theme] ?? THEME_PRESETS.dkit;
   return [
-    `:root {\n${tokensToCss(preset.tokens)}\n}`,
-    THEME_INLINE,
+    `:root {\n${tokensToCss(preset.tokens)}\n${COLOR_ALIASES}\n}`,
+    THEME_BLOCK,
     CHROME_CSS,
   ].join("\n");
 }
@@ -207,8 +215,9 @@ export function buildSandpackMinimalCss(): string {
   --border: #e4e4e7;
   --input: #e4e4e7;
   --ring: #a1a1aa;
+${COLOR_ALIASES}
 }`,
-    THEME_INLINE,
+    THEME_BLOCK,
     CHROME_CSS,
   ].join("\n");
 }

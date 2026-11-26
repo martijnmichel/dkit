@@ -4,10 +4,22 @@
   "title": "Blog detail",
   "description": "Article page with categories, byline, and rich text",
   "version": "0.1.0",
-  "frameworks": ["next", "nuxt"],
-  "uiKits": ["shadcn", "minimal"],
+  "frameworks": [
+    "next",
+    "nuxt"
+  ],
+  "uiKits": [
+    "shadcn",
+    "minimal"
+  ],
   "slot": "detail",
-  "registryDependencies": ["blog"],
-  "dependencies": ["@directus/sdk"],
-  "layers": ["ui"]
+  "registryDependencies": [
+    "blog"
+  ],
+  "dependencies": [
+    "@directus/sdk"
+  ],
+  "layers": [
+    "ui"
+  ]
 }

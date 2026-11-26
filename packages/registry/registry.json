@@ -32,7 +32,7 @@
       "registryDependencies": ["blog"],
       "slot": "list",
       "frameworks": ["next", "nuxt"],
-      "uiKits": ["shadcn"]
+      "uiKits": ["shadcn", "minimal"]
     },
     {
       "id": "blog-list-cards",
@@ -44,7 +44,7 @@
       "registryDependencies": ["blog"],
       "slot": "list",
       "frameworks": ["next", "nuxt"],
-      "uiKits": ["shadcn"]
+      "uiKits": ["shadcn", "minimal"]
     },
     {
       "id": "blog-detail",
@@ -104,7 +104,7 @@
       "registryDependencies": ["contact-form"],
       "slot": "form",
       "frameworks": ["next"],
-      "uiKits": ["shadcn"]
+      "uiKits": ["shadcn", "minimal"]
     },
     {
       "id": "page-builder",
@@ -125,7 +125,7 @@
       "registryDependencies": ["page-builder"],
       "slot": "renderer",
       "frameworks": ["next"],
-      "uiKits": ["shadcn"]
+      "uiKits": ["shadcn", "minimal"]
     }
   ]
 }

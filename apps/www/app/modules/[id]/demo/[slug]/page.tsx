@@ -1,4 +1,6 @@
 import { ModuleDetailPreview } from "@/components/previews/module-previews";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { getPages } from "@/lib/dkit/pages";
 import { getPosts } from "@/lib/dkit/blog";
 import { getModuleMeta, getRegistry } from "@/lib/registry";
@@ -35,19 +37,18 @@ export default async function ModuleDemoSlugPage({
 
   return (
     <div className="px-6 py-8 lg:px-10">
-      <p className="mb-4 text-sm text-muted-foreground">
-        <a
-          href={`/modules/${id}/`}
-          className="underline-offset-2 hover:underline"
-        >
-          ← {meta.item.title}
-        </a>
-        <span className="mx-2">·</span>
-        Sample detail route (seed data)
-      </p>
-      <div className="overflow-hidden rounded-xl border border-border bg-background">
-        <ModuleDetailPreview moduleId={id} slug={slug} />
+      <div className="mb-4 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+        <Button asChild variant="link" className="h-auto px-0">
+          <a href={`/modules/${id}/`}>← {meta.item.title}</a>
+        </Button>
+        <span>·</span>
+        <span>Sample detail route (seed data)</span>
       </div>
+      <Card className="gap-0 overflow-hidden py-0">
+        <CardContent className="p-0">
+          <ModuleDetailPreview moduleId={id} slug={slug} />
+        </CardContent>
+      </Card>
     </div>
   );
 }

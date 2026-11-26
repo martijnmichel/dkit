@@ -36,14 +36,14 @@ const BLOCK_META: Record<
 > = {
   "blog-list": {
     module: "blog",
-    uiKits: ["shadcn"],
+    uiKits: ["shadcn", "minimal"],
     nextFile: "blog-list.tsx",
     nuxtFile: "BlogList.vue",
     exportName: "BlogList",
   },
   "blog-list-cards": {
     module: "blog",
-    uiKits: ["shadcn"],
+    uiKits: ["shadcn", "minimal"],
     nextFile: "blog-list-cards.tsx",
     nuxtFile: "BlogListCards.vue",
     exportName: "BlogListCards",
@@ -66,13 +66,13 @@ const BLOCK_META: Record<
   },
   "contact-form-ui": {
     module: "contact-form",
-    uiKits: ["shadcn"],
+    uiKits: ["shadcn", "minimal"],
     nextFile: "contact-form.tsx",
     exportName: "ContactForm",
   },
   "page-renderer": {
     module: "page-builder",
-    uiKits: ["shadcn"],
+    uiKits: ["shadcn", "minimal"],
     nextFile: "page-renderer.tsx",
     exportName: "PageRenderer",
     props: { slug: '"sample"' },

@@ -1,5 +1,8 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 
 export type TocItem = { id: string; label: string };
@@ -53,16 +56,13 @@ export function OnThisPageMobile({ items }: { items: TocItem[] }) {
       <ul className="flex gap-1 overflow-x-auto pb-1">
         {items.map((item) => (
           <li key={item.id} className="shrink-0">
-            <a
-              href={`#${item.id}`}
-              className={
-                active === item.id
-                  ? "inline-flex rounded-md bg-muted px-2.5 py-1 text-xs font-medium text-foreground no-underline hover:no-underline"
-                  : "inline-flex rounded-md px-2.5 py-1 text-xs text-muted-foreground no-underline hover:bg-muted/60 hover:text-foreground hover:no-underline"
-              }
+            <Button
+              asChild
+              size="xs"
+              variant={active === item.id ? "secondary" : "ghost"}
             >
-              {item.label}
-            </a>
+              <a href={`#${item.id}`}>{item.label}</a>
+            </Button>
           </li>
         ))}
       </ul>
@@ -80,16 +80,18 @@ export function OnThisPageRail({ items }: { items: TocItem[] }) {
       <p className="mb-3 text-[0.6875rem] font-medium tracking-wide text-muted-foreground uppercase">
         On this page
       </p>
+      <Separator className="mb-3" />
       <ul className="space-y-1 border-l border-border">
         {items.map((item) => (
           <li key={item.id}>
             <a
               href={`#${item.id}`}
-              className={
+              className={cn(
+                "-ml-px block border-l-2 py-1 pl-3 text-sm no-underline hover:no-underline",
                 active === item.id
-                  ? "-ml-px block border-l-2 border-primary py-1 pl-3 text-sm font-medium text-foreground no-underline hover:no-underline"
-                  : "-ml-px block border-l-2 border-transparent py-1 pl-3 text-sm text-muted-foreground no-underline hover:border-border hover:text-foreground hover:no-underline"
-              }
+                  ? "border-primary font-medium text-foreground"
+                  : "border-transparent text-muted-foreground hover:border-border hover:text-foreground",
+              )}
             >
               {item.label}
             </a>

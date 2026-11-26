@@ -14,10 +14,10 @@
   --dkit-prose-body: var(--foreground, #44403c);
   --dkit-prose-heading: var(--foreground, #1c1917);
   --dkit-prose-muted: var(--muted-foreground, #78716c);
-  --dkit-prose-link: var(--primary, #0f766e);
+  --dkit-prose-link: var(--primary, #00c769);
   --dkit-prose-quote-border: color-mix(
     in oklab,
-    var(--primary, #0f766e) 40%,
+    var(--primary, #00c769) 40%,
     transparent
   );
   --dkit-prose-code-bg: var(--muted, color-mix(in oklab, var(--foreground, #1c1917) 6%, transparent));

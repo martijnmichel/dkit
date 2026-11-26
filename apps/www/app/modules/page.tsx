@@ -1,3 +1,10 @@
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { getRegistry } from "@/lib/registry";
 
 export default function ModulesPage() {
@@ -15,20 +22,22 @@ export default function ModulesPage() {
         <code className="font-mono text-sm">npx dkit add &lt;id&gt;</code>.
       </p>
 
-      <div className="mt-8 space-y-1 md:hidden">
+      <div className="mt-8 space-y-2 md:hidden">
         {modules.map((m) => (
           <a
             key={m.id}
             href={`/modules/${m.id}/`}
-            className="flex flex-col rounded-lg border border-border px-4 py-3 no-underline hover:bg-muted/50 hover:no-underline"
+            className="block no-underline hover:no-underline"
           >
-            <span className="font-medium text-foreground">{m.title}</span>
-            <span className="mt-0.5 text-sm text-muted-foreground">
-              {m.description}
-            </span>
-            <span className="mt-2 font-mono text-xs text-muted-foreground">
-              {m.id}
-            </span>
+            <Card className="transition-colors hover:border-primary/40">
+              <CardHeader className="gap-1">
+                <CardTitle className="text-base">{m.title}</CardTitle>
+                <CardDescription>{m.description}</CardDescription>
+                <p className="pt-1 font-mono text-xs text-muted-foreground">
+                  {m.id}
+                </p>
+              </CardHeader>
+            </Card>
           </a>
         ))}
       </div>
@@ -38,14 +47,20 @@ export default function ModulesPage() {
           <a
             key={m.id}
             href={`/modules/${m.id}/`}
-            className="rounded-xl border border-border bg-card p-5 text-card-foreground no-underline shadow-sm transition-colors hover:border-primary/40 hover:no-underline"
+            className="block no-underline hover:no-underline"
           >
-            <div className="flex items-center justify-between gap-2">
-              <h2 className="font-medium">{m.title}</h2>
-              <span className="badge">v{m.version}</span>
-            </div>
-            <p className="mt-2 text-sm text-muted-foreground">{m.description}</p>
-            <p className="mt-4 font-mono text-sm text-muted-foreground">{m.id}</p>
+            <Card className="h-full transition-colors hover:border-primary/40">
+              <CardHeader>
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="text-base">{m.title}</CardTitle>
+                  <Badge variant="outline">v{m.version}</Badge>
+                </div>
+                <CardDescription>{m.description}</CardDescription>
+                <p className="pt-2 font-mono text-sm text-muted-foreground">
+                  {m.id}
+                </p>
+              </CardHeader>
+            </Card>
           </a>
         ))}
       </div>
