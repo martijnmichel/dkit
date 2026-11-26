@@ -24,6 +24,7 @@ import {
   loadItem,
   loadRegistryIndex,
   resolveInstallPlan,
+  type LoadedBlock,
 } from "../lib/registry.js";
 import { parseTemplateFlag } from "../lib/templates.js";
 import {
@@ -38,6 +39,7 @@ import {
   writeModuleTypes,
   writeProjectConfig,
 } from "../lib/write-files.js";
+import { writeModuleUiEntry } from "../lib/write-ui-entry.js";
 
 function cancelIf<T>(value: T | symbol): asserts value is T {
   if (p.isCancel(value)) {
@@ -360,10 +362,13 @@ export function addCommand(): Command {
           }
         }
 
+        const installedBlocks: LoadedBlock[] = [];
+
         if (!opts.schemaOnly) {
           for (const blockId of plan.blocks) {
             const loaded = await loadItem(blockId, config.registry, framework);
             if (loaded.kind !== "block") continue;
+            installedBlocks.push(loaded.item);
             if (opts.dryRun) {
               p.log.info(
                 `ui: would write ${loaded.item.uiFiles.length} file(s) for ${blockId} (${framework})`,
@@ -377,6 +382,33 @@ export function addCommand(): Command {
               Boolean(opts.force),
             );
             for (const f of files) p.log.step(`wrote ${f}`);
+          }
+        }
+
+        // Static entry re-exports so app routes don't dynamic-import optional templates
+        if (!opts.dryRun && !opts.schemaOnly && installedBlocks.length) {
+          const moduleIds = new Set<string>([
+            ...plan.modules,
+            ...(await modulesNeedingPathFromBlocks(plan.blocks, index, root)),
+          ]);
+          if (moduleIds.size === 0) {
+            for (const b of installedBlocks) {
+              const dep = b.manifest.registryDependencies?.[0];
+              if (dep) moduleIds.add(dep);
+            }
+          }
+          for (const moduleId of moduleIds) {
+            const forModule = installedBlocks.filter((b) =>
+              (b.manifest.registryDependencies ?? []).includes(moduleId),
+            );
+            if (!forModule.length) continue;
+            const entry = writeModuleUiEntry(
+              projectRoot,
+              config,
+              moduleId,
+              forModule,
+            );
+            p.log.step(`wrote ${entry}`);
           }
         }
 

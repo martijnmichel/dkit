@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { collections } from '@/lib/dkit/config'
+import { collections, moduleBasePath } from '@/lib/dkit/config'
 
 type BlogPost = {
   id: string
@@ -8,11 +8,18 @@ type BlogPost = {
   body?: string | null
   published_at?: string | null
   author?: { name?: string } | string | null
+  categories?: Array<{ id: string; title?: string; slug?: string } | string> | null
 }
 
-const props = defineProps<{ slug: string }>()
-const config = useRuntimeConfig()
+const props = withDefaults(defineProps<{ slug: string; basePath?: string }>(), {
+  basePath: undefined,
+})
 
+const resolvedBase = computed(
+  () => props.basePath ?? moduleBasePath('blog', '/blog'),
+)
+
+const config = useRuntimeConfig()
 const { data: post } = await useAsyncData(`dkit-blog-${props.slug}`, async () => {
   const url = config.public.directusUrl as string | undefined
   if (!url) return null
@@ -23,27 +30,85 @@ const { data: post } = await useAsyncData(`dkit-blog-${props.slug}`, async () =>
       filter: {
         _and: [{ status: { _eq: 'published' } }, { slug: { _eq: props.slug } }],
       },
-      fields: ['id', 'title', 'slug', 'body', 'published_at', { author: ['name'] }],
+      fields: [
+        'id',
+        'title',
+        'slug',
+        'body',
+        'published_at',
+        { author: ['name'] },
+        { categories: ['id', 'title', 'slug'] },
+      ],
       limit: 1,
     }),
   )) as BlogPost[]
   return rows[0] ?? null
 })
+
+const author = computed(() =>
+  post.value && typeof post.value.author === 'object' && post.value.author?.name
+    ? post.value.author.name
+    : null,
+)
+
+const categories = computed(() =>
+  (post.value?.categories ?? []).filter(
+    (c): c is { id: string; title?: string; slug?: string } =>
+      typeof c === 'object' && c !== null,
+  ),
+)
 </script>
 
 <template>
-  <div v-if="!post" class="mx-auto max-w-2xl py-10 text-neutral-500">Post not found.</div>
-  <article v-else class="mx-auto max-w-2xl space-y-6 py-10">
-    <header class="space-y-2">
-      <h1 class="text-4xl font-semibold tracking-tight">{{ post.title }}</h1>
-      <p class="text-sm text-neutral-500">
-        <span v-if="typeof post.author === 'object' && post.author?.name">{{ post.author.name }}</span>
-        <span v-if="post.published_at"> · {{ new Date(post.published_at).toLocaleDateString() }}</span>
-      </p>
+  <div v-if="!post" class="mx-auto max-w-2xl px-6 py-20 text-center text-stone-500">
+    <p class="font-serif text-2xl text-stone-800 dark:text-stone-200">Post not found</p>
+    <NuxtLink
+      :to="resolvedBase"
+      class="mt-4 inline-block text-sm text-teal-800 underline-offset-4 hover:underline dark:text-teal-300"
+    >
+      ← Back to blog
+    </NuxtLink>
+  </div>
+
+  <article v-else class="mx-auto max-w-2xl px-6 py-16 sm:py-20">
+    <NuxtLink
+      :to="resolvedBase"
+      class="mb-10 inline-flex items-center gap-2 text-sm text-stone-500 no-underline transition hover:text-teal-800 dark:hover:text-teal-300"
+    >
+      ← All posts
+    </NuxtLink>
+
+    <header class="border-b border-stone-200 pb-10 dark:border-stone-800">
+      <div v-if="categories.length" class="mb-4 flex flex-wrap gap-2">
+        <span
+          v-for="c in categories"
+          :key="c.id"
+          class="rounded-full bg-teal-50 px-3 py-1 text-xs font-medium text-teal-900 dark:bg-teal-950 dark:text-teal-200"
+        >
+          {{ c.title ?? c.slug }}
+        </span>
+      </div>
+      <h1 class="font-serif text-4xl leading-[1.15] tracking-tight text-stone-900 sm:text-5xl dark:text-stone-50">
+        {{ post.title }}
+      </h1>
+      <div class="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-stone-500">
+        <span v-if="author" class="font-medium text-stone-700 dark:text-stone-300">{{ author }}</span>
+        <span v-if="author && post.published_at" aria-hidden>·</span>
+        <time v-if="post.published_at" :datetime="post.published_at">
+          {{
+            new Date(post.published_at).toLocaleDateString(undefined, {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })
+          }}
+        </time>
+      </div>
     </header>
+
     <div
       v-if="post.body"
-      class="prose prose-neutral dark:prose-invert max-w-none"
+      class="mt-10 space-y-4 text-[1.05rem] leading-8 text-stone-700 dark:text-stone-300"
       v-html="post.body"
     />
   </article>

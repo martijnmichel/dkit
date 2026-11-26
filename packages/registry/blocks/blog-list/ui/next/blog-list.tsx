@@ -22,6 +22,12 @@ async function getPosts(): Promise<BlogPost[]> {
   ) as Promise<BlogPost[]>;
 }
 
+function authorName(post: BlogPost): string | null {
+  return typeof post.author === "object" && post.author?.name
+    ? post.author.name
+    : null;
+}
+
 export async function BlogList({
   basePath = moduleBasePath("blog", "/blog"),
 }: {
@@ -30,41 +36,70 @@ export async function BlogList({
   const posts = await getPosts();
 
   return (
-    <div className="mx-auto max-w-2xl space-y-8 py-10">
-      <header>
-        <h1 className="text-3xl font-semibold tracking-tight">Blog</h1>
-        <p className="mt-2 text-neutral-500">Published posts from Directus.</p>
+    <div className="relative mx-auto max-w-2xl px-6 py-16 sm:py-20">
+      <header className="mb-12 border-b border-stone-200 pb-10 dark:border-stone-800">
+        <p className="mb-3 text-xs font-semibold tracking-[0.2em] text-teal-800 uppercase dark:text-teal-300">
+          Journal
+        </p>
+        <h1 className="font-serif text-4xl leading-tight tracking-tight text-stone-900 sm:text-5xl dark:text-stone-50">
+          Blog
+        </h1>
+        <p className="mt-4 max-w-md text-base leading-relaxed text-stone-500 dark:text-stone-400">
+          Stories and notes from Directus — newest first.
+        </p>
       </header>
-      <ul className="space-y-6">
-        {posts.map((post) => (
-          <li
-            key={post.id}
-            className="border-b border-neutral-200 pb-6 dark:border-neutral-800"
-          >
-            <a href={`${basePath}/${post.slug}`} className="group block">
-              <h2 className="text-xl font-medium group-hover:underline">
-                {post.title}
-              </h2>
-              {post.excerpt ? (
-                <p className="mt-2 text-neutral-600 dark:text-neutral-400">
-                  {post.excerpt}
-                </p>
-              ) : null}
-              <p className="mt-2 text-sm text-neutral-400">
-                {typeof post.author === "object" && post.author?.name
-                  ? post.author.name
-                  : null}
-                {post.published_at
-                  ? ` · ${new Date(post.published_at).toLocaleDateString()}`
-                  : null}
-              </p>
-            </a>
-          </li>
-        ))}
-        {posts.length === 0 ? (
-          <li className="text-neutral-500">No published posts yet.</li>
-        ) : null}
-      </ul>
+
+      {posts.length === 0 ? (
+        <p className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-6 py-10 text-center text-stone-500 dark:border-stone-700 dark:bg-stone-900/40 dark:text-stone-400">
+          No published posts yet. Add one in Directus and refresh.
+        </p>
+      ) : (
+        <ul className="space-y-2">
+          {posts.map((post, i) => (
+            <li key={post.id}>
+              <a
+                href={`${basePath}/${post.slug}`}
+                className="group flex gap-5 rounded-2xl px-4 py-5 transition hover:bg-stone-100/80 dark:hover:bg-stone-900/60"
+              >
+                <span className="mt-1 w-8 shrink-0 font-mono text-xs text-stone-400 tabular-nums">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-serif text-xl tracking-tight text-stone-900 transition group-hover:text-teal-800 dark:text-stone-50 dark:group-hover:text-teal-300">
+                    {post.title}
+                  </span>
+                  {post.excerpt ? (
+                    <span className="mt-2 block text-sm leading-relaxed text-stone-500 dark:text-stone-400">
+                      {post.excerpt}
+                    </span>
+                  ) : null}
+                  <span className="mt-3 flex flex-wrap items-center gap-x-2 text-xs text-stone-400">
+                    {authorName(post) ? <span>{authorName(post)}</span> : null}
+                    {authorName(post) && post.published_at ? (
+                      <span aria-hidden>·</span>
+                    ) : null}
+                    {post.published_at ? (
+                      <time dateTime={post.published_at}>
+                        {new Date(post.published_at).toLocaleDateString(
+                          undefined,
+                          {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          },
+                        )}
+                      </time>
+                    ) : null}
+                    <span className="ml-auto text-teal-800 opacity-0 transition group-hover:opacity-100 dark:text-teal-300">
+                      Read →
+                    </span>
+                  </span>
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

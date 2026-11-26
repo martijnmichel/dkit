@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { collections } from '@/lib/dkit/config'
 
+/**
+ * Unstyled / bare markup — no design system classes.
+ */
 type BlogPost = {
   id: string
   title: string
@@ -30,12 +33,14 @@ const { data: post } = await useAsyncData(`dkit-blog-min-${props.slug}`, async (
 </script>
 
 <template>
-  <p v-if="!post" class="p-8 text-neutral-500">Post not found.</p>
-  <article v-else class="mx-auto max-w-xl space-y-4 py-10">
-    <h1 class="text-2xl font-semibold">{{ post.title }}</h1>
-    <p v-if="post.published_at" class="text-xs text-neutral-400">
-      {{ new Date(post.published_at).toLocaleDateString() }}
+  <p v-if="!post">Post not found.</p>
+  <article v-else>
+    <h1>{{ post.title }}</h1>
+    <p v-if="post.published_at">
+      <time :datetime="post.published_at">
+        {{ new Date(post.published_at).toLocaleDateString() }}
+      </time>
     </p>
-    <div v-if="post.body" class="text-sm leading-relaxed" v-html="post.body" />
+    <div v-if="post.body" v-html="post.body" />
   </article>
 </template>

@@ -16,6 +16,26 @@ for (const target of targets) {
   console.log(`removed ${path.relative(root, target)}`);
 }
 
-// Keep DIRECTUS_* in .env.local; only strip nothing else
+// Restore stub entry so Next can always resolve @/lib/dkit/entries/blog
+const stubDir = path.join(root, "lib/dkit/entries");
+fs.mkdirSync(stubDir, { recursive: true });
+fs.writeFileSync(
+  path.join(stubDir, "blog.tsx"),
+  `/** Stub — run \`dkit add blog\` to generate real UI exports. */
+export const installed = false;
+export const moduleId = "blog" as const;
+export const blocks = [] as const;
+
+export function List() {
+  return null;
+}
+
+export function Detail(_props: { slug: string }) {
+  return null;
+}
+`,
+);
+console.log("restored lib/dkit/entries/blog.tsx stub");
+
 console.log("Cleared dkit-generated files. .env.local kept (if present).");
 console.log("Re-install: pnpm dkit:add-blog   (or example:next:reset from root)");

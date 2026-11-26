@@ -32,25 +32,69 @@ const { data: posts } = await useAsyncData('dkit-blog-list', async () => {
     }),
   ) as Promise<BlogPost[]>
 })
+
+function authorName(post: BlogPost) {
+  return typeof post.author === 'object' && post.author?.name ? post.author.name : null
+}
 </script>
 
 <template>
-  <div class="mx-auto max-w-2xl space-y-8 py-10">
-    <header>
-      <h1 class="text-3xl font-semibold tracking-tight">Blog</h1>
-      <p class="mt-2 text-neutral-500">Published posts from Directus.</p>
+  <div class="relative mx-auto max-w-2xl px-6 py-16 sm:py-20">
+    <header class="mb-12 border-b border-stone-200 pb-10 dark:border-stone-800">
+      <p class="mb-3 text-xs font-semibold tracking-[0.2em] text-teal-800 uppercase dark:text-teal-300">
+        Journal
+      </p>
+      <h1 class="font-serif text-4xl leading-tight tracking-tight text-stone-900 sm:text-5xl dark:text-stone-50">
+        Blog
+      </h1>
+      <p class="mt-4 max-w-md text-base leading-relaxed text-stone-500 dark:text-stone-400">
+        Stories and notes from Directus — newest first.
+      </p>
     </header>
-    <ul class="space-y-6">
-      <li
-        v-for="post in posts || []"
-        :key="post.id"
-        class="border-b border-neutral-200 pb-6 dark:border-neutral-800"
-      >
-        <NuxtLink :to="`${resolvedBase}/${post.slug}`" class="group block">
-          <h2 class="text-xl font-medium group-hover:underline">{{ post.title }}</h2>
-          <p v-if="post.excerpt" class="mt-2 text-neutral-600 dark:text-neutral-400">
-            {{ post.excerpt }}
-          </p>
+
+    <p
+      v-if="!(posts && posts.length)"
+      class="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-6 py-10 text-center text-stone-500 dark:border-stone-700 dark:bg-stone-900/40 dark:text-stone-400"
+    >
+      No published posts yet. Add one in Directus and refresh.
+    </p>
+
+    <ul v-else class="space-y-2">
+      <li v-for="(post, i) in posts" :key="post.id">
+        <NuxtLink
+          :to="`${resolvedBase}/${post.slug}`"
+          class="group flex gap-5 rounded-2xl px-4 py-5 transition hover:bg-stone-100/80 dark:hover:bg-stone-900/60"
+        >
+          <span class="mt-1 w-8 shrink-0 font-mono text-xs text-stone-400 tabular-nums">
+            {{ String(i + 1).padStart(2, '0') }}
+          </span>
+          <span class="min-w-0 flex-1">
+            <span class="block font-serif text-xl tracking-tight text-stone-900 transition group-hover:text-teal-800 dark:text-stone-50 dark:group-hover:text-teal-300">
+              {{ post.title }}
+            </span>
+            <span
+              v-if="post.excerpt"
+              class="mt-2 block text-sm leading-relaxed text-stone-500 dark:text-stone-400"
+            >
+              {{ post.excerpt }}
+            </span>
+            <span class="mt-3 flex flex-wrap items-center gap-x-2 text-xs text-stone-400">
+              <span v-if="authorName(post)">{{ authorName(post) }}</span>
+              <span v-if="authorName(post) && post.published_at" aria-hidden>·</span>
+              <time v-if="post.published_at" :datetime="post.published_at">
+                {{
+                  new Date(post.published_at).toLocaleDateString(undefined, {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                  })
+                }}
+              </time>
+              <span class="ml-auto text-teal-800 opacity-0 transition group-hover:opacity-100 dark:text-teal-300">
+                Read →
+              </span>
+            </span>
+          </span>
         </NuxtLink>
       </li>
     </ul>
