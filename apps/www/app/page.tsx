@@ -32,7 +32,7 @@ const FEATURES = [
   {
     title: "Services",
     body: "Optional flows and seed data so you can smoke-test UI right after install.",
-    href: "/docs/cli/",
+    href: "/docs/services/",
     icon: Workflow,
   },
   {
@@ -74,11 +74,11 @@ export default function HomePage() {
           dkit
         </h1>
         <p className="mt-4 max-w-3xl text-2xl font-medium tracking-tight text-foreground sm:text-3xl sm:leading-snug">
-          The foundation for your Directus frontend
+          The foundation for Directus modules you own
         </p>
         <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-          Composable schema, access, and UI for Next.js and Nuxt — with
-          thoughtful defaults. Install modules into your repo as code you can
+          Composable schema, access, services, and UI for Next.js and Nuxt —
+          with thoughtful defaults. Install into your repo as code you can
           customize, extend, and make your own.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">

@@ -5,6 +5,7 @@ import {
 } from "@/components/on-this-page";
 import { ModuleBlockPreviews } from "@/components/previews/module-previews";
 import { SchemaReference } from "@/components/schema-reference";
+import { ServicesReference } from "@/components/services-reference";
 import { Badge } from "@/components/ui/badge";
 import {
   getBlocksForModule,
@@ -12,6 +13,7 @@ import {
   getRegistry,
 } from "@/lib/registry";
 import type { RestSchemaDoc } from "@/lib/schema-docs";
+import { parseFlowsBundle, parseSeedBundle } from "@/lib/services-docs";
 import { notFound } from "next/navigation";
 
 export function generateStaticParams() {
@@ -38,19 +40,22 @@ export default async function ModulePage({
       fields?: string[] | null;
     }>;
   } | undefined;
-  const flows = meta.flows as {
-    flows?: Array<{ name: string; description?: string; status?: string }>;
-  } | undefined;
+
+  const { flows } = parseFlowsBundle(meta.flows);
+  const { files, collections } = parseSeedBundle(meta.seed);
+  const hasServices =
+    flows.length > 0 ||
+    files.length > 0 ||
+    collections.some((c) => c.count > 0);
 
   const blocks = getBlocksForModule(id);
-  const hasFlows = (flows?.flows?.length ?? 0) > 0;
 
   const toc: TocItem[] = [
     { id: "install", label: "Install" },
     { id: "schema", label: "Schema" },
     { id: "access", label: "Access" },
   ];
-  if (hasFlows) toc.push({ id: "flows", label: "Flows" });
+  if (hasServices) toc.push({ id: "services", label: "Services" });
   toc.push({ id: "preview", label: "UI preview" });
 
   return (
@@ -67,18 +72,26 @@ export default async function ModulePage({
             <pre className="code mt-8">{`npx dkit add ${id}`}</pre>
             <p className="mt-3 text-[0.9375rem] text-muted-foreground">
               Schema only:{" "}
-              <code className="font-mono">
-                npx dkit add {id} --schema-only
-              </code>
+              <code>npx dkit add {id} --schema-only</code>
               {" · "}
               With sample data:{" "}
-              <code className="font-mono">npx dkit add {id} --seed</code>
+              <code>npx dkit add {id} --seed</code>
             </p>
           </section>
 
           <div className="mt-16">
-            <SchemaReference schema={schema} access={access} flows={flows} />
+            <SchemaReference schema={schema} access={access} />
           </div>
+
+          {hasServices ? (
+            <div className="mt-16">
+              <ServicesReference
+                moduleId={id}
+                flows={meta.flows}
+                seed={meta.seed}
+              />
+            </div>
+          ) : null}
 
           <section id="preview" className="mt-16 scroll-mt-24">
             <h2 className="text-foreground">UI preview</h2>

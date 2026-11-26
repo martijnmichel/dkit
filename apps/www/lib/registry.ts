@@ -60,12 +60,19 @@ export function getModuleMeta(id: string) {
   let schema: unknown;
   let access: unknown;
   let flows: unknown;
+  let seed: unknown;
   const schemaPath = path.join(dir, "schema/snapshot.json");
   const accessPath = path.join(dir, "access/policies.json");
   const flowsPath = path.join(dir, "services/flows.json");
-  if (fs.existsSync(schemaPath)) schema = JSON.parse(fs.readFileSync(schemaPath, "utf8"));
-  if (fs.existsSync(accessPath)) access = JSON.parse(fs.readFileSync(accessPath, "utf8"));
-  if (fs.existsSync(flowsPath)) flows = JSON.parse(fs.readFileSync(flowsPath, "utf8"));
+  const seedPath = path.join(dir, "services/seed.json");
+  if (fs.existsSync(schemaPath))
+    schema = JSON.parse(fs.readFileSync(schemaPath, "utf8"));
+  if (fs.existsSync(accessPath))
+    access = JSON.parse(fs.readFileSync(accessPath, "utf8"));
+  if (fs.existsSync(flowsPath))
+    flows = JSON.parse(fs.readFileSync(flowsPath, "utf8"));
+  if (fs.existsSync(seedPath))
+    seed = JSON.parse(fs.readFileSync(seedPath, "utf8"));
 
-  return { item, manifest, schema, access, flows };
+  return { item, manifest, schema, access, flows, seed };
 }

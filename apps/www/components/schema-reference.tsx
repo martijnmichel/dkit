@@ -1,5 +1,4 @@
 import { SchemaCollectionsAccordion } from "@/components/schema-collections";
-import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -11,7 +10,6 @@ import type { RestSchemaDoc } from "@/lib/schema-docs";
 export function SchemaReference({
   schema,
   access,
-  flows,
 }: {
   schema?: RestSchemaDoc | null;
   access?: {
@@ -23,9 +21,6 @@ export function SchemaReference({
       permissions?: unknown;
       validation?: unknown;
     }>;
-  } | null;
-  flows?: {
-    flows?: Array<{ name: string; description?: string; status?: string }>;
   } | null;
 }) {
   const collections = schema?.collections ?? [];
@@ -108,31 +103,6 @@ export function SchemaReference({
           </ul>
         </CardContent>
       </Card>
-
-      {(flows?.flows?.length ?? 0) > 0 ? (
-        <Card id="flows" className="scroll-mt-24">
-          <CardHeader className="pb-0">
-            <CardTitle className="text-base">Flows</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2 text-sm">
-              {flows!.flows!.map((f) => (
-                <li key={f.name}>
-                  <strong>{f.name}</strong>
-                  {f.status ? (
-                    <Badge variant="outline" className="ml-2 font-mono">
-                      {f.status}
-                    </Badge>
-                  ) : null}
-                  {f.description ? (
-                    <div className="text-muted-foreground">{f.description}</div>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      ) : null}
 
       <p className="text-sm text-muted-foreground">
         Requires Directus 11+ (12.2+ recommended). Prefer a staging project

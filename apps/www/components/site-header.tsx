@@ -1,4 +1,5 @@
 import { DkitWordmark } from "@/components/dkit-logo";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 
 export function SiteHeader() {
@@ -18,6 +19,7 @@ export function SiteHeader() {
           <Button asChild variant="ghost" size="sm">
             <a href="https://github.com/martijnmichel/dkit">GitHub</a>
           </Button>
+          <ThemeToggle />
         </nav>
       </div>
     </header>

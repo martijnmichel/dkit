@@ -248,7 +248,7 @@ export function SandpackBlockPreview({
           if (e.target === dialogRef.current) onExpandedChange(false);
         }}
       >
-        <div className="flex max-h-[min(96vh,920px)] w-[min(96vw,1200px)] flex-col overflow-hidden rounded-xl border border-border bg-white shadow-2xl">
+        <div className="flex max-h-[min(96vh,920px)] w-[min(96vw,1200px)] flex-col overflow-hidden rounded-xl border border-border bg-background shadow-2xl">
           <header className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
             <div className="min-w-0">
               <h3
@@ -269,7 +269,7 @@ export function SandpackBlockPreview({
               Close
             </Button>
           </header>
-          <div className="min-h-0 flex-1 overflow-auto bg-white">
+          <div className="preview-canvas min-h-0 flex-1 overflow-auto">
             {expanded ? (
               <SandpackStage
                 project={project}

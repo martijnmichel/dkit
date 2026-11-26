@@ -21,6 +21,11 @@ export const DOCS_GUIDES: DocsNavLink[] = [
     description: "init, add, list, doctor",
   },
   {
+    href: "/docs/services/",
+    title: "Services",
+    description: "Flows and seed data",
+  },
+  {
     href: "/docs/ui-kits/",
     title: "UI kits",
     description: "shadcn, minimal, themes",

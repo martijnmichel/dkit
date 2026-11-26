@@ -1,4 +1,5 @@
 import { SiteFooter, SiteHeader } from "@/components/site-header";
+import { THEME_BOOT_SCRIPT } from "@/lib/theme";
 import type { Metadata } from "next";
 import { JetBrains_Mono, Source_Sans_3 } from "next/font/google";
 import "./globals.css";
@@ -16,9 +17,9 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "dkit — The foundation for your Directus frontend",
+  title: "dkit — The foundation for Directus modules you own",
   description:
-    "Composable schema, access, and UI for Next.js and Nuxt. Install Directus modules into your repo as code you own.",
+    "Composable schema, access, services, and UI for Next.js and Nuxt. Install Directus modules into your repo as code you own.",
 };
 
 export default function RootLayout({
@@ -27,7 +28,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${sans.variable} ${mono.variable}`}>
+    <html
+      lang="en"
+      className={`${sans.variable} ${mono.variable}`}
+      suppressHydrationWarning
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
+      </head>
       <body className="bg-background font-sans text-foreground antialiased">
         <SiteHeader />
         <main>{children}</main>

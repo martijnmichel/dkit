@@ -8,6 +8,8 @@
 @source "./**/*.{js,jsx,ts,tsx}";
 @source "../lib/**/*.{js,jsx,ts,tsx}";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /*
  * Near-white docs chrome + shadcn-compatible tokens for block previews.
  * Avoid warm paper tints — keep backgrounds neutral white / gray.
@@ -41,6 +43,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --background: #09090b;
   --foreground: #fafafa;
   --card: #09090b;
