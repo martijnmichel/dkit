@@ -7,6 +7,10 @@ import {
 } from "./block-paths.js";
 import { resolveAliasPath } from "./paths.js";
 import type { LoadedBlock, LoadedModule } from "./registry.js";
+import {
+  adaptShadcnBlockSource,
+  detectShadcnPrimitiveBase,
+} from "./shadcn.js";
 
 export { writeClientHelper, writeDkitClient } from "./write-client.js";
 
@@ -124,7 +128,18 @@ export function writeBlockUi(
       skipped.push(dest);
       continue;
     }
-    fs.copyFileSync(file.abs, dest);
+    let source = fs.readFileSync(file.abs, "utf8");
+    if (
+      block.uiKit === "shadcn" &&
+      config.framework === "next" &&
+      /\.(tsx|jsx)$/.test(file.rel)
+    ) {
+      source = adaptShadcnBlockSource(
+        source,
+        detectShadcnPrimitiveBase(projectRoot),
+      );
+    }
+    fs.writeFileSync(dest, source, "utf8");
     written.push(dest);
   }
   return { written, skipped };

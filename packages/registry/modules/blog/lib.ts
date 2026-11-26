@@ -1,10 +1,19 @@
-import { getDirectus, readItem, readItems } from "@/lib/dkit/client";
+import {
+  directusAssetUrl,
+  directusFileId,
+  getDirectus,
+  readItem,
+  readItems,
+} from "@/lib/dkit/client";
 import { collections } from "@/lib/dkit/config";
 import type {
   BlogAuthor,
   BlogCategory,
   BlogPost,
-  DirectusFileRef,
+  GetBlogAuthorsOptions,
+  GetBlogBySlugOptions,
+  GetBlogCategoriesOptions,
+  GetBlogPostsOptions,
 } from "./types";
 
 export type {
@@ -12,6 +21,10 @@ export type {
   BlogCategory,
   BlogPost,
   DirectusFileRef,
+  GetBlogAuthorsOptions,
+  GetBlogBySlugOptions,
+  GetBlogCategoriesOptions,
+  GetBlogPostsOptions,
   PostsCategoriesRow,
 } from "./types";
 
@@ -39,22 +52,8 @@ const POST_DETAIL_FIELDS = [
   { categories: ["id", { categories_id: ["id", "title", "slug"] }] },
 ] as const;
 
-export function directusFileId(
-  value: string | DirectusFileRef | null | undefined,
-): string | null {
-  if (!value) return null;
-  if (typeof value === "string") return value;
-  return value.id ?? null;
-}
-
-export function directusAssetUrl(
-  fileId: string,
-  baseUrl = process.env.DIRECTUS_URL,
-): string | null {
-  const base = baseUrl?.replace(/\/$/, "");
-  if (!base || !fileId) return null;
-  return `${base}/assets/${fileId}`;
-}
+const AUTHOR_FIELDS = ["id", "status", "name", "slug", "avatar", "bio"] as const;
+const CATEGORY_FIELDS = ["id", "title", "slug"] as const;
 
 export function authorName(post: BlogPost): string | null {
   return typeof post.author === "object" && post.author?.name
@@ -97,16 +96,34 @@ export function normalizeCategories(
   return out;
 }
 
-/** Published posts, newest first. */
-export async function getPosts(): Promise<BlogPost[]> {
+function statusFilter(status: string | null | undefined) {
+  if (status === null) return undefined;
+  return { status: { _eq: status ?? "published" } };
+}
+
+/** Posts, newest first. */
+export async function getBlogPosts(
+  options: GetBlogPostsOptions = {},
+): Promise<BlogPost[]> {
   const client = getDirectus();
   if (!client) return [];
+  const status = statusFilter(options.status);
+  const and: Record<string, unknown>[] = [];
+  if (status) and.push(status);
+  if (options.category) {
+    and.push({
+      categories: {
+        categories_id: { slug: { _eq: options.category } },
+      },
+    });
+  }
   try {
     return await client.request(
       readItems(collections.posts, {
-        filter: { status: { _eq: "published" } },
+        filter: and.length ? { _and: and } : undefined,
         fields: [...POST_LIST_FIELDS],
-        sort: ["-published_at"],
+        sort: options.sort ?? ["-published_at"],
+        limit: options.limit,
       }),
     );
   } catch {
@@ -114,15 +131,19 @@ export async function getPosts(): Promise<BlogPost[]> {
   }
 }
 
-export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
+export async function getBlogPostBySlug(
+  slug: string,
+  options: GetBlogBySlugOptions = {},
+): Promise<BlogPost | null> {
   const client = getDirectus();
   if (!client) return null;
+  const status = statusFilter(options.status);
+  const and: Record<string, unknown>[] = [{ slug: { _eq: slug } }];
+  if (status) and.unshift(status);
   try {
     const rows = await client.request(
       readItems(collections.posts, {
-        filter: {
-          _and: [{ status: { _eq: "published" } }, { slug: { _eq: slug } }],
-        },
+        filter: { _and: and },
         fields: [...POST_DETAIL_FIELDS],
         limit: 1,
       }),
@@ -133,7 +154,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
   }
 }
 
-export async function getPostById(id: string): Promise<BlogPost | null> {
+export async function getBlogPostById(id: string): Promise<BlogPost | null> {
   const client = getDirectus();
   if (!client) return null;
   try {
@@ -147,18 +168,20 @@ export async function getPostById(id: string): Promise<BlogPost | null> {
   }
 }
 
-/** @deprecated prefer getPostBySlug */
-export const getPost = getPostBySlug;
-
-export async function getAuthors(): Promise<BlogAuthor[]> {
+/** Authors, by name. */
+export async function getBlogAuthors(
+  options: GetBlogAuthorsOptions = {},
+): Promise<BlogAuthor[]> {
   const client = getDirectus();
   if (!client) return [];
+  const status = statusFilter(options.status);
   try {
     return await client.request(
       readItems(collections.authors, {
-        filter: { status: { _eq: "published" } },
-        fields: ["id", "status", "name", "slug", "avatar", "bio"],
-        sort: ["name"],
+        filter: status,
+        fields: [...AUTHOR_FIELDS],
+        sort: options.sort ?? ["name"],
+        limit: options.limit,
       }),
     );
   } catch {
@@ -166,16 +189,20 @@ export async function getAuthors(): Promise<BlogAuthor[]> {
   }
 }
 
-export async function getAuthorBySlug(slug: string): Promise<BlogAuthor | null> {
+export async function getBlogAuthorBySlug(
+  slug: string,
+  options: GetBlogBySlugOptions = {},
+): Promise<BlogAuthor | null> {
   const client = getDirectus();
   if (!client) return null;
+  const status = statusFilter(options.status);
+  const and: Record<string, unknown>[] = [{ slug: { _eq: slug } }];
+  if (status) and.unshift(status);
   try {
     const rows = await client.request(
       readItems(collections.authors, {
-        filter: {
-          _and: [{ status: { _eq: "published" } }, { slug: { _eq: slug } }],
-        },
-        fields: ["id", "status", "name", "slug", "avatar", "bio"],
+        filter: { _and: and },
+        fields: [...AUTHOR_FIELDS],
         limit: 1,
       }),
     );
@@ -185,13 +212,13 @@ export async function getAuthorBySlug(slug: string): Promise<BlogAuthor | null> 
   }
 }
 
-export async function getAuthorById(id: string): Promise<BlogAuthor | null> {
+export async function getBlogAuthorById(id: string): Promise<BlogAuthor | null> {
   const client = getDirectus();
   if (!client) return null;
   try {
     return await client.request(
       readItem(collections.authors, id, {
-        fields: ["id", "status", "name", "slug", "avatar", "bio"],
+        fields: [...AUTHOR_FIELDS],
       }),
     );
   } catch {
@@ -199,14 +226,18 @@ export async function getAuthorById(id: string): Promise<BlogAuthor | null> {
   }
 }
 
-export async function getCategories(): Promise<BlogCategory[]> {
+/** Categories, by title. */
+export async function getBlogCategories(
+  options: GetBlogCategoriesOptions = {},
+): Promise<BlogCategory[]> {
   const client = getDirectus();
   if (!client) return [];
   try {
     return await client.request(
       readItems(collections.categories, {
-        fields: ["id", "title", "slug"],
-        sort: ["title"],
+        fields: [...CATEGORY_FIELDS],
+        sort: options.sort ?? ["title"],
+        limit: options.limit,
       }),
     );
   } catch {
@@ -214,7 +245,7 @@ export async function getCategories(): Promise<BlogCategory[]> {
   }
 }
 
-export async function getCategoryBySlug(
+export async function getBlogCategoryBySlug(
   slug: string,
 ): Promise<BlogCategory | null> {
   const client = getDirectus();
@@ -223,7 +254,7 @@ export async function getCategoryBySlug(
     const rows = await client.request(
       readItems(collections.categories, {
         filter: { slug: { _eq: slug } },
-        fields: ["id", "title", "slug"],
+        fields: [...CATEGORY_FIELDS],
         limit: 1,
       }),
     );
@@ -233,13 +264,15 @@ export async function getCategoryBySlug(
   }
 }
 
-export async function getCategoryById(id: string): Promise<BlogCategory | null> {
+export async function getBlogCategoryById(
+  id: string,
+): Promise<BlogCategory | null> {
   const client = getDirectus();
   if (!client) return null;
   try {
     return await client.request(
       readItem(collections.categories, id, {
-        fields: ["id", "title", "slug"],
+        fields: [...CATEGORY_FIELDS],
       }),
     );
   } catch {
@@ -247,30 +280,29 @@ export async function getCategoryById(id: string): Promise<BlogCategory | null> 
   }
 }
 
-/** Published posts in a category (by category slug). */
-export async function getPostsByCategorySlug(
+/** @deprecated prefer getBlogPosts({ category }) */
+export async function getBlogPostsByCategorySlug(
   categorySlug: string,
+  options: Omit<GetBlogPostsOptions, "category"> = {},
 ): Promise<BlogPost[]> {
-  const client = getDirectus();
-  if (!client) return [];
-  try {
-    return await client.request(
-      readItems(collections.posts, {
-        filter: {
-          _and: [
-            { status: { _eq: "published" } },
-            {
-              categories: {
-                categories_id: { slug: { _eq: categorySlug } },
-              },
-            },
-          ],
-        },
-        fields: [...POST_LIST_FIELDS],
-        sort: ["-published_at"],
-      }),
-    );
-  } catch {
-    return [];
-  }
+  return getBlogPosts({ ...options, category: categorySlug });
 }
+
+/** @deprecated prefer getBlogPostBySlug */
+export const getBlogPost = getBlogPostBySlug;
+/** @deprecated prefer getBlogPosts */
+export const getPosts = getBlogPosts;
+/** @deprecated prefer getBlogPostBySlug */
+export const getPostBySlug = getBlogPostBySlug;
+/** @deprecated prefer getBlogPostById */
+export const getPostById = getBlogPostById;
+/** @deprecated prefer getBlogPostBySlug */
+export const getPost = getBlogPostBySlug;
+/** @deprecated prefer getBlogCategories */
+export const getCategories = getBlogCategories;
+/** @deprecated prefer getBlogAuthors */
+export const getAuthors = getBlogAuthors;
+/** @deprecated prefer getBlogAuthorBySlug */
+export const getAuthorBySlug = getBlogAuthorBySlug;
+/** @deprecated prefer getBlogAuthorById */
+export const getAuthorById = getBlogAuthorById;

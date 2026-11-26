@@ -10,12 +10,13 @@ import type {
 } from "@/lib/sandpack/types";
 import {
   buildBlogMockSource,
+  buildClientMockSource,
   buildConfigMockSource,
   buildContactMockSource,
   buildPageBuilderMockSource,
   buildPagesMockSource,
 } from "@/lib/sandpack/mocks";
-import { sandpackUiStubFiles } from "@/lib/sandpack/ui-stubs";
+import { sandpackUiKitFiles } from "@/lib/sandpack/ui-kit-files";
 
 export type {
   BlockSandpackProject,
@@ -108,6 +109,7 @@ function sharedLibFiles(
   prefix: "/lib" | "/src/lib",
 ): SandpackFiles {
   const files: SandpackFiles = {
+    [`${prefix}/dkit/client.ts`]: buildClientMockSource(),
     [`${prefix}/dkit/config.ts`]: buildConfigMockSource(),
   };
   if (moduleId === "blog") {
@@ -182,7 +184,7 @@ export default function App() {
 
   return {
     ...sharedLibFiles(meta.module, "/lib"),
-    ...sandpackUiStubFiles(kit),
+    ...sandpackUiKitFiles(kit, "next"),
     "/components/Block.tsx": component,
     "/App.tsx": isClientOnly ? appClient : appAsync,
     "/styles.css": SANDPACK_THEME_CSS,
@@ -232,6 +234,7 @@ function buildNuxtProject(
 
   return {
     ...sharedLibFiles(meta.module, "/src/lib"),
+    ...sandpackUiKitFiles(kit, "nuxt"),
     "/src/components/Block.vue": component,
     "/src/nuxt-shims.ts": `import { ref, type Ref } from "vue";
 

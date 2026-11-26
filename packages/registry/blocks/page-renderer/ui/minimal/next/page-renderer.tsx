@@ -1,5 +1,5 @@
 import type { PageBlock } from "@/lib/dkit/page-builder";
-import { getBuilderPage } from "@/lib/dkit/page-builder";
+import { getPageBuilderPageBySlug } from "@/lib/dkit/page-builder";
 import { collections } from "@/lib/dkit/config";
 
 /** Minimal kit — semantic HTML + dkit-prose only. */
@@ -46,7 +46,7 @@ function BlockView({ block }: { block: PageBlock }) {
 }
 
 export async function PageRenderer({ slug }: { slug: string }) {
-  const page = await getBuilderPage(slug);
+  const page = await getPageBuilderPageBySlug(slug);
   if (!page) {
     return <p>Page not found.</p>;
   }

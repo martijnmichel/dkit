@@ -2,7 +2,7 @@ import { ModuleDetailPreview } from "@/components/previews/module-previews";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { getPages } from "@/lib/dkit/pages";
-import { getPosts } from "@/lib/dkit/blog";
+import { getBlogPosts } from "@/lib/dkit/blog";
 import { getModuleMeta, getRegistry } from "@/lib/registry";
 import { notFound } from "next/navigation";
 
@@ -12,7 +12,7 @@ export async function generateStaticParams() {
 
   for (const mod of modules) {
     if (mod.id === "blog") {
-      for (const post of await getPosts()) {
+      for (const post of await getBlogPosts()) {
         params.push({ id: "blog", slug: post.slug });
       }
     }

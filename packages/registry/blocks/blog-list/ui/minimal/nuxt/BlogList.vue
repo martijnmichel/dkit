@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getPosts } from '@/lib/dkit/blog'
+import { getBlogPosts } from '@/lib/dkit/blog'
 import { joinModulePath, moduleBasePath } from '@/lib/dkit/config'
 
 /** Minimal kit — semantic HTML only. */
@@ -11,7 +11,7 @@ const resolvedBase = computed(
   () => props.basePath ?? moduleBasePath('blog', '/blog'),
 )
 
-const { data: posts } = await useAsyncData('dkit-blog-list-min', () => getPosts())
+const { data: posts } = await useAsyncData('dkit-blog-list-min', () => getBlogPosts())
 </script>
 
 <template>

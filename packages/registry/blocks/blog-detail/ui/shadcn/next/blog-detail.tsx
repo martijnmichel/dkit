@@ -2,7 +2,7 @@ import {
   authorAvatarUrl,
   authorName,
   featuredImageUrl,
-  getPost,
+  getBlogPostBySlug,
   normalizeCategories,
 } from "@/lib/dkit/blog";
 import { moduleBasePath } from "@/lib/dkit/config";
@@ -17,7 +17,7 @@ export async function BlogDetail({
   slug: string;
   basePath?: string;
 }) {
-  const post = await getPost(slug);
+  const post = await getBlogPostBySlug(slug);
   if (!post) {
     return (
       <div className="mx-auto max-w-2xl px-6 py-20 text-center text-muted-foreground">

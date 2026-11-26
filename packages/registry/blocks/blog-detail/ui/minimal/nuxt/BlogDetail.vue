@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { featuredImageUrl, getPost } from '@/lib/dkit/blog'
+import { featuredImageUrl, getBlogPostBySlug } from '@/lib/dkit/blog'
 
 const props = defineProps<{ slug: string }>()
 
 const { data: post } = await useAsyncData(`dkit-blog-min-${props.slug}`, () =>
-  getPost(props.slug),
+  getBlogPostBySlug(props.slug),
 )
 </script>
 

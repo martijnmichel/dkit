@@ -11,7 +11,8 @@ import {
   parseSeedBundle,
 } from "@/lib/services-docs";
 
-export function ServicesReference({
+/** Directus flows + optional seed under services/ — not the TypeScript fetch API. */
+export function FlowsSeedReference({
   flows: flowsRaw,
   seed: seedRaw,
   moduleId,
@@ -25,30 +26,17 @@ export function ServicesReference({
   const hasFlows = flows.length > 0;
   const hasSeed = files.length > 0 || collections.some((c) => c.count > 0);
 
-  if (!hasFlows && !hasSeed) {
-    return (
-      <section id="services" className="scroll-mt-24 space-y-3">
-        <h2 className="text-xl font-semibold tracking-tight text-foreground">
-          Services
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          This module does not ship flows or seed data under{" "}
-          <code>services/</code>.
-        </p>
-      </section>
-    );
-  }
+  if (!hasFlows && !hasSeed) return null;
 
   return (
-    <section id="services" className="scroll-mt-24 space-y-6">
+    <section id="flows-seed" className="scroll-mt-24 space-y-6">
       <div>
         <h2 className="text-xl font-semibold tracking-tight text-foreground">
-          Services
+          Flows &amp; seed
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          From this module&apos;s <code>services/</code> folder. Flows apply on{" "}
-          <code>dkit add</code>; seed only with <code>--seed</code>. See{" "}
-          <a href="/docs/services/">Services</a>.
+          Optional Directus extras from <code>services/</code>. Flows apply on{" "}
+          <code>dkit add</code>; seed only with <code>--seed</code>.
         </p>
       </div>
 
@@ -122,7 +110,6 @@ export function ServicesReference({
                         {" "}
                         · {file.filename_download}
                         {file.type ? ` · ${file.type}` : ""}
-                        {file.path ? ` · ${file.path}` : ""}
                       </span>
                     </li>
                   ))}
@@ -151,7 +138,10 @@ export function ServicesReference({
                         </code>
                       ) : null}
                       {item.status ? (
-                        <Badge variant="outline" className="font-mono text-[0.65rem]">
+                        <Badge
+                          variant="outline"
+                          className="font-mono text-[0.65rem]"
+                        >
                           {item.status}
                         </Badge>
                       ) : null}

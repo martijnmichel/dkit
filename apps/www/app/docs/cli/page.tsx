@@ -24,7 +24,10 @@ dkit init --yes --url … --token … --ui shadcn`}</pre>
 
       <DocsSection id="add" title="dkit add">
         <p>
-          Applies module schema/access/services and copies UI blocks. Template
+          Applies schema and access, installs TypeScript services as{" "}
+          <code className="font-mono">lib/dkit/&lt;module&gt;.ts</code>, and
+          copies UI blocks. Optional Directus flows apply automatically; sample
+          seed only with <code className="font-mono">--seed</code>. Template
           slots pick <em>component variants</em> (e.g. list cards); UI kit comes
           from <code className="font-mono">uiAdapter</code>.
         </p>

@@ -1,8 +1,8 @@
-import { getPost } from "@/lib/dkit/blog";
+import { getBlogPostBySlug } from "@/lib/dkit/blog";
 
 /** Minimal kit — semantic HTML + dkit-prose only. */
 export async function BlogDetail({ slug }: { slug: string }) {
-  const post = await getPost(slug);
+  const post = await getBlogPostBySlug(slug);
   if (!post) return <p>Post not found.</p>;
 
   return (

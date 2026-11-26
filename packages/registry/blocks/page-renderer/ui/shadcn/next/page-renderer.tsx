@@ -1,5 +1,5 @@
 import type { PageBlock } from "@/lib/dkit/page-builder";
-import { getBuilderPage } from "@/lib/dkit/page-builder";
+import { getPageBuilderPageBySlug } from "@/lib/dkit/page-builder";
 import { collections } from "@/lib/dkit/config";
 import { Button } from "@/components/ui/button";
 
@@ -37,23 +37,24 @@ function BlockView({ block }: { block: PageBlock }) {
           ) : null}
         </section>
       );
-    case collections.block_cta:
+    case collections.block_cta: {
+      const href = (block.item as { href?: string }).href;
+      const label = (block.item as { label?: string }).label;
       return (
         <section className="flex justify-center py-8">
           <Button asChild>
-            <a href={(block.item as { href?: string }).href}>
-              {(block.item as { label?: string }).label}
-            </a>
+            <a href={href}>{label}</a>
           </Button>
         </section>
       );
+    }
     default:
       return null;
   }
 }
 
 export async function PageRenderer({ slug }: { slug: string }) {
-  const page = await getBuilderPage(slug);
+  const page = await getPageBuilderPageBySlug(slug);
   if (!page) {
     return (
       <div className="py-10 text-center text-muted-foreground">

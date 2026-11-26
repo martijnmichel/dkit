@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { getPage } from '@/lib/dkit/pages'
+import { getPageBySlug } from '@/lib/dkit/pages'
 
 const props = defineProps<{ slug: string }>()
 
 const { data: page } = await useAsyncData(`dkit-page-min-${props.slug}`, () =>
-  getPage(props.slug),
+  getPageBySlug(props.slug),
 )
 </script>
 

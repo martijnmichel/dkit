@@ -38,3 +38,14 @@ export type BuilderPagesBlocksRow = {
 
 /** @deprecated use BuilderPage */
 export type Page = BuilderPage;
+
+export type GetPageBuilderPagesOptions = {
+  /** Directus status filter. Default `"published"`. Pass `null` to skip. */
+  status?: string | null;
+  limit?: number;
+  sort?: string[];
+};
+
+export type GetPageBuilderPageBySlugOptions = {
+  status?: string | null;
+};

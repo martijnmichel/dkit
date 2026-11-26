@@ -1,26 +1,44 @@
 import { loadModuleSeed } from "@/lib/preview/seeds";
 
-export function buildBlogMockSource(): string {
-  const seed = loadModuleSeed("blog");
-  const json = JSON.stringify(seed ?? { items: {}, files: [] });
+export function buildClientMockSource(): string {
+  return `export type DirectusFileRef = { id: string };
 
-  return `const SEED = ${json} as const;
+export function getDirectus() {
+  return null;
+}
 
-type FileRef = string | { id?: string } | null | undefined;
-
-function fileId(value: FileRef): string | null {
+export function directusFileId(
+  value: string | DirectusFileRef | null | undefined,
+): string | null {
   if (!value) return null;
   if (typeof value === "string") return value;
   return value.id ?? null;
 }
 
-function asset(file: FileRef): string | null {
-  const id = fileId(file);
-  if (!id) return null;
-  const row = (SEED.files ?? []).find((f: { id: string }) => f.id === id);
-  const slug = row?.filename_download?.replace(/\\W+/g, "") ?? id;
-  return \`https://picsum.photos/seed/\${encodeURIComponent(slug)}/640/360\`;
+export function directusAssetUrl(fileId: string): string | null {
+  if (!fileId) return null;
+  return \`https://picsum.photos/seed/\${encodeURIComponent(fileId)}/640/360\`;
 }
+
+export function createItem() {
+  throw new Error("createItem is not available in preview");
+}
+export function readItem() {
+  throw new Error("readItem is not available in preview");
+}
+export function readItems() {
+  throw new Error("readItems is not available in preview");
+}
+`;
+}
+
+export function buildBlogMockSource(): string {
+  const seed = loadModuleSeed("blog");
+  const json = JSON.stringify(seed ?? { items: {}, files: [] });
+
+  return `import { directusAssetUrl, directusFileId } from "@/lib/dkit/client";
+
+const SEED = ${json} as const;
 
 function authorsById() {
   const map = new Map<string, any>();
@@ -54,30 +72,70 @@ export function authorName(post: any): string | null {
 }
 export function authorAvatarUrl(post: any): string | null {
   if (typeof post.author !== "object" || !post.author) return null;
-  return asset(post.author.avatar);
+  const id = directusFileId(post.author.avatar);
+  return id ? directusAssetUrl(id) : null;
 }
 export function featuredImageUrl(post: any): string | null {
-  return asset(post.featured_image);
+  const id = directusFileId(post.featured_image);
+  return id ? directusAssetUrl(id) : null;
 }
 export function normalizeCategories(raw: any): any[] {
   return Array.isArray(raw) ? raw.filter((c) => c && typeof c === "object" && "id" in c) : [];
 }
 
-export async function getPosts() {
-  return (SEED.items?.posts ?? [])
-    .filter((r: any) => r.status === "published")
-    .map(hydrate)
-    .sort((a: any, b: any) => String(b.published_at ?? "").localeCompare(String(a.published_at ?? "")));
+export async function getBlogPosts(options: { status?: string | null; limit?: number; category?: string } = {}) {
+  const status = options.status === null ? null : (options.status ?? "published");
+  let rows = (SEED.items?.posts ?? []).map(hydrate);
+  if (status !== null) rows = rows.filter((r: any) => r.status === status);
+  if (options.category) {
+    rows = rows.filter((p: any) =>
+      normalizeCategories(p.categories).some((c: any) => c.slug === options.category),
+    );
+  }
+  rows.sort((a: any, b: any) => String(b.published_at ?? "").localeCompare(String(a.published_at ?? "")));
+  if (options.limit != null) rows = rows.slice(0, options.limit);
+  return rows;
 }
-export async function getPostBySlug(slug: string) {
-  const row = (SEED.items?.posts ?? []).find((r: any) => r.status === "published" && r.slug === slug);
+export async function getBlogPostBySlug(slug: string, options: { status?: string | null } = {}) {
+  const status = options.status === null ? null : (options.status ?? "published");
+  const row = (SEED.items?.posts ?? []).find((r: any) => {
+    if (r.slug !== slug) return false;
+    if (status === null) return true;
+    return r.status === status;
+  });
   return row ? hydrate(row) : null;
 }
-export async function getPostById(id: string) {
+export async function getBlogPostById(id: string) {
   const row = (SEED.items?.posts ?? []).find((r: any) => String(r.id) === id);
   return row ? hydrate(row) : null;
 }
-export const getPost = getPostBySlug;
+export async function getBlogAuthors(options: { status?: string | null; limit?: number } = {}) {
+  const status = options.status === null ? null : (options.status ?? "published");
+  let rows = [...(SEED.items?.authors ?? [])];
+  if (status !== null) rows = rows.filter((r: any) => r.status === status);
+  if (options.limit != null) rows = rows.slice(0, options.limit);
+  return rows;
+}
+export async function getBlogAuthorBySlug(slug: string) {
+  return (SEED.items?.authors ?? []).find((r: any) => r.status === "published" && r.slug === slug) ?? null;
+}
+export async function getBlogAuthorById(id: string) {
+  return authorsById().get(id) ?? null;
+}
+export async function getBlogCategories(options: { limit?: number } = {}) {
+  let rows = [...(SEED.items?.categories ?? [])];
+  if (options.limit != null) rows = rows.slice(0, options.limit);
+  return rows;
+}
+export async function getBlogCategoryBySlug(slug: string) {
+  return (SEED.items?.categories ?? []).find((r: any) => r.slug === slug) ?? null;
+}
+export async function getBlogCategoryById(id: string) {
+  return categoriesById().get(id) ?? null;
+}
+export async function getBlogPostsByCategorySlug(categorySlug: string, options: { limit?: number } = {}) {
+  return getBlogPosts({ ...options, category: categorySlug });
+}
 `;
 }
 
@@ -90,24 +148,34 @@ function pages() {
   return (SEED.items?.pages ?? []) as any[];
 }
 
-export async function getPages() {
-  return pages()
-    .filter((p) => p.status === "published")
-    .sort((a, b) => String(b.published_at ?? "").localeCompare(String(a.published_at ?? "")));
+export async function getPages(options: { status?: string | null; limit?: number } = {}) {
+  const status = options.status === null ? null : (options.status ?? "published");
+  let rows = pages();
+  if (status !== null) rows = rows.filter((p) => p.status === status);
+  rows.sort((a, b) => String(b.published_at ?? "").localeCompare(String(a.published_at ?? "")));
+  if (options.limit != null) rows = rows.slice(0, options.limit);
+  return rows;
 }
-export async function getPageBySlug(slug: string) {
-  return pages().find((p) => p.status === "published" && p.slug === slug) ?? null;
+export async function getPageBySlug(slug: string, options: { status?: string | null } = {}) {
+  const status = options.status === null ? null : (options.status ?? "published");
+  return pages().find((p) => {
+    if (p.slug !== slug) return false;
+    if (status === null) return true;
+    return p.status === status;
+  }) ?? null;
 }
 export async function getPageById(id: string) {
   return pages().find((p) => p.id === id) ?? null;
 }
-export const getPage = getPageBySlug;
 `;
 }
 
 export function buildContactMockSource(): string {
   return `export type ContactFormState = { ok: boolean; error?: string };
 
+export async function createContactSubmission() {
+  return { ok: true as const, id: "preview" };
+}
 export async function submitContactForm(
   _prev: ContactFormState,
   _formData: FormData,
@@ -136,10 +204,15 @@ const SAMPLE = {
   ],
 };
 
-export async function getBuilderPage(slug: string) {
+export async function getPageBuilderPages() {
+  return [SAMPLE];
+}
+export async function getPageBuilderPageBySlug(slug: string) {
   return slug === "sample" ? SAMPLE : null;
 }
-export const getBuilderPageBySlug = getBuilderPage;
+export async function getPageBuilderPageById(id: string) {
+  return id === SAMPLE.id ? SAMPLE : null;
+}
 `;
 }
 

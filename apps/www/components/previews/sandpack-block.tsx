@@ -12,6 +12,7 @@ import {
   THEME_PRESETS,
   withSandpackThemeCss,
 } from "@/lib/sandpack/themes";
+import { SANDPACK_SHADCN_DEPENDENCIES } from "@/lib/sandpack/ui-kit-deps";
 import type { BlockSandpackProject } from "@/lib/sandpack/types";
 import { resolveProjectUiKit } from "@/lib/sandpack/types";
 import {
@@ -103,10 +104,15 @@ function SandpackStage({
         ],
       }}
       customSetup={{
-        dependencies:
-          resolved.actualFramework === "nuxt"
+        dependencies: {
+          ...(resolved.actualFramework === "nuxt"
             ? {}
-            : { react: "^19.0.0", "react-dom": "^19.0.0" },
+            : { react: "^19.0.0", "react-dom": "^19.0.0" }),
+          ...(resolved.actualKit === "shadcn" &&
+          resolved.actualFramework === "next"
+            ? SANDPACK_SHADCN_DEPENDENCIES
+            : {}),
+        },
       }}
     >
       <SandpackLayout

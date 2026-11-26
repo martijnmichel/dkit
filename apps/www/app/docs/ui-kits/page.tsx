@@ -59,8 +59,10 @@ export default function UiKitsPage() {
       <DocsSection id="preview" title="Previews">
         <p>
           On each <a href="/docs/modules/">module page</a>, Sandpack runs the
-          real block sources with seed mocks. Use Framework / UI kit / Theme
-          controls to match your target app.
+          real block sources with seed mocks. Preview kit primitives live in the
+          registry at <code>ui-kits/&lt;kit&gt;/&lt;framework&gt;/</code> (separate
+          from www site chrome), so Next and Nuxt each get their own components.
+          Use Framework / UI kit / Theme controls to match your target app.
         </p>
       </DocsSection>
     </DocsPage>

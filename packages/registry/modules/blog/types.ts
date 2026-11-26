@@ -35,3 +35,28 @@ export type PostsCategoriesRow = {
   posts_id: string | BlogPost;
   categories_id: string | BlogCategory;
 };
+
+/** Shared list/query options for blog fetches. */
+export type GetBlogPostsOptions = {
+  /** Directus status filter. Default `"published"`. Pass `null` to skip. */
+  status?: string | null;
+  limit?: number;
+  /** Filter by category slug. */
+  category?: string;
+  sort?: string[];
+};
+
+export type GetBlogAuthorsOptions = {
+  status?: string | null;
+  limit?: number;
+  sort?: string[];
+};
+
+export type GetBlogCategoriesOptions = {
+  limit?: number;
+  sort?: string[];
+};
+
+export type GetBlogBySlugOptions = {
+  status?: string | null;
+};

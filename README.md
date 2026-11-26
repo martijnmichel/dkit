@@ -81,6 +81,8 @@ pnpm dkit --help
 
 Stack: **Commander** (commands/flags) + **@clack/prompts** (interactive questions).
 
+Anonymous CLI usage (command name, flags, version — no paths/tokens) goes to Umami. Opt out: `DKIT_TELEMETRY=0`, `DO_NOT_TRACK=1`, or `dkit --no-telemetry …`.
+
 ## Develop
 
 ```bash

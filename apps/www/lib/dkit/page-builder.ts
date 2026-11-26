@@ -1,6 +1,8 @@
 import { collections } from "@/lib/dkit/config";
 import type {
   BuilderPage,
+  GetPageBuilderPageBySlugOptions,
+  GetPageBuilderPagesOptions,
   PageBlock,
 } from "../../../../packages/registry/modules/page-builder/types";
 
@@ -10,6 +12,8 @@ export type {
   BlockRichtext,
   BuilderPage,
   BuilderPagesBlocksRow,
+  GetPageBuilderPageBySlugOptions,
+  GetPageBuilderPagesOptions,
   Page,
   PageBlock,
 } from "../../../../packages/registry/modules/page-builder/types";
@@ -45,20 +49,26 @@ const FIXTURE: BuilderPage = {
   ] as PageBlock[],
 };
 
-export async function getBuilderPages(): Promise<BuilderPage[]> {
+export async function getPageBuilderPages(
+  _options: GetPageBuilderPagesOptions = {},
+): Promise<BuilderPage[]> {
   return [FIXTURE];
 }
 
-export async function getBuilderPageBySlug(
+export async function getPageBuilderPageBySlug(
   slug: string,
+  _options: GetPageBuilderPageBySlugOptions = {},
 ): Promise<BuilderPage | null> {
   return slug === FIXTURE.slug ? FIXTURE : null;
 }
 
-export async function getBuilderPageById(
+export async function getPageBuilderPageById(
   id: string,
 ): Promise<BuilderPage | null> {
   return id === FIXTURE.id ? FIXTURE : null;
 }
 
-export const getBuilderPage = getBuilderPageBySlug;
+/** @deprecated prefer getPageBuilderPageBySlug */
+export const getBuilderPage = getPageBuilderPageBySlug;
+/** @deprecated prefer getPageBuilderPages */
+export const getBuilderPages = getPageBuilderPages;

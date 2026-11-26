@@ -3,7 +3,7 @@ import {
   authorAvatarUrl,
   authorName,
   featuredImageUrl,
-  getPost,
+  getBlogPostBySlug,
   normalizeCategories,
 } from '@/lib/dkit/blog'
 import { moduleBasePath } from '@/lib/dkit/config'
@@ -18,7 +18,7 @@ const resolvedBase = computed(
 )
 
 const { data: post } = await useAsyncData(`dkit-blog-${props.slug}`, () =>
-  getPost(props.slug),
+  getBlogPostBySlug(props.slug),
 )
 
 const categories = computed(() =>

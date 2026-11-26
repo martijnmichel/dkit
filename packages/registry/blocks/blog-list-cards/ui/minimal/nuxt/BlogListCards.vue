@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getPosts } from '@/lib/dkit/blog'
+import { getBlogPosts } from '@/lib/dkit/blog'
 import { joinModulePath, moduleBasePath } from '@/lib/dkit/config'
 
 /** Minimal kit — semantic HTML card list (no theme tokens). */
@@ -12,7 +12,7 @@ const resolvedBase = computed(
 )
 
 const { data: posts } = await useAsyncData('dkit-blog-list-cards-min', () =>
-  getPosts(),
+  getBlogPosts(),
 )
 </script>
 

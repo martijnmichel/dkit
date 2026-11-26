@@ -2,7 +2,7 @@ import {
   authorAvatarUrl,
   authorName,
   featuredImageUrl,
-  getPosts,
+  getBlogPosts,
 } from "@/lib/dkit/blog";
 import { joinModulePath, moduleBasePath } from "@/lib/dkit/config";
 import {
@@ -20,7 +20,7 @@ export async function BlogListCards({
 }: {
   basePath?: string;
 }) {
-  const posts = await getPosts();
+  const posts = await getBlogPosts();
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
@@ -50,7 +50,7 @@ export async function BlogListCards({
                 href={joinModulePath(basePath, post.slug)}
                 className="group block no-underline transition hover:-translate-y-0.5"
               >
-                <Card className="h-full overflow-hidden py-0 shadow-sm transition group-hover:border-primary/40 group-hover:shadow-md">
+                <Card className="h-full overflow-hidden pt-0 pb-6 shadow-sm transition group-hover:border-primary/40 group-hover:shadow-md">
                   {imageUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img

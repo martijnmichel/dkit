@@ -3,7 +3,7 @@ import {
   authorAvatarUrl,
   authorName,
   featuredImageUrl,
-  getPosts,
+  getBlogPosts,
 } from '@/lib/dkit/blog'
 import { joinModulePath, moduleBasePath } from '@/lib/dkit/config'
 
@@ -16,7 +16,7 @@ const resolvedBase = computed(
   () => props.basePath ?? moduleBasePath('blog', '/blog'),
 )
 
-const { data: posts } = await useAsyncData('dkit-blog-list', () => getPosts())
+const { data: posts } = await useAsyncData('dkit-blog-list', () => getBlogPosts())
 </script>
 
 <template>

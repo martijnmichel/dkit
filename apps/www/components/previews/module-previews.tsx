@@ -2,7 +2,7 @@ import {
   ModuleSandpackPreviews,
   PreviewPrefsProvider,
 } from "@/components/previews/preview-prefs";
-import { getPostBySlug } from "@/lib/dkit/blog";
+import { getBlogPostBySlug } from "@/lib/dkit/blog";
 import { getPageBySlug } from "@/lib/dkit/pages";
 import type { RegistryItem } from "@/lib/registry";
 import { buildModuleSandpackProjects } from "@/lib/sandpack/build-project";
@@ -61,7 +61,7 @@ export async function ModuleDetailPreview({
   slug: string;
 }) {
   if (moduleId === "blog") {
-    const post = await getPostBySlug(slug);
+    const post = await getBlogPostBySlug(slug);
     if (!post) {
       return <p className="p-8 text-muted-foreground">Post not found.</p>;
     }

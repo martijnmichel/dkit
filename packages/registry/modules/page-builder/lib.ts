@@ -1,6 +1,10 @@
 import { getDirectus, readItem, readItems } from "@/lib/dkit/client";
 import { collections } from "@/lib/dkit/config";
-import type { BuilderPage } from "./types";
+import type {
+  BuilderPage,
+  GetPageBuilderPageBySlugOptions,
+  GetPageBuilderPagesOptions,
+} from "./types";
 
 export type {
   BlockCta,
@@ -8,6 +12,8 @@ export type {
   BlockRichtext,
   BuilderPage,
   BuilderPagesBlocksRow,
+  GetPageBuilderPageBySlugOptions,
+  GetPageBuilderPagesOptions,
   Page,
   PageBlock,
 } from "./types";
@@ -24,16 +30,24 @@ const BUILDER_DETAIL_FIELDS = [
   },
 ] as const;
 
-/** Published builder pages. */
-export async function getBuilderPages(): Promise<BuilderPage[]> {
+function statusFilter(status: string | null | undefined) {
+  if (status === null) return undefined;
+  return { status: { _eq: status ?? "published" } };
+}
+
+/** Builder pages for the page-builder module. */
+export async function getPageBuilderPages(
+  options: GetPageBuilderPagesOptions = {},
+): Promise<BuilderPage[]> {
   const client = getDirectus();
   if (!client) return [];
   try {
     return await client.request(
       readItems(collections.builder_pages, {
-        filter: { status: { _eq: "published" } },
+        filter: statusFilter(options.status),
         fields: [...BUILDER_LIST_FIELDS],
-        sort: ["title"],
+        sort: options.sort ?? ["title"],
+        limit: options.limit,
       }),
     );
   } catch {
@@ -41,17 +55,19 @@ export async function getBuilderPages(): Promise<BuilderPage[]> {
   }
 }
 
-export async function getBuilderPageBySlug(
+export async function getPageBuilderPageBySlug(
   slug: string,
+  options: GetPageBuilderPageBySlugOptions = {},
 ): Promise<BuilderPage | null> {
   const client = getDirectus();
   if (!client) return null;
+  const status = statusFilter(options.status);
+  const and: Record<string, unknown>[] = [{ slug: { _eq: slug } }];
+  if (status) and.unshift(status);
   try {
     const rows = await client.request(
       readItems(collections.builder_pages, {
-        filter: {
-          _and: [{ status: { _eq: "published" } }, { slug: { _eq: slug } }],
-        },
+        filter: { _and: and },
         fields: [...BUILDER_DETAIL_FIELDS],
         limit: 1,
       }),
@@ -62,7 +78,7 @@ export async function getBuilderPageBySlug(
   }
 }
 
-export async function getBuilderPageById(
+export async function getPageBuilderPageById(
   id: string,
 ): Promise<BuilderPage | null> {
   const client = getDirectus();
@@ -78,5 +94,11 @@ export async function getBuilderPageById(
   }
 }
 
-/** @deprecated prefer getBuilderPageBySlug */
-export const getBuilderPage = getBuilderPageBySlug;
+/** @deprecated prefer getPageBuilderPages */
+export const getBuilderPages = getPageBuilderPages;
+/** @deprecated prefer getPageBuilderPageBySlug */
+export const getBuilderPageBySlug = getPageBuilderPageBySlug;
+/** @deprecated prefer getPageBuilderPageById */
+export const getBuilderPageById = getPageBuilderPageById;
+/** @deprecated prefer getPageBuilderPageBySlug */
+export const getBuilderPage = getPageBuilderPageBySlug;

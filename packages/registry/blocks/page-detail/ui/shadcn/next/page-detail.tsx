@@ -1,4 +1,4 @@
-import { getPage } from "@/lib/dkit/pages";
+import { getPageBySlug } from "@/lib/dkit/pages";
 import { moduleBasePath } from "@/lib/dkit/config";
 
 /** Styled with shadcn theme tokens — inherits your app theme (Next shadcn/ui). */
@@ -9,7 +9,7 @@ export async function PageDetail({
   slug: string;
   basePath?: string;
 }) {
-  const page = await getPage(slug);
+  const page = await getPageBySlug(slug);
   if (!page) {
     return (
       <div className="mx-auto max-w-2xl px-6 py-20 text-center text-muted-foreground">

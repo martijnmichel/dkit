@@ -1,3 +1,4 @@
+import { Analytics } from "@/components/analytics";
 import { SiteFooter, SiteHeader } from "@/components/site-header";
 import { THEME_BOOT_SCRIPT } from "@/lib/theme";
 import type { Metadata } from "next";
@@ -40,6 +41,7 @@ export default function RootLayout({
         <SiteHeader />
         <main>{children}</main>
         <SiteFooter />
+        <Analytics />
       </body>
     </html>
   );

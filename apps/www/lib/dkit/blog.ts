@@ -1,9 +1,16 @@
-import { loadModuleSeed, previewAssetUrl } from "@/lib/preview/seeds";
+import {
+  directusAssetUrl,
+  directusFileId,
+} from "@/lib/dkit/client";
+import { loadModuleSeed } from "@/lib/preview/seeds";
 import type {
   BlogAuthor,
   BlogCategory,
   BlogPost,
-  DirectusFileRef,
+  GetBlogAuthorsOptions,
+  GetBlogBySlugOptions,
+  GetBlogCategoriesOptions,
+  GetBlogPostsOptions,
 } from "../../../../packages/registry/modules/blog/types";
 
 export type {
@@ -11,6 +18,10 @@ export type {
   BlogCategory,
   BlogPost,
   DirectusFileRef,
+  GetBlogAuthorsOptions,
+  GetBlogBySlugOptions,
+  GetBlogCategoriesOptions,
+  GetBlogPostsOptions,
   PostsCategoriesRow,
 } from "../../../../packages/registry/modules/blog/types";
 
@@ -39,7 +50,9 @@ function hydratePost(row: Record<string, unknown>): BlogPost {
   const categories = categoriesById();
   const junctions = seed()?.items?.posts_categories ?? [];
   const authorId =
-    typeof row.author === "string" ? row.author : (row.author as { id?: string })?.id;
+    typeof row.author === "string"
+      ? row.author
+      : (row.author as { id?: string })?.id;
   const catIds = junctions
     .filter((j) => String(j.posts_id) === String(row.id))
     .map((j) => String(j.categories_id));
@@ -53,18 +66,6 @@ function hydratePost(row: Record<string, unknown>): BlogPost {
   };
 }
 
-export function directusFileId(
-  value: string | DirectusFileRef | null | undefined,
-): string | null {
-  if (!value) return null;
-  if (typeof value === "string") return value;
-  return value.id ?? null;
-}
-
-export function directusAssetUrl(fileId: string): string | null {
-  return previewAssetUrl("blog", fileId);
-}
-
 export function authorName(post: BlogPost): string | null {
   return typeof post.author === "object" && post.author?.name
     ? post.author.name
@@ -73,11 +74,13 @@ export function authorName(post: BlogPost): string | null {
 
 export function authorAvatarUrl(post: BlogPost): string | null {
   if (typeof post.author !== "object" || !post.author) return null;
-  return previewAssetUrl("blog", post.author.avatar);
+  const id = directusFileId(post.author.avatar);
+  return id ? directusAssetUrl(id) : null;
 }
 
 export function featuredImageUrl(post: BlogPost): string | null {
-  return previewAssetUrl("blog", post.featured_image);
+  const id = directusFileId(post.featured_image);
+  return id ? directusAssetUrl(id) : null;
 }
 
 export function normalizeCategories(
@@ -89,67 +92,100 @@ export function normalizeCategories(
   );
 }
 
-export async function getPosts(): Promise<BlogPost[]> {
-  const rows = seed()?.items?.posts ?? [];
-  return rows
-    .filter((r) => r.status === "published")
-    .map((r) => hydratePost(r))
-    .sort((a, b) =>
-      String(b.published_at ?? "").localeCompare(String(a.published_at ?? "")),
+export async function getBlogPosts(
+  options: GetBlogPostsOptions = {},
+): Promise<BlogPost[]> {
+  const status = options.status === null ? null : (options.status ?? "published");
+  let rows = (seed()?.items?.posts ?? []).map((r) => hydratePost(r));
+  if (status !== null) rows = rows.filter((r) => r.status === status);
+  if (options.category) {
+    rows = rows.filter((p) =>
+      normalizeCategories(p.categories).some((c) => c.slug === options.category),
     );
+  }
+  rows.sort((a, b) =>
+    String(b.published_at ?? "").localeCompare(String(a.published_at ?? "")),
+  );
+  if (options.limit != null) rows = rows.slice(0, options.limit);
+  return rows;
 }
 
-export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
-  const row = (seed()?.items?.posts ?? []).find(
-    (r) => r.status === "published" && r.slug === slug,
-  );
+export async function getBlogPostBySlug(
+  slug: string,
+  options: GetBlogBySlugOptions = {},
+): Promise<BlogPost | null> {
+  const status = options.status === null ? null : (options.status ?? "published");
+  const row = (seed()?.items?.posts ?? []).find((r) => {
+    if (r.slug !== slug) return false;
+    if (status === null) return true;
+    return r.status === status;
+  });
   return row ? hydratePost(row) : null;
 }
 
-export async function getPostById(id: string): Promise<BlogPost | null> {
+export async function getBlogPostById(id: string): Promise<BlogPost | null> {
   const row = (seed()?.items?.posts ?? []).find((r) => String(r.id) === id);
   return row ? hydratePost(row) : null;
 }
 
-export const getPost = getPostBySlug;
-
-export async function getAuthors(): Promise<BlogAuthor[]> {
-  return (seed()?.items?.authors ?? []).map((r) => r as unknown as BlogAuthor);
+export async function getBlogAuthors(
+  options: GetBlogAuthorsOptions = {},
+): Promise<BlogAuthor[]> {
+  const status = options.status === null ? null : (options.status ?? "published");
+  let rows = (seed()?.items?.authors ?? []).map(
+    (r) => r as unknown as BlogAuthor,
+  );
+  if (status !== null) rows = rows.filter((r) => r.status === status);
+  rows.sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  if (options.limit != null) rows = rows.slice(0, options.limit);
+  return rows;
 }
 
-export async function getAuthorBySlug(slug: string): Promise<BlogAuthor | null> {
-  const row = (seed()?.items?.authors ?? []).find((r) => r.slug === slug);
+export async function getBlogAuthorBySlug(
+  slug: string,
+  options: GetBlogBySlugOptions = {},
+): Promise<BlogAuthor | null> {
+  const status = options.status === null ? null : (options.status ?? "published");
+  const row = (seed()?.items?.authors ?? []).find((r) => {
+    if (r.slug !== slug) return false;
+    if (status === null) return true;
+    return r.status === status;
+  });
   return row ? (row as unknown as BlogAuthor) : null;
 }
 
-export async function getAuthorById(id: string): Promise<BlogAuthor | null> {
+export async function getBlogAuthorById(id: string): Promise<BlogAuthor | null> {
   return authorsById().get(id) ?? null;
 }
 
-export async function getCategories(): Promise<BlogCategory[]> {
-  return (seed()?.items?.categories ?? []).map(
+export async function getBlogCategories(
+  options: GetBlogCategoriesOptions = {},
+): Promise<BlogCategory[]> {
+  let rows = (seed()?.items?.categories ?? []).map(
     (r) => r as unknown as BlogCategory,
   );
+  rows.sort((a, b) => String(a.title).localeCompare(String(b.title)));
+  if (options.limit != null) rows = rows.slice(0, options.limit);
+  return rows;
 }
 
-export async function getCategoryBySlug(
+export async function getBlogCategoryBySlug(
   slug: string,
 ): Promise<BlogCategory | null> {
   const row = (seed()?.items?.categories ?? []).find((r) => r.slug === slug);
   return row ? (row as unknown as BlogCategory) : null;
 }
 
-export async function getCategoryById(id: string): Promise<BlogCategory | null> {
+export async function getBlogCategoryById(
+  id: string,
+): Promise<BlogCategory | null> {
   return categoriesById().get(id) ?? null;
 }
 
-export async function getPostsByCategorySlug(
+/** @deprecated prefer getBlogPosts({ category }) */
+export async function getBlogPostsByCategorySlug(
   categorySlug: string,
+  options: Omit<GetBlogPostsOptions, "category"> = {},
 ): Promise<BlogPost[]> {
-  const cat = await getCategoryBySlug(categorySlug);
-  if (!cat) return [];
-  const posts = await getPosts();
-  return posts.filter((p) =>
-    normalizeCategories(p.categories).some((c) => c.id === cat.id),
-  );
+  return getBlogPosts({ ...options, category: categorySlug });
 }

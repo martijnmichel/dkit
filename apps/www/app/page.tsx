@@ -13,7 +13,7 @@ import {
   Database,
   Rocket,
   Terminal,
-  Workflow,
+  Library,
 } from "lucide-react";
 
 const FEATURES = [
@@ -31,9 +31,9 @@ const FEATURES = [
   },
   {
     title: "Services",
-    body: "Optional flows and seed data so you can smoke-test UI right after install.",
+    body: "Typed fetch helpers — getBlogPosts, getPageBySlug, and more — installed as lib/dkit you own.",
     href: "/docs/services/",
-    icon: Workflow,
+    icon: Library,
   },
   {
     title: "Owned UI",

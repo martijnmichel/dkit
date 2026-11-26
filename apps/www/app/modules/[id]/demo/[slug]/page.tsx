@@ -1,6 +1,6 @@
 import { StaticRedirect } from "@/components/static-redirect";
 import { getPages } from "@/lib/dkit/pages";
-import { getPosts } from "@/lib/dkit/blog";
+import { getBlogPosts } from "@/lib/dkit/blog";
 import { getRegistry } from "@/lib/registry";
 
 export async function generateStaticParams() {
@@ -9,7 +9,7 @@ export async function generateStaticParams() {
 
   for (const mod of modules) {
     if (mod.id === "blog") {
-      for (const post of await getPosts()) {
+      for (const post of await getBlogPosts()) {
         params.push({ id: "blog", slug: post.slug });
       }
     }

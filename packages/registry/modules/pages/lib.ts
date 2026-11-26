@@ -1,8 +1,16 @@
 import { getDirectus, readItem, readItems } from "@/lib/dkit/client";
 import { collections } from "@/lib/dkit/config";
-import type { SitePage } from "./types";
+import type {
+  GetPageBySlugOptions,
+  GetPagesOptions,
+  SitePage,
+} from "./types";
 
-export type { SitePage } from "./types";
+export type {
+  GetPageBySlugOptions,
+  GetPagesOptions,
+  SitePage,
+} from "./types";
 
 const PAGE_LIST_FIELDS = [
   "id",
@@ -23,16 +31,27 @@ const PAGE_DETAIL_FIELDS = [
   "excerpt",
 ] as const;
 
-/** Published pages, newest first. */
-export async function getPages(): Promise<SitePage[]> {
+function statusFilter(status: string | null | undefined) {
+  if (status === null) return undefined;
+  return { status: { _eq: status ?? "published" } };
+}
+
+/**
+ * Pages module list helper.
+ * Module id is `pages`, so the name is `getPages` (not `getPagesPages`).
+ */
+export async function getPages(
+  options: GetPagesOptions = {},
+): Promise<SitePage[]> {
   const client = getDirectus();
   if (!client) return [];
   try {
     return await client.request(
       readItems(collections.pages, {
-        filter: { status: { _eq: "published" } },
+        filter: statusFilter(options.status),
         fields: [...PAGE_LIST_FIELDS],
-        sort: ["-published_at"],
+        sort: options.sort ?? ["-published_at"],
+        limit: options.limit,
       }),
     );
   } catch {
@@ -40,15 +59,19 @@ export async function getPages(): Promise<SitePage[]> {
   }
 }
 
-export async function getPageBySlug(slug: string): Promise<SitePage | null> {
+export async function getPageBySlug(
+  slug: string,
+  options: GetPageBySlugOptions = {},
+): Promise<SitePage | null> {
   const client = getDirectus();
   if (!client) return null;
+  const status = statusFilter(options.status);
+  const and: Record<string, unknown>[] = [{ slug: { _eq: slug } }];
+  if (status) and.unshift(status);
   try {
     const rows = await client.request(
       readItems(collections.pages, {
-        filter: {
-          _and: [{ status: { _eq: "published" } }, { slug: { _eq: slug } }],
-        },
+        filter: { _and: and },
         fields: [...PAGE_DETAIL_FIELDS],
         limit: 1,
       }),

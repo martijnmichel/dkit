@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "preserve",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "allowJs": false,
+    "baseUrl": ".",
+    "paths": {
+      "@/lib/dkit/client": ["./ts-shims/client.ts"],
+      "@/lib/dkit/config": ["./ts-shims/config.ts"],
+      "@/lib/dkit/blog": ["./modules/blog/lib.ts"],
+      "@/lib/dkit/pages": ["./modules/pages/lib.ts"],
+      "@/lib/dkit/page-builder": ["./modules/page-builder/lib.ts"],
+      "@/lib/dkit/contact-form": ["./modules/contact-form/lib.ts"],
+      "@/lib/utils": ["./ts-shims/utils.ts"],
+      "@/components/ui/*": ["./ui-kits/shadcn/next/*"]
+    }
+  },
+  "include": [
+    "blocks/**/*.ts",
+    "blocks/**/*.tsx",
+    "modules/**/*.ts",
+    "ui-kits/**/*.ts",
+    "ui-kits/**/*.tsx",
+    "ts-shims/**/*.ts"
+  ],
+  "exclude": ["blocks/**/nuxt/**"]
+}

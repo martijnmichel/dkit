@@ -3,10 +3,12 @@ import {
   OnThisPageRail,
   type TocItem,
 } from "@/components/on-this-page";
+import { FlowsSeedReference } from "@/components/flows-seed-reference";
+import { ModuleServicesReference } from "@/components/module-services-reference";
 import { ModuleBlockPreviews } from "@/components/previews/module-previews";
 import { SchemaReference } from "@/components/schema-reference";
-import { ServicesReference } from "@/components/services-reference";
 import { Badge } from "@/components/ui/badge";
+import { getModuleLibDoc } from "@/lib/module-lib-docs";
 import {
   getBlocksForModule,
   getModuleMeta,
@@ -43,10 +45,11 @@ export default async function ModulePage({
 
   const { flows } = parseFlowsBundle(meta.flows);
   const { files, collections } = parseSeedBundle(meta.seed);
-  const hasServices =
+  const hasFlowsSeed =
     flows.length > 0 ||
     files.length > 0 ||
     collections.some((c) => c.count > 0);
+  const hasLib = Boolean(getModuleLibDoc(id)?.exports.length);
 
   const blocks = getBlocksForModule(id);
 
@@ -55,7 +58,8 @@ export default async function ModulePage({
     { id: "schema", label: "Schema" },
     { id: "access", label: "Access" },
   ];
-  if (hasServices) toc.push({ id: "services", label: "Services" });
+  if (hasLib) toc.push({ id: "services", label: "Services" });
+  if (hasFlowsSeed) toc.push({ id: "flows-seed", label: "Flows & seed" });
   toc.push({ id: "preview", label: "UI preview" });
 
   return (
@@ -83,9 +87,15 @@ export default async function ModulePage({
             <SchemaReference schema={schema} access={access} />
           </div>
 
-          {hasServices ? (
+          {hasLib ? (
             <div className="mt-16">
-              <ServicesReference
+              <ModuleServicesReference moduleId={id} />
+            </div>
+          ) : null}
+
+          {hasFlowsSeed ? (
+            <div className="mt-16">
+              <FlowsSeedReference
                 moduleId={id}
                 flows={meta.flows}
                 seed={meta.seed}

@@ -2,7 +2,7 @@ import {
   authorAvatarUrl,
   authorName,
   featuredImageUrl,
-  getPosts,
+  getBlogPosts,
 } from "@/lib/dkit/blog";
 import { joinModulePath, moduleBasePath } from "@/lib/dkit/config";
 
@@ -12,7 +12,7 @@ export async function BlogList({
 }: {
   basePath?: string;
 }) {
-  const posts = await getPosts();
+  const posts = await getBlogPosts();
 
   return (
     <div className="relative mx-auto max-w-2xl px-6 py-16 sm:py-20">

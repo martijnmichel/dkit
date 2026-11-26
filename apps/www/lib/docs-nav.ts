@@ -23,7 +23,7 @@ export const DOCS_GUIDES: DocsNavLink[] = [
   {
     href: "/docs/services/",
     title: "Services",
-    description: "Flows and seed data",
+    description: "Fetch helpers in lib/dkit",
   },
   {
     href: "/docs/ui-kits/",

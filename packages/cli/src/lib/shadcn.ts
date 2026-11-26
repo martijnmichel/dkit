@@ -3,6 +3,8 @@ import fs from "node:fs";
 import path from "node:path";
 import type { Framework } from "@dkit/shared";
 
+export type ShadcnPrimitiveBase = "radix" | "base";
+
 function uiDirCandidates(projectRoot: string): string[] {
   return [
     path.join(projectRoot, "components", "ui"),
@@ -12,6 +14,150 @@ function uiDirCandidates(projectRoot: string): string[] {
 
 export function hasShadcnConfig(projectRoot: string): boolean {
   return fs.existsSync(path.join(projectRoot, "components.json"));
+}
+
+export function readShadcnComponentsJson(
+  projectRoot: string,
+): { style?: string } | null {
+  const file = path.join(projectRoot, "components.json");
+  if (!fs.existsSync(file)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(file, "utf8")) as { style?: string };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Map components.json `style` → composition API.
+ * - `base-*` (e.g. base-nova) → Base UI (`render` / `nativeButton`)
+ * - `radix-*`, `new-york`, `default`, … → Radix (`asChild`)
+ */
+export function detectShadcnPrimitiveBase(
+  projectRoot: string,
+): ShadcnPrimitiveBase {
+  const style = readShadcnComponentsJson(projectRoot)?.style ?? "";
+  if (style.startsWith("base-") || style === "base") return "base";
+  return "radix";
+}
+
+/**
+ * Registry blocks are authored with Radix `asChild`.
+ * For Base UI shadcn styles, rewrite to `render` + `nativeButton={false}`.
+ */
+export function adaptShadcnBlockSource(
+  source: string,
+  primitive: ShadcnPrimitiveBase,
+): string {
+  if (primitive !== "base") return source;
+  return rewriteAsChildToRender(source);
+}
+
+function rewriteAsChildToRender(source: string): string {
+  const openRe = /<(Button|Badge)\b/g;
+  let out = "";
+  let cursor = 0;
+  let m: RegExpExecArray | null;
+
+  while ((m = openRe.exec(source))) {
+    const start = m.index;
+    const comp = m[1]!;
+    const afterName = start + m[0].length;
+    const openEnd = findTagEnd(source, afterName);
+    if (openEnd < 0) continue;
+
+    const openInner = source.slice(afterName, openEnd);
+    if (!/\basChild\b/.test(openInner)) continue;
+
+    const selfClosing = source[openEnd - 1] === "/";
+    if (selfClosing) continue;
+
+    const props = openInner.replace(/\basChild\b/g, "").replace(/\s+/g, " ").trim();
+    const afterOpen = openEnd + 1;
+    const child = parseChildElement(source, afterOpen);
+    if (!child) continue;
+
+    const closeRe = new RegExp(`^\\s*<\\/${comp}>`);
+    const closeMatch = source.slice(child.end).match(closeRe);
+    if (!closeMatch) continue;
+    const end = child.end + closeMatch[0].length;
+
+    out += source.slice(cursor, start);
+    const renderEl = child.selfClosing
+      ? `<${child.tag}${child.attrs ? ` ${child.attrs}` : ""} />`
+      : `<${child.tag}${child.attrs ? ` ${child.attrs}` : ""} />`;
+    // Always self-close the render element; move text children onto Button/Badge.
+    const native = comp === "Button" ? " nativeButton={false}" : "";
+    const propsStr = props ? ` ${props}` : "";
+    const body = child.children.trim();
+    out += body
+      ? `<${comp}${propsStr} render={${renderEl}}${native}>\n  ${body}\n</${comp}>`
+      : `<${comp}${propsStr} render={${renderEl}}${native} />`;
+
+    cursor = end;
+    openRe.lastIndex = end;
+  }
+
+  out += source.slice(cursor);
+  return out;
+}
+
+/** Index of `>` that ends the opening tag, respecting strings/braces. */
+function findTagEnd(source: string, from: number): number {
+  let depthBrace = 0;
+  let inStr: string | null = null;
+  for (let i = from; i < source.length; i++) {
+    const ch = source[i]!;
+    const prev = source[i - 1];
+    if (inStr) {
+      if (ch === inStr && prev !== "\\") inStr = null;
+      continue;
+    }
+    if (ch === '"' || ch === "'" || ch === "`") {
+      inStr = ch;
+      continue;
+    }
+    if (ch === "{") depthBrace++;
+    else if (ch === "}") depthBrace--;
+    else if (ch === ">" && depthBrace === 0) return i;
+  }
+  return -1;
+}
+
+function parseChildElement(
+  source: string,
+  from: number,
+): {
+  tag: string;
+  attrs: string;
+  children: string;
+  selfClosing: boolean;
+  end: number;
+} | null {
+  const ws = source.slice(from).match(/^\s*/)?.[0].length ?? 0;
+  const start = from + ws;
+  if (source[start] !== "<") return null;
+  const tagMatch = source.slice(start).match(/^<([A-Za-z][\w.]*)/);
+  if (!tagMatch) return null;
+  const tag = tagMatch[1]!;
+  const afterName = start + tagMatch[0].length;
+  const tagEnd = findTagEnd(source, afterName);
+  if (tagEnd < 0) return null;
+  const attrs = source.slice(afterName, tagEnd).replace(/\/\s*$/, "").trim();
+  const selfClosing = source[tagEnd - 1] === "/";
+  if (selfClosing) {
+    return { tag, attrs, children: "", selfClosing: true, end: tagEnd + 1 };
+  }
+  const close = `</${tag}>`;
+  const closeAt = source.indexOf(close, tagEnd + 1);
+  if (closeAt < 0) return null;
+  return {
+    tag,
+    attrs,
+    children: source.slice(tagEnd + 1, closeAt),
+    selfClosing: false,
+    end: closeAt + close.length,
+  };
 }
 
 export function resolveShadcnUiDir(projectRoot: string): string | null {
@@ -72,6 +218,7 @@ function runShadcn(
 /**
  * Ensure shadcn is initialized and required components exist.
  * Auto-runs `shadcn init --defaults` then `shadcn add … -y` when missing.
+ * Leaves installed components as-is (Base UI or Radix per components.json).
  */
 export function ensureShadcnComponents(
   projectRoot: string,
@@ -111,7 +258,9 @@ export function ensureShadcnComponents(
   const installed = listInstalledShadcnComponents(projectRoot);
   const missing = unique.filter((c) => !installed.has(c));
   if (!missing.length) {
-    log(`shadcn components ok (${unique.join(", ")})`);
+    log(
+      `shadcn components ok (${unique.join(", ")}; ${detectShadcnPrimitiveBase(projectRoot)})`,
+    );
     return { ok: true };
   }
 

@@ -1,4 +1,4 @@
-import { getPosts } from "@/lib/dkit/blog";
+import { getBlogPosts } from "@/lib/dkit/blog";
 import { joinModulePath, moduleBasePath } from "@/lib/dkit/config";
 
 /** Minimal kit — semantic HTML only. */
@@ -7,7 +7,7 @@ export async function BlogList({
 }: {
   basePath?: string;
 }) {
-  const posts = await getPosts();
+  const posts = await getBlogPosts();
 
   return (
     <section>

@@ -21,8 +21,8 @@ const schema = z.object({
   message: z.string().min(1).max(5000),
 });
 
-/** Create a submission (inbox). Prefer submitContactForm from UI. */
-export async function createSubmission(
+/** Create a contact-form submission (inbox). Prefer submitContactForm from UI. */
+export async function createContactSubmission(
   input: FormSubmissionInput,
 ): Promise<{ ok: true; id?: string } | { ok: false; error: string }> {
   const parsed = schema.safeParse(input);
@@ -49,11 +49,12 @@ export async function createSubmission(
   }
 }
 
+/** Server Action for the contact form UI. */
 export async function submitContactForm(
   _prev: ContactFormState,
   formData: FormData,
 ): Promise<ContactFormState> {
-  const result = await createSubmission({
+  const result = await createContactSubmission({
     name: String(formData.get("name") ?? ""),
     email: String(formData.get("email") ?? ""),
     message: String(formData.get("message") ?? ""),
@@ -61,3 +62,6 @@ export async function submitContactForm(
   if (!result.ok) return { ok: false, error: result.error };
   return { ok: true };
 }
+
+/** @deprecated prefer createContactSubmission */
+export const createSubmission = createContactSubmission;

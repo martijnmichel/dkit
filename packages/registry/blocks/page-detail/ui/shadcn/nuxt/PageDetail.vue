@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getPage } from '@/lib/dkit/pages'
+import { getPageBySlug } from '@/lib/dkit/pages'
 import { moduleBasePath } from '@/lib/dkit/config'
 
 /** Styled with shadcn-vue theme tokens — inherits your app theme. */
@@ -12,7 +12,7 @@ const resolvedBase = computed(
 )
 
 const { data: page } = await useAsyncData(`dkit-page-${props.slug}`, () =>
-  getPage(props.slug),
+  getPageBySlug(props.slug),
 )
 </script>
 

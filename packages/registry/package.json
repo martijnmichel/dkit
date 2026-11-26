@@ -5,7 +5,7 @@
   "description": "dkit module and block registry source",
   "scripts": {
     "build": "echo 'registry is source-only'",
-    "typecheck": "echo 'ok'",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "echo 'ok'",
     "lint": "echo 'ok'"
   }
