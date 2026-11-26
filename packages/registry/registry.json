@@ -63,10 +63,45 @@
       "slot": "detail"
     },
     {
+      "id": "pages",
+      "type": "dkit:module",
+      "title": "Pages (WYSIWYG)",
+      "description": "Simple published pages with a rich-text body",
+      "version": "0.1.0",
+      "path": "modules/pages",
+      "defaultBlocks": ["page-detail"],
+      "templates": {
+        "detail": {
+          "default": "page-detail",
+          "options": ["page-detail", "page-detail-minimal"]
+        }
+      }
+    },
+    {
+      "id": "page-detail",
+      "type": "dkit:block",
+      "title": "Page detail",
+      "description": "Styled WYSIWYG page view (Tailwind)",
+      "version": "0.1.0",
+      "path": "blocks/page-detail",
+      "registryDependencies": ["pages"],
+      "slot": "detail"
+    },
+    {
+      "id": "page-detail-minimal",
+      "type": "dkit:block",
+      "title": "Page detail (unstyled)",
+      "description": "Bare semantic HTML for a WYSIWYG page",
+      "version": "0.1.0",
+      "path": "blocks/page-detail-minimal",
+      "registryDependencies": ["pages"],
+      "slot": "detail"
+    },
+    {
       "id": "contact-form",
       "type": "dkit:module",
-      "title": "Lead Capture Form",
-      "description": "Write-only submissions + email notification flow",
+      "title": "Contact form",
+      "description": "Public form → Directus inbox; optional email if Directus mail is configured",
       "version": "0.1.0",
       "path": "modules/contact-form",
       "defaultBlocks": ["contact-form-ui"]
@@ -82,29 +117,10 @@
       "slot": "form"
     },
     {
-      "id": "changelog",
-      "type": "dkit:module",
-      "title": "Changelog / Roadmap",
-      "description": "Releases with status and tags",
-      "version": "0.1.0",
-      "path": "modules/changelog",
-      "defaultBlocks": ["changelog-timeline"]
-    },
-    {
-      "id": "changelog-timeline",
-      "type": "dkit:block",
-      "title": "Changelog timeline",
-      "description": "Timeline UI with status badges",
-      "version": "0.1.0",
-      "path": "blocks/changelog-timeline",
-      "registryDependencies": ["changelog"],
-      "slot": "timeline"
-    },
-    {
       "id": "page-builder",
       "type": "dkit:module",
       "title": "Dynamic Page Builder",
-      "description": "Pages with M2A content blocks",
+      "description": "Composable pages with M2A content blocks",
       "version": "0.1.0",
       "path": "modules/page-builder",
       "defaultBlocks": ["page-renderer"]

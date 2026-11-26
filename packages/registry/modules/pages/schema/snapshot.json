@@ -1,0 +1,245 @@
+{
+  "format": "dkit.rest",
+  "collections": [
+    {
+      "collection": "site",
+      "schema": null,
+      "meta": {
+        "icon": "web",
+        "color": "#0F766E",
+        "collapse": "open",
+        "translations": [
+          {
+            "language": "en-US",
+            "translation": "Site",
+            "singular": "Site",
+            "plural": "Site"
+          }
+        ],
+        "note": "Simple site pages (WYSIWYG). Use page-builder for composable M2A pages."
+      }
+    },
+    {
+      "collection": "pages",
+      "schema": {},
+      "meta": {
+        "icon": "article",
+        "color": "#0F766E",
+        "group": "site",
+        "display_template": "{{title}}",
+        "archive_field": "status",
+        "archive_value": "archived",
+        "unarchive_value": "draft",
+        "archive_app_filter": true,
+        "sort": 1,
+        "translations": [
+          {
+            "language": "en-US",
+            "translation": "Pages",
+            "singular": "Page",
+            "plural": "Pages"
+          }
+        ],
+        "note": "Single-document pages with a rich-text body"
+      },
+      "fields": [
+        {
+          "field": "id",
+          "type": "uuid",
+          "meta": {
+            "hidden": true,
+            "readonly": true,
+            "interface": "input",
+            "special": ["uuid"],
+            "sort": 1,
+            "width": "full",
+            "translations": [{ "language": "en-US", "translation": "ID" }]
+          },
+          "schema": {
+            "is_primary_key": true,
+            "length": 36,
+            "has_auto_increment": false
+          }
+        },
+        {
+          "field": "status",
+          "type": "string",
+          "meta": {
+            "interface": "select-dropdown",
+            "display": "labels",
+            "width": "half",
+            "sort": 2,
+            "options": {
+              "choices": [
+                { "text": "Published", "value": "published" },
+                { "text": "Draft", "value": "draft" },
+                { "text": "Archived", "value": "archived" }
+              ]
+            },
+            "display_options": {
+              "choices": [
+                {
+                  "text": "Published",
+                  "value": "published",
+                  "foreground": "#FFFFFF",
+                  "background": "#0F766E"
+                },
+                {
+                  "text": "Draft",
+                  "value": "draft",
+                  "foreground": "#44403C",
+                  "background": "#E7E5E4"
+                },
+                {
+                  "text": "Archived",
+                  "value": "archived",
+                  "foreground": "#FFFFFF",
+                  "background": "#A8A29E"
+                }
+              ]
+            },
+            "translations": [{ "language": "en-US", "translation": "Status" }],
+            "note": "Only published pages appear on the public site",
+            "validation": {
+              "_and": [
+                {
+                  "status": {
+                    "_in": ["published", "draft", "archived"]
+                  }
+                }
+              ]
+            },
+            "validation_message": "Choose Published, Draft, or Archived."
+          },
+          "schema": { "default_value": "draft", "is_nullable": false }
+        },
+        {
+          "field": "published_at",
+          "type": "timestamp",
+          "meta": {
+            "interface": "datetime",
+            "display": "datetime",
+            "width": "half",
+            "sort": 3,
+            "translations": [
+              { "language": "en-US", "translation": "Published at" }
+            ],
+            "note": "Public publish date/time",
+            "conditions": [
+              {
+                "name": "Required when published",
+                "rule": {
+                  "_and": [{ "status": { "_eq": "published" } }]
+                },
+                "required": true
+              }
+            ]
+          },
+          "schema": {}
+        },
+        {
+          "field": "title",
+          "type": "string",
+          "meta": {
+            "interface": "input",
+            "required": true,
+            "width": "full",
+            "sort": 4,
+            "options": { "trim": true },
+            "translations": [{ "language": "en-US", "translation": "Title" }],
+            "validation": {
+              "_and": [{ "title": { "_regex": "^.{1,200}$" } }]
+            },
+            "validation_message": "Title is required (max 200 characters)."
+          },
+          "schema": { "is_nullable": false, "max_length": 200 }
+        },
+        {
+          "field": "slug",
+          "type": "string",
+          "meta": {
+            "interface": "input",
+            "required": true,
+            "width": "half",
+            "sort": 5,
+            "options": { "trim": true, "slug": true },
+            "translations": [{ "language": "en-US", "translation": "Slug" }],
+            "note": "Used in the page URL",
+            "validation": {
+              "_and": [
+                {
+                  "slug": {
+                    "_regex": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                  }
+                }
+              ]
+            },
+            "validation_message": "Use lowercase letters, numbers, and hyphens only."
+          },
+          "schema": { "is_nullable": false, "is_unique": true, "max_length": 200 }
+        },
+        {
+          "field": "excerpt",
+          "type": "text",
+          "meta": {
+            "interface": "input-multiline",
+            "width": "half",
+            "sort": 6,
+            "translations": [{ "language": "en-US", "translation": "Excerpt" }],
+            "note": "Optional short summary for listings or SEO",
+            "validation": {
+              "_and": [
+                {
+                  "_or": [
+                    { "excerpt": { "_null": true } },
+                    { "excerpt": { "_empty": true } },
+                    { "excerpt": { "_regex": "^[\\s\\S]{1,500}$" } }
+                  ]
+                }
+              ]
+            },
+            "validation_message": "Excerpt must be at most 500 characters."
+          },
+          "schema": {}
+        },
+        {
+          "field": "body",
+          "type": "text",
+          "meta": {
+            "interface": "input-rich-text-html",
+            "width": "fill",
+            "sort": 7,
+            "options": {
+              "toolbar": [
+                "bold",
+                "italic",
+                "underline",
+                "h2",
+                "h3",
+                "numlist",
+                "bullist",
+                "blockquote",
+                "link",
+                "code",
+                "empty"
+              ]
+            },
+            "translations": [{ "language": "en-US", "translation": "Body" }],
+            "note": "Main page content (WYSIWYG)",
+            "conditions": [
+              {
+                "name": "Required when published",
+                "rule": {
+                  "_and": [{ "status": { "_eq": "published" } }]
+                },
+                "required": true
+              }
+            ]
+          },
+          "schema": {}
+        }
+      ]
+    }
+  ],
+  "relations": []
+}

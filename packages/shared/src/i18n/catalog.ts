@@ -613,6 +613,17 @@ export const COLLECTION_LABEL_CATALOG: Record<
     },
     "zh-CN": { translation: "版本", singular: "版本", plural: "版本" },
   },
+  Site: {
+    "en-GB": { translation: "Site", singular: "Site", plural: "Site" },
+    "nl-NL": { translation: "Site", singular: "Site", plural: "Site" },
+    "de-DE": { translation: "Website", singular: "Website", plural: "Website" },
+    "fr-FR": { translation: "Site", singular: "Site", plural: "Site" },
+    "es-ES": { translation: "Sitio", singular: "Sitio", plural: "Sitio" },
+    "pt-BR": { translation: "Site", singular: "Site", plural: "Site" },
+    "it-IT": { translation: "Sito", singular: "Sito", plural: "Sito" },
+    "ja-JP": { translation: "サイト", singular: "サイト", plural: "サイト" },
+    "zh-CN": { translation: "站点", singular: "站点", plural: "站点" },
+  },
   Contact: {
     "en-GB": { translation: "Contact", singular: "Contact", plural: "Contact" },
     "nl-NL": { translation: "Contact", singular: "Contact", plural: "Contact" },

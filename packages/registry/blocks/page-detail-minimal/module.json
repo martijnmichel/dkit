@@ -1,0 +1,10 @@
+{
+  "type": "dkit:block",
+  "id": "page-detail-minimal",
+  "title": "Page detail (unstyled)",
+  "description": "Bare semantic HTML for a WYSIWYG page",
+  "version": "0.1.0",
+  "frameworks": ["next", "nuxt"],
+  "registryDependencies": ["pages"],
+  "slot": "detail"
+}

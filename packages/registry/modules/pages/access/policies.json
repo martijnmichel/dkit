@@ -1,0 +1,25 @@
+{
+  "policies": [
+    {
+      "name": "dkit Pages Public Read",
+      "icon": "public",
+      "description": "Public read for WYSIWYG pages (flat rules — Core-compatible). UI filters published status.",
+      "admin_access": false,
+      "app_access": false
+    }
+  ],
+  "permissions": [
+    {
+      "policy": "dkit Pages Public Read",
+      "collection": "pages",
+      "action": "read",
+      "fields": ["*"]
+    }
+  ],
+  "access": [
+    {
+      "role": "$public",
+      "policy": "dkit Pages Public Read"
+    }
+  ]
+}

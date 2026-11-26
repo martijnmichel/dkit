@@ -1,0 +1,10 @@
+{
+  "type": "dkit:block",
+  "id": "page-detail",
+  "title": "Page detail",
+  "description": "Styled WYSIWYG page view (Tailwind)",
+  "version": "0.1.0",
+  "frameworks": ["next", "nuxt"],
+  "registryDependencies": ["pages"],
+  "slot": "detail"
+}

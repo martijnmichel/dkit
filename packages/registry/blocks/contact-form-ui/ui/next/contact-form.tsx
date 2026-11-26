@@ -21,6 +21,10 @@ export function ContactForm() {
 
   return (
     <form action={action} className="mx-auto max-w-md space-y-4">
+      <p className="text-sm text-stone-500 dark:text-stone-400">
+        Messages are stored in your Directus inbox. Email notify is optional if
+        Directus mail is configured.
+      </p>
       <div>
         <label className="mb-1 block text-sm font-medium" htmlFor="name">
           Name
