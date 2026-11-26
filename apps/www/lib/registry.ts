@@ -19,15 +19,24 @@ export type RegistryIndex = {
   items: RegistryItem[];
 };
 
-function registryRoot(): string {
+/** Prefer packages/registry in monorepo; fall back to synced public/r. */
+export function registryRoot(): string {
   const candidates = [
-    path.join(process.cwd(), "public/r"),
     path.join(process.cwd(), "../../packages/registry"),
+    path.join(process.cwd(), "public/r"),
   ];
   for (const c of candidates) {
     if (fs.existsSync(path.join(c, "registry.json"))) return c;
   }
-  return candidates[1]!;
+  return candidates[0]!;
+}
+
+export function getBlocksForModule(moduleId: string): RegistryItem[] {
+  return getRegistry().items.filter(
+    (i) =>
+      i.type === "dkit:block" &&
+      (i.registryDependencies ?? []).includes(moduleId),
+  );
 }
 
 export function getRegistry(): RegistryIndex {

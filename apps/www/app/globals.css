@@ -1,3 +1,21 @@
+@import "tailwindcss";
+@import "../styles/dkit/prose.css";
+
+/* From app/globals.css → repo packages/registry */
+@source "../../../packages/registry/blocks/**/*.{js,jsx,ts,tsx}";
+@source "../components/**/*.{js,jsx,ts,tsx}";
+@source "./**/*.{js,jsx,ts,tsx}";
+@source "../lib/**/*.{js,jsx,ts,tsx}";
+
+@theme {
+  --color-paper: #f7f4ef;
+  --color-ink: #1c1917;
+  --color-muted: #666666;
+  --color-card: #ffffff;
+  --color-line: #e5e5e5;
+  --color-accent: #0a0a0a;
+}
+
 :root {
   color-scheme: light dark;
   --bg: #fafafa;
@@ -19,14 +37,10 @@
   }
 }
 
-* {
-  box-sizing: border-box;
-}
-
 html,
 body {
   margin: 0;
-  padding: 0;
+  min-height: 100vh;
   background: var(--bg);
   color: var(--fg);
   font-family:
@@ -50,111 +64,17 @@ a:hover {
   text-decoration: underline;
 }
 
-.border-b {
-  border-bottom: 1px solid var(--border);
-}
-.border-t {
-  border-top: 1px solid var(--border);
-}
-.mx-auto {
-  margin-left: auto;
-  margin-right: auto;
-}
-.max-w-5xl {
-  max-width: 64rem;
-}
-.max-w-2xl {
-  max-width: 42rem;
-}
-.px-6 {
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
-}
-.py-4 {
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-}
-.py-8 {
-  padding-top: 2rem;
-  padding-bottom: 2rem;
-}
-.py-16 {
-  padding-top: 4rem;
-  padding-bottom: 4rem;
-}
-.mt-2 {
-  margin-top: 0.5rem;
-}
-.mt-4 {
-  margin-top: 1rem;
-}
-.mt-6 {
-  margin-top: 1.5rem;
-}
-.mt-8 {
-  margin-top: 2rem;
-}
-.mt-10 {
-  margin-top: 2.5rem;
-}
-.mt-20 {
-  margin-top: 5rem;
-}
-.flex {
-  display: flex;
-}
-.items-center {
-  align-items: center;
-}
-.justify-between {
-  justify-content: space-between;
-}
-.gap-2 {
-  gap: 0.5rem;
-}
-.gap-4 {
-  gap: 1rem;
-}
-.grid {
-  display: grid;
-}
-.grid-3 {
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 1rem;
-}
-.font-semibold {
-  font-weight: 600;
-}
-.font-medium {
-  font-weight: 500;
-}
-.font-mono {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-}
-.text-sm {
-  font-size: 0.875rem;
-}
-.text-lg {
-  font-size: 1.125rem;
-}
-.text-3xl {
-  font-size: 1.875rem;
-}
-.text-4xl {
-  font-size: 2.25rem;
-}
-.tracking-tight {
-  letter-spacing: -0.025em;
-}
 .text-muted {
   color: var(--muted);
 }
+
 .card {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 1.25rem;
 }
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -166,10 +86,12 @@ a:hover {
   font-size: 0.875rem;
   font-weight: 500;
 }
+
 .btn:hover {
   text-decoration: none;
   opacity: 0.9;
 }
+
 .code {
   display: block;
   overflow-x: auto;
@@ -180,28 +102,7 @@ a:hover {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.875rem;
 }
-.tabs {
-  display: flex;
-  gap: 0.5rem;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 1.5rem;
-}
-.tab {
-  appearance: none;
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-  padding: 0.5rem 0.75rem;
-  color: var(--muted);
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  font: inherit;
-}
-.tab[aria-current="page"] {
-  color: var(--fg);
-  border-bottom-color: var(--fg);
-  font-weight: 500;
-}
+
 .badge {
   display: inline-block;
   border-radius: 999px;
@@ -209,15 +110,13 @@ a:hover {
   padding: 0.15rem 0.55rem;
   font-size: 0.75rem;
 }
-.prose p {
-  margin: 0.75rem 0;
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
 }
-.space-y-2 > * + * {
-  margin-top: 0.5rem;
-}
-.space-y-4 > * + * {
-  margin-top: 1rem;
-}
-.space-y-6 > * + * {
-  margin-top: 1.5rem;
+
+.preview-canvas {
+  background: var(--color-paper, #f7f4ef);
 }
