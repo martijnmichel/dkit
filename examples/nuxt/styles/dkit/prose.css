@@ -2,20 +2,30 @@
  * Shared rich-text styles for dkit content modules (blog, pages, page-builder, …).
  * Import once in your app CSS. Override tokens below to match your brand.
  *
+ * Uses shadcn / shadcn-vue CSS variables when present
+ * (--foreground, --muted-foreground, --primary, --border, --muted, --radius)
+ * with sensible fallbacks for bare projects.
+ *
  * Contract: wrap Directus HTML in an element with class `dkit-prose`
  * (optional modifier: `dkit-prose--compact`).
  */
 
 .dkit-prose {
-  --dkit-prose-body: #44403c;
-  --dkit-prose-heading: #1c1917;
-  --dkit-prose-muted: #78716c;
-  --dkit-prose-link: #0f766e;
-  --dkit-prose-quote-border: color-mix(in oklab, #0f766e 40%, transparent);
+  --dkit-prose-body: var(--foreground, #44403c);
+  --dkit-prose-heading: var(--foreground, #1c1917);
+  --dkit-prose-muted: var(--muted-foreground, #78716c);
+  --dkit-prose-link: var(--primary, #00c769);
+  --dkit-prose-quote-border: color-mix(
+    in oklab,
+    var(--primary, #00c769) 40%,
+    transparent
+  );
+  --dkit-prose-code-bg: var(--muted, color-mix(in oklab, var(--foreground, #1c1917) 6%, transparent));
+  --dkit-prose-radius: var(--radius, 0.5rem);
 
   color: var(--dkit-prose-body);
   font-size: 1.05rem;
-  line-height: 2;
+  line-height: 1.75;
 }
 
 .dkit-prose--compact {
@@ -35,16 +45,16 @@
 
 .dkit-prose :where(h2) {
   margin-top: 2.5rem;
-  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   font-size: 1.5rem;
+  font-weight: 600;
   letter-spacing: -0.025em;
   color: var(--dkit-prose-heading);
 }
 
 .dkit-prose :where(h3) {
   margin-top: 2rem;
-  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   font-size: 1.25rem;
+  font-weight: 600;
   color: var(--dkit-prose-heading);
 }
 
@@ -73,26 +83,31 @@
 .dkit-prose :where(img) {
   max-width: 100%;
   height: auto;
-  border-radius: 0.75rem;
+  border-radius: calc(var(--dkit-prose-radius) + 0.25rem);
 }
 
 .dkit-prose :where(pre) {
   overflow-x: auto;
-  border-radius: 0.5rem;
+  border-radius: var(--dkit-prose-radius);
+  background: var(--dkit-prose-code-bg);
   padding: 1rem;
   font-size: 0.875rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  line-height: 1.55;
 }
 
-.dkit-prose :where(code) {
-  font-size: 0.9em;
+.dkit-prose :where(:not(pre) > code) {
+  border-radius: calc(var(--dkit-prose-radius) - 0.125rem);
+  background: var(--dkit-prose-code-bg);
+  padding: 0.15em 0.4em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8125em;
+  font-weight: 500;
 }
 
-@media (prefers-color-scheme: dark) {
-  .dkit-prose {
-    --dkit-prose-body: #d6d3d1;
-    --dkit-prose-heading: #fafaf9;
-    --dkit-prose-muted: #a8a29e;
-    --dkit-prose-link: #5eead4;
-    --dkit-prose-quote-border: color-mix(in oklab, #5eead4 35%, transparent);
-  }
+.dkit-prose :where(pre code) {
+  background: transparent;
+  padding: 0;
+  font-size: inherit;
+  font-weight: inherit;
 }

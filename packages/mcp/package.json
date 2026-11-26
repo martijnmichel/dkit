@@ -1,0 +1,50 @@
+{
+  "name": "@dkit/mcp",
+  "version": "0.1.0",
+  "description": "MCP server for discovering dkit modules and drafting install commands",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "dkit-mcp": "./dist/bin.js"
+  },
+  "files": [
+    "dist",
+    "vendor",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/martijnmichel/dkit.git",
+    "directory": "packages/mcp"
+  },
+  "keywords": [
+    "directus",
+    "mcp",
+    "dkit",
+    "model-context-protocol"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "node ./scripts/copy-registry.mjs && tsup && node ./scripts/chmod-bin.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "dev": "tsx src/bin.ts",
+    "test": "node --import tsx --test src/**/*.test.ts",
+    "lint": "echo 'no lint configured'"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.22.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@dkit/shared": "workspace:*",
+    "@types/node": "^22.10.2",
+    "tsup": "^8.3.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

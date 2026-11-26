@@ -14,10 +14,10 @@
   --dkit-prose-body: var(--foreground, #44403c);
   --dkit-prose-heading: var(--foreground, #1c1917);
   --dkit-prose-muted: var(--muted-foreground, #78716c);
-  --dkit-prose-link: var(--primary, #0f766e);
+  --dkit-prose-link: var(--primary, #00c769);
   --dkit-prose-quote-border: color-mix(
     in oklab,
-    var(--primary, #0f766e) 40%,
+    var(--primary, #00c769) 40%,
     transparent
   );
   --dkit-prose-code-bg: var(--muted, color-mix(in oklab, var(--foreground, #1c1917) 6%, transparent));
@@ -92,8 +92,22 @@
   background: var(--dkit-prose-code-bg);
   padding: 1rem;
   font-size: 0.875rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  line-height: 1.55;
 }
 
-.dkit-prose :where(code) {
-  font-size: 0.9em;
+.dkit-prose :where(:not(pre) > code) {
+  border-radius: calc(var(--dkit-prose-radius) - 0.125rem);
+  background: var(--dkit-prose-code-bg);
+  padding: 0.15em 0.4em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8125em;
+  font-weight: 500;
+}
+
+.dkit-prose :where(pre code) {
+  background: transparent;
+  padding: 0;
+  font-size: inherit;
+  font-weight: inherit;
 }

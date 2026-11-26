@@ -40,7 +40,7 @@ const FIXTURE: BuilderPage = {
     },
     {
       collection: collections.block_cta,
-      item: { id: "3", label: "Browse modules", href: "/modules/" },
+      item: { id: "3", label: "Browse modules", href: "/docs/modules/" },
     },
   ] as PageBlock[],
 };

@@ -52,7 +52,7 @@ export async function ModuleBlockPreviews({
   );
 }
 
-/** Seeded demo routes under /modules/[id]/demo/[slug]. */
+/** Seeded demo routes under /docs/modules/[id]/demo/[slug]. */
 export async function ModuleDetailPreview({
   moduleId,
   slug,

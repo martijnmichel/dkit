@@ -21,6 +21,7 @@ Requires **Directus 11+** (best on **12.2+** for additive schema merge). Always 
 | Path | Purpose |
 |------|---------|
 | `packages/cli` | Published npm package `dkit` |
+| `packages/mcp` | MCP server `@dkit/mcp` (registry discover + `dkit add` drafts) |
 | `packages/schema` | Schema / policies / flows / seed apply |
 | `packages/shared` | Manifest + `dkit.json` Zod schemas |
 | `packages/registry` | Modules (`dkit:module`) + UI blocks (`dkit:block`) |

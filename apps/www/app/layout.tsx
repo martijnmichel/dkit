@@ -16,9 +16,9 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "dkit — Directus modules for your app",
+  title: "dkit — The foundation for your Directus frontend",
   description:
-    "Browse and install Directus schema, permissions, flows, and typed Next.js / Nuxt UI with one CLI.",
+    "Composable schema, access, and UI for Next.js and Nuxt. Install Directus modules into your repo as code you own.",
 };
 
 export default function RootLayout({

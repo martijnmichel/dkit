@@ -121,8 +121,10 @@ function SandpackStage({
           <SandpackCodeEditor showTabs showLineNumbers style={{ height }} />
         ) : null}
         <SandpackPreview
-          showOpenInCodeSandbox
-          showRefreshButton
+          showNavigator={false}
+          showOpenInCodeSandbox={false}
+          showRefreshButton={false}
+          showRestartButton={false}
           style={{ height, background: "#fff" }}
         />
       </SandpackLayout>

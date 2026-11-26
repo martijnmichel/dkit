@@ -15,6 +15,7 @@ docker/directus/extensions
 *.tsbuildinfo
 .pnpm-store
 packages/cli/vendor
+packages/mcp/vendor
 apps/www/public/r
 apps/www/out
 

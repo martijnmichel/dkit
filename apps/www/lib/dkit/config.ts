@@ -22,8 +22,8 @@ export const collections = {
 export type DkitCollection = keyof typeof collections;
 
 export const modules = {
-  blog: { basePath: "/modules/blog/demo", blocks: undefined },
-  pages: { basePath: "/modules/pages/demo", blocks: undefined },
+  blog: { basePath: "/docs/modules/blog/demo", blocks: undefined },
+  pages: { basePath: "/docs/modules/pages/demo", blocks: undefined },
   "contact-form": { basePath: "/contact", blocks: undefined },
   "page-builder": { basePath: "/composed", blocks: undefined },
 } as const;

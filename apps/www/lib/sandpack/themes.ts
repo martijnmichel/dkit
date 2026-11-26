@@ -174,6 +174,24 @@ a { color: inherit; }
 .dkit-prose :where(ul) { margin-bottom: 1rem; padding-left: 1.25rem; list-style: disc; }
 .dkit-prose :where(ol) { margin-bottom: 1rem; padding-left: 1.25rem; list-style: decimal; }
 .dkit-prose :where(img) { max-width: 100%; height: auto; border-radius: 0.75rem; }
+.dkit-prose :where(pre) {
+  overflow-x: auto;
+  border-radius: 0.5rem;
+  background: var(--muted, #f4f4f5);
+  padding: 1rem;
+  font-size: 0.875rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  line-height: 1.55;
+}
+.dkit-prose :where(:not(pre) > code) {
+  border-radius: 0.375rem;
+  background: var(--muted, #f4f4f5);
+  padding: 0.15em 0.4em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8125em;
+  font-weight: 500;
+}
+.dkit-prose :where(pre code) { background: transparent; padding: 0; font-size: inherit; font-weight: inherit; }
 `.trim();
 
 function tokensToCss(tokens: ThemeTokens): string {
