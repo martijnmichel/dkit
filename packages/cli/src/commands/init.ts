@@ -8,6 +8,7 @@ import {
   DkitProjectConfigSchema,
   normalizeCollectionPrefix,
   type Framework,
+  type UiAdapter,
 } from "@dkit/shared";
 import { createAuthClient, createTokenClient } from "@dkit/schema";
 import { getDirectusCreds, upsertEnvLocal } from "../lib/env.js";
@@ -47,12 +48,17 @@ export function initCommand(): Command {
       "Prefill static admin token (skips token prompt with --yes)",
     )
     .option("--framework <name>", "Force framework (next|nuxt); skips detect")
+    .option(
+      "--ui <adapter>",
+      "UI adapter: shadcn (Next shadcn/ui or Nuxt shadcn-vue) | minimal",
+    )
     .option("--yes", "Non-interactive: require --url and --token (CI)")
     .action(
       async (opts: {
         url?: string;
         token?: string;
         framework?: string;
+        ui?: string;
         yes?: boolean;
       }) => {
         p.intro(pc.bgCyan(pc.black(" dkit init ")));
@@ -94,6 +100,7 @@ export function initCommand(): Command {
             url,
             token,
             framework,
+            uiAdapter: parseUiAdapterFlag(opts.ui) ?? "shadcn",
             collectionPrefix: "dkit_",
           });
           return;
@@ -190,15 +197,50 @@ export function initCommand(): Command {
         });
         cancelIf(prefixAnswer);
 
+        const uiFromFlag = parseUiAdapterFlag(opts.ui);
+        let uiAdapter: UiAdapter = uiFromFlag ?? "shadcn";
+        if (!uiFromFlag) {
+          const uiPick = await p.select({
+            message: "UI adapter (how installed blocks are styled)",
+            options: [
+              {
+                value: "shadcn" as const,
+                label:
+                  framework === "nuxt"
+                    ? "shadcn-vue theme tokens"
+                    : "shadcn/ui theme tokens",
+                hint: "recommended — inherits your theme CSS variables",
+              },
+              {
+                value: "minimal" as const,
+                label: "Minimal",
+                hint: "semantic HTML + dkit-prose only",
+              },
+            ],
+            initialValue: "shadcn" as UiAdapter,
+          });
+          cancelIf(uiPick);
+          uiAdapter = uiPick;
+        }
+
         await finishInit({
           projectRoot,
           url: url.trim(),
           token: finalToken,
           framework,
+          uiAdapter,
           collectionPrefix: normalizeCollectionPrefix(prefixAnswer),
         });
       },
     );
+}
+
+function parseUiAdapterFlag(raw?: string): UiAdapter | undefined {
+  if (!raw) return undefined;
+  const v = raw.trim().toLowerCase();
+  if (v === "shadcn" || v === "minimal") return v;
+  p.cancel(`Unknown --ui "${raw}". Use shadcn or minimal.`);
+  process.exit(1);
 }
 
 async function resolveFramework(
@@ -300,6 +342,7 @@ async function finishInit(args: {
   url: string;
   token: string;
   framework: Framework;
+  uiAdapter: UiAdapter;
   collectionPrefix: string;
 }): Promise<void> {
   if (args.framework !== "next" && args.framework !== "nuxt") {
@@ -333,6 +376,7 @@ async function finishInit(args: {
   const config = DkitProjectConfigSchema.parse({
     ...DEFAULT_PROJECT_CONFIG,
     framework: args.framework,
+    uiAdapter: args.uiAdapter,
     collectionPrefix: args.collectionPrefix,
     aliases:
       args.framework === "nuxt"
@@ -342,13 +386,23 @@ async function finishInit(args: {
   writeProjectConfig(args.projectRoot, config);
   const clientFile = writeClientHelper(args.projectRoot, config);
 
+  const uiHint =
+    args.uiAdapter === "shadcn"
+      ? args.framework === "nuxt"
+        ? "Ensure shadcn-vue CSS variables are in your theme."
+        : "Ensure shadcn/ui CSS variables are in your theme."
+      : "Minimal blocks prefer *-minimal templates + dkit-prose.";
+
   p.note(
     [
       `Framework: ${args.framework}`,
+      `UI:        ${args.uiAdapter}`,
       `Prefix:    ${args.collectionPrefix || "(none)"}`,
       `Config:    ${path.join(args.projectRoot, "dkit.json")}`,
       `Env:       ${path.join(args.projectRoot, ".env.local")}`,
       `Client:    ${clientFile}`,
+      "",
+      uiHint,
       "",
       "Next:  dkit add blog --seed",
       "Tips:  dkit list · dkit doctor",

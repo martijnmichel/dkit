@@ -57,7 +57,8 @@ export default async function ModulePage({
       <section className="mt-14">
         <h2 className="text-xl font-semibold tracking-tight">UI preview</h2>
         <p className="text-muted mt-1 text-sm">
-          Live blocks from the registry, fed by seed data (or a fixture).
+          Pick framework + UI kit (saved in localStorage). Blocks run live in
+          the browser via Sandpack.
         </p>
         <div className="mt-6">
           <ModuleBlockPreviews moduleId={id} blocks={blocks} />

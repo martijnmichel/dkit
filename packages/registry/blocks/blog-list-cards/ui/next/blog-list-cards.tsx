@@ -6,6 +6,7 @@ import {
 } from "@/lib/dkit/blog";
 import { joinModulePath, moduleBasePath } from "@/lib/dkit/config";
 
+/** Styled with shadcn theme tokens — inherits your app theme (Next shadcn/ui). */
 export async function BlogListCards({
   basePath = moduleBasePath("blog", "/blog"),
 }: {
@@ -16,19 +17,17 @@ export async function BlogListCards({
   return (
     <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
       <header className="mb-12 max-w-xl">
-        <p className="mb-3 text-xs font-semibold tracking-[0.2em] text-teal-800 uppercase dark:text-teal-300">
+        <p className="mb-3 text-xs font-medium tracking-[0.2em] text-primary uppercase">
           Journal
         </p>
-        <h1 className="font-serif text-4xl tracking-tight text-stone-900 sm:text-5xl dark:text-stone-50">
+        <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
           Blog
         </h1>
-        <p className="mt-4 text-stone-500 dark:text-stone-400">
-          Browse posts in a card grid.
-        </p>
+        <p className="mt-4 text-muted-foreground">Browse posts in a card grid.</p>
       </header>
 
       {posts.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-stone-300 px-6 py-12 text-center text-stone-500 dark:border-stone-700">
+        <p className="rounded-xl border border-dashed border-border px-6 py-12 text-center text-muted-foreground">
           No published posts yet.
         </p>
       ) : (
@@ -41,7 +40,7 @@ export async function BlogListCards({
               <a
                 key={post.id}
                 href={joinModulePath(basePath, post.slug)}
-                className="group relative flex flex-col overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-[0_1px_0_rgba(28,25,23,0.04)] transition hover:-translate-y-0.5 hover:border-teal-700/30 hover:shadow-md dark:border-stone-800 dark:bg-stone-950"
+                className="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
               >
                 {imageUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -51,14 +50,14 @@ export async function BlogListCards({
                     className="aspect-[16/9] w-full object-cover"
                   />
                 ) : (
-                  <div className="aspect-[16/9] w-full bg-gradient-to-br from-stone-100 to-stone-200 dark:from-stone-900 dark:to-stone-800" />
+                  <div className="aspect-[16/9] w-full bg-muted" />
                 )}
                 <div className="flex flex-1 flex-col p-6">
-                  <div className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-teal-700 transition group-hover:scale-x-100" />
+                  <div className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-primary transition group-hover:scale-x-100" />
                   {post.published_at ? (
                     <time
                       dateTime={post.published_at}
-                      className="text-xs font-medium tracking-wide text-stone-400 uppercase"
+                      className="text-xs font-medium tracking-wide text-muted-foreground uppercase"
                     >
                       {new Date(post.published_at).toLocaleDateString(undefined, {
                         month: "short",
@@ -67,11 +66,11 @@ export async function BlogListCards({
                       })}
                     </time>
                   ) : null}
-                  <h2 className="mt-3 font-serif text-2xl tracking-tight text-stone-900 transition group-hover:text-teal-800 dark:text-stone-50 dark:group-hover:text-teal-300">
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-foreground transition-colors group-hover:text-primary">
                     {post.title}
                   </h2>
                   {post.excerpt ? (
-                    <p className="mt-3 line-clamp-3 flex-1 text-sm leading-relaxed text-stone-500 dark:text-stone-400">
+                    <p className="mt-3 line-clamp-3 flex-1 text-sm leading-relaxed text-muted-foreground">
                       {post.excerpt}
                     </p>
                   ) : (
@@ -79,13 +78,13 @@ export async function BlogListCards({
                   )}
                   <div className="mt-6 flex items-center justify-between gap-3">
                     {name ? (
-                      <span className="inline-flex items-center gap-2 text-xs text-stone-500">
+                      <span className="inline-flex items-center gap-2 text-xs text-muted-foreground">
                         {avatar ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={avatar}
                             alt=""
-                            className="h-6 w-6 rounded-full object-cover ring-1 ring-stone-200 dark:ring-stone-700"
+                            className="h-6 w-6 rounded-full object-cover ring-1 ring-border"
                           />
                         ) : null}
                         {name}
@@ -93,7 +92,7 @@ export async function BlogListCards({
                     ) : (
                       <span />
                     )}
-                    <span className="text-sm font-medium text-teal-800 dark:text-teal-300">
+                    <span className="text-sm font-medium text-primary">
                       Read article →
                     </span>
                   </div>

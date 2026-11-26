@@ -1,4 +1,4 @@
-import type { RegistryIndex } from "@dkit/shared";
+import type { RegistryIndex, UiAdapter } from "@dkit/shared";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -22,12 +22,24 @@ export function parseTemplateFlag(raw?: string): TemplateOverrides {
   return out;
 }
 
+/** Prefer `*-minimal` options when uiAdapter is minimal and no override is set. */
+function pickDefaultForAdapter(
+  def: { default: string; options?: string[] },
+  uiAdapter: UiAdapter | undefined,
+): string {
+  if (uiAdapter !== "minimal") return def.default;
+  const options = def.options?.length ? def.options : [def.default];
+  const minimal = options.find((id) => id.endsWith("-minimal"));
+  return minimal ?? def.default;
+}
+
 export function resolveDefaultBlocksFromTemplates(
   moduleId: string,
   index: RegistryIndex,
   registryRoot: string,
   overrides: TemplateOverrides,
   withBlocks?: string[],
+  uiAdapter?: UiAdapter,
 ): string[] {
   if (withBlocks?.length) return withBlocks;
 
@@ -54,7 +66,7 @@ export function resolveDefaultBlocksFromTemplates(
 
   const blocks: string[] = [];
   for (const [slot, def] of Object.entries(templates)) {
-    const chosen = overrides[slot] ?? def.default;
+    const chosen = overrides[slot] ?? pickDefaultForAdapter(def, uiAdapter);
     const options = def.options?.length ? def.options : [def.default];
     if (!options.includes(chosen) && chosen !== def.default) {
       throw new Error(

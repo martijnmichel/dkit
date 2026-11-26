@@ -8,18 +8,16 @@ export function BlockFrame({
   children: React.ReactNode;
 }) {
   return (
-    <section className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm dark:border-stone-800 dark:bg-stone-950">
-      <header className="border-b border-stone-200 bg-stone-50 px-4 py-3 dark:border-stone-800 dark:bg-stone-900/80">
-        <h3 className="font-mono text-sm font-medium text-stone-900 dark:text-stone-100">
+    <section className="overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm">
+      <header className="border-b border-border bg-muted/50 px-4 py-3">
+        <h3 className="font-mono text-sm font-medium text-foreground">
           {title}
         </h3>
         {description ? (
-          <p className="mt-0.5 text-xs text-stone-500">{description}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
         ) : null}
       </header>
-      <div className="preview-canvas min-h-[12rem] bg-[var(--color-paper,#f7f4ef)]">
-        {children}
-      </div>
+      <div className="preview-canvas min-h-[12rem]">{children}</div>
     </section>
   );
 }

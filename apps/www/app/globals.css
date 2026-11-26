@@ -7,42 +7,92 @@
 @source "./**/*.{js,jsx,ts,tsx}";
 @source "../lib/**/*.{js,jsx,ts,tsx}";
 
-@theme {
-  --color-paper: #f7f4ef;
-  --color-ink: #1c1917;
-  --color-muted: #666666;
-  --color-card: #ffffff;
-  --color-line: #e5e5e5;
-  --color-accent: #0a0a0a;
-}
-
+/*
+ * shadcn-compatible theme tokens so registry block previews inherit the same
+ * contract as Next shadcn/ui / Nuxt shadcn-vue apps.
+ */
 :root {
   color-scheme: light dark;
-  --bg: #fafafa;
-  --fg: #111;
-  --muted: #666;
-  --card: #fff;
-  --border: #e5e5e5;
-  --accent: #0a0a0a;
+  --radius: 0.5rem;
+  --background: oklch(0.985 0.002 90);
+  --foreground: oklch(0.2 0.01 60);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2 0.01 60);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2 0.01 60);
+  --primary: oklch(0.45 0.1 175);
+  --primary-foreground: oklch(0.98 0.01 175);
+  --secondary: oklch(0.96 0.005 90);
+  --secondary-foreground: oklch(0.25 0.01 60);
+  --muted: oklch(0.95 0.005 90);
+  --muted-foreground: oklch(0.5 0.015 60);
+  --accent: oklch(0.95 0.01 175);
+  --accent-foreground: oklch(0.3 0.05 175);
+  --destructive: oklch(0.55 0.2 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.9 0.005 90);
+  --input: oklch(0.9 0.005 90);
+  --ring: oklch(0.45 0.1 175);
+
+  /* Legacy site chrome (directory chrome, not block UI) */
+  --bg: var(--background);
+  --fg: var(--foreground);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0a0a0a;
-    --fg: #f5f5f5;
-    --muted: #a3a3a3;
-    --card: #171717;
-    --border: #262626;
-    --accent: #f5f5f5;
-  }
+.dark {
+  --background: oklch(0.16 0.01 60);
+  --foreground: oklch(0.96 0.005 90);
+  --card: oklch(0.2 0.01 60);
+  --card-foreground: oklch(0.96 0.005 90);
+  --popover: oklch(0.2 0.01 60);
+  --popover-foreground: oklch(0.96 0.005 90);
+  --primary: oklch(0.75 0.1 175);
+  --primary-foreground: oklch(0.2 0.04 175);
+  --secondary: oklch(0.25 0.01 60);
+  --secondary-foreground: oklch(0.96 0.005 90);
+  --muted: oklch(0.25 0.01 60);
+  --muted-foreground: oklch(0.7 0.015 60);
+  --accent: oklch(0.25 0.02 175);
+  --accent-foreground: oklch(0.9 0.04 175);
+  --destructive: oklch(0.6 0.2 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.3 0.01 60);
+  --input: oklch(0.3 0.01 60);
+  --ring: oklch(0.75 0.1 175);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
 html,
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--bg);
-  color: var(--fg);
+  background: var(--background);
+  color: var(--foreground);
   font-family:
     ui-sans-serif,
     system-ui,
@@ -65,13 +115,13 @@ a:hover {
 }
 
 .text-muted {
-  color: var(--muted);
+  color: var(--muted-foreground);
 }
 
 .card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius);
   padding: 1.25rem;
 }
 
@@ -79,9 +129,9 @@ a:hover {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
-  background: var(--accent);
-  color: var(--bg);
+  border-radius: calc(var(--radius) - 2px);
+  background: var(--primary);
+  color: var(--primary-foreground);
   padding: 0.6rem 1rem;
   font-size: 0.875rem;
   font-weight: 500;
@@ -95,9 +145,9 @@ a:hover {
 .code {
   display: block;
   overflow-x: auto;
-  border-radius: 10px;
-  background: #111;
-  color: #f5f5f5;
+  border-radius: var(--radius);
+  background: oklch(0.2 0.01 60);
+  color: oklch(0.96 0.005 90);
   padding: 1rem 1.25rem;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.875rem;
@@ -118,5 +168,6 @@ a:hover {
 }
 
 .preview-canvas {
-  background: var(--color-paper, #f7f4ef);
+  background: var(--background);
+  color: var(--foreground);
 }

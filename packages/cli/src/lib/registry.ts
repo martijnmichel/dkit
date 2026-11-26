@@ -9,6 +9,7 @@ import {
   type ModuleManifest,
   type RegistryIndex,
   type RegistryItem,
+  type UiAdapter,
 } from "@dkit/shared";
 import { getBundledRegistryRoot } from "./paths.js";
 import {
@@ -201,6 +202,7 @@ export function resolveInstallPlan(
     uiOnly?: boolean;
     withBlocks?: string[];
     templateOverrides?: TemplateOverrides;
+    uiAdapter?: UiAdapter;
   },
 ): { modules: string[]; blocks: string[] } {
   const entry = index.items.find((i) => i.id === id);
@@ -218,6 +220,7 @@ export function resolveInstallPlan(
         registryRoot,
         opts.templateOverrides ?? {},
         opts.withBlocks,
+        opts.uiAdapter,
       );
       for (const b of names) blocks.add(b);
     }

@@ -7,6 +7,7 @@ import {
 } from "@/lib/dkit/blog";
 import { moduleBasePath } from "@/lib/dkit/config";
 
+/** Styled with shadcn theme tokens — inherits your app theme (Next shadcn/ui). */
 export async function BlogDetail({
   slug,
   basePath = moduleBasePath("blog", "/blog"),
@@ -17,13 +18,11 @@ export async function BlogDetail({
   const post = await getPost(slug);
   if (!post) {
     return (
-      <div className="mx-auto max-w-2xl px-6 py-20 text-center text-stone-500">
-        <p className="font-serif text-2xl text-stone-800 dark:text-stone-200">
-          Post not found
-        </p>
+      <div className="mx-auto max-w-2xl px-6 py-20 text-center text-muted-foreground">
+        <p className="text-2xl font-semibold text-foreground">Post not found</p>
         <a
           href={basePath}
-          className="mt-4 inline-block text-sm text-teal-800 underline-offset-4 hover:underline dark:text-teal-300"
+          className="mt-4 inline-block text-sm text-primary underline-offset-4 hover:underline"
         >
           ← Back to blog
         </a>
@@ -40,7 +39,7 @@ export async function BlogDetail({
     <article className="mx-auto max-w-2xl px-6 py-16 sm:py-20">
       <a
         href={basePath}
-        className="mb-10 inline-flex items-center gap-2 text-sm text-stone-500 no-underline transition hover:text-teal-800 dark:hover:text-teal-300"
+        className="mb-10 inline-flex items-center gap-2 text-sm text-muted-foreground no-underline transition-colors hover:text-primary"
       >
         ← All posts
       </a>
@@ -50,35 +49,35 @@ export async function BlogDetail({
         <img
           src={imageUrl}
           alt=""
-          className="mb-10 aspect-[16/9] w-full rounded-3xl object-cover ring-1 ring-stone-200 dark:ring-stone-800"
+          className="mb-10 aspect-[16/9] w-full rounded-xl object-cover ring-1 ring-border"
         />
       ) : null}
 
-      <header className="border-b border-stone-200 pb-10 dark:border-stone-800">
+      <header className="border-b border-border pb-10">
         {categories.length > 0 ? (
           <div className="mb-4 flex flex-wrap gap-2">
             {categories.map((c) => (
               <span
                 key={c.id}
-                className="rounded-full bg-teal-50 px-3 py-1 text-xs font-medium text-teal-900 dark:bg-teal-950 dark:text-teal-200"
+                className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary"
               >
                 {c.title ?? c.slug}
               </span>
             ))}
           </div>
         ) : null}
-        <h1 className="font-serif text-4xl leading-[1.15] tracking-tight text-stone-900 sm:text-5xl dark:text-stone-50">
+        <h1 className="text-4xl font-semibold leading-[1.15] tracking-tight text-foreground sm:text-5xl">
           {post.title}
         </h1>
-        <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-stone-500">
+        <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
           {name ? (
-            <span className="inline-flex items-center gap-2 font-medium text-stone-700 dark:text-stone-300">
+            <span className="inline-flex items-center gap-2 font-medium text-foreground">
               {avatar ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={avatar}
                   alt=""
-                  className="h-7 w-7 rounded-full object-cover ring-1 ring-stone-200 dark:ring-stone-700"
+                  className="h-7 w-7 rounded-full object-cover ring-1 ring-border"
                 />
               ) : null}
               {name}

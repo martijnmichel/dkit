@@ -2,6 +2,7 @@
 import { getPage } from '@/lib/dkit/pages'
 import { moduleBasePath } from '@/lib/dkit/config'
 
+/** Styled with shadcn-vue theme tokens — inherits your app theme. */
 const props = withDefaults(defineProps<{ slug: string; basePath?: string }>(), {
   basePath: undefined,
 })
@@ -16,25 +17,25 @@ const { data: page } = await useAsyncData(`dkit-page-${props.slug}`, () =>
 </script>
 
 <template>
-  <div v-if="!page" class="mx-auto max-w-2xl px-6 py-20 text-center text-stone-500">
-    <p class="font-serif text-2xl text-stone-800 dark:text-stone-200">Page not found</p>
+  <div v-if="!page" class="mx-auto max-w-2xl px-6 py-20 text-center text-muted-foreground">
+    <p class="text-2xl font-semibold text-foreground">Page not found</p>
     <NuxtLink
       :to="resolvedBase === '/' ? '/' : resolvedBase"
-      class="mt-4 inline-block text-sm text-teal-800 underline-offset-4 hover:underline dark:text-teal-300"
+      class="mt-4 inline-block text-sm text-primary underline-offset-4 hover:underline"
     >
       ← Back
     </NuxtLink>
   </div>
 
   <article v-else class="mx-auto max-w-2xl px-6 py-16 sm:py-20">
-    <header class="border-b border-stone-200 pb-10 dark:border-stone-800">
-      <h1 class="font-serif text-4xl leading-[1.15] tracking-tight text-stone-900 sm:text-5xl dark:text-stone-50">
+    <header class="border-b border-border pb-10">
+      <h1 class="text-4xl font-semibold leading-[1.15] tracking-tight text-foreground sm:text-5xl">
         {{ page.title }}
       </h1>
       <time
         v-if="page.published_at"
         :datetime="page.published_at"
-        class="mt-6 block text-sm text-stone-500"
+        class="mt-6 block text-sm text-muted-foreground"
       >
         {{
           new Date(page.published_at).toLocaleDateString(undefined, {
@@ -46,7 +47,7 @@ const { data: page } = await useAsyncData(`dkit-page-${props.slug}`, () =>
       </time>
       <p
         v-if="page.excerpt"
-        class="mt-4 text-lg leading-relaxed text-stone-500 dark:text-stone-400"
+        class="mt-4 text-lg leading-relaxed text-muted-foreground"
       >
         {{ page.excerpt }}
       </p>

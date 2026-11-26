@@ -8,12 +8,13 @@ import {
 
 const initial: ContactFormState = { ok: false };
 
+/** Styled with shadcn theme tokens — inherits your app theme (Next shadcn/ui). */
 export function ContactForm() {
   const [state, action, pending] = useActionState(submitContactForm, initial);
 
   if (state.ok) {
     return (
-      <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-6 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-100">
+      <div className="rounded-lg border border-border bg-muted/40 p-6 text-foreground">
         Thanks — we received your message.
       </div>
     );
@@ -21,23 +22,29 @@ export function ContactForm() {
 
   return (
     <form action={action} className="mx-auto max-w-md space-y-4">
-      <p className="text-sm text-stone-500 dark:text-stone-400">
+      <p className="text-sm text-muted-foreground">
         Messages are stored in your Directus inbox. Email notify is optional if
         Directus mail is configured.
       </p>
       <div>
-        <label className="mb-1 block text-sm font-medium" htmlFor="name">
+        <label
+          className="mb-1 block text-sm font-medium text-foreground"
+          htmlFor="name"
+        >
           Name
         </label>
         <input
           id="name"
           name="name"
           required
-          className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 dark:border-neutral-700 dark:bg-neutral-950"
+          className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         />
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium" htmlFor="email">
+        <label
+          className="mb-1 block text-sm font-medium text-foreground"
+          htmlFor="email"
+        >
           Email
         </label>
         <input
@@ -45,11 +52,14 @@ export function ContactForm() {
           name="email"
           type="email"
           required
-          className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 dark:border-neutral-700 dark:bg-neutral-950"
+          className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         />
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium" htmlFor="message">
+        <label
+          className="mb-1 block text-sm font-medium text-foreground"
+          htmlFor="message"
+        >
           Message
         </label>
         <textarea
@@ -57,16 +67,16 @@ export function ContactForm() {
           name="message"
           required
           rows={5}
-          className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 dark:border-neutral-700 dark:bg-neutral-950"
+          className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         />
       </div>
       {state.error ? (
-        <p className="text-sm text-red-600 dark:text-red-400">{state.error}</p>
+        <p className="text-sm text-destructive">{state.error}</p>
       ) : null}
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900"
+        className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
       >
         {pending ? "Sending…" : "Send"}
       </button>

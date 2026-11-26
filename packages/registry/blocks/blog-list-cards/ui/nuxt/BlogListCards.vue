@@ -7,6 +7,7 @@ import {
 } from '@/lib/dkit/blog'
 import { joinModulePath, moduleBasePath } from '@/lib/dkit/config'
 
+/** Styled with shadcn-vue theme tokens — inherits your app theme. */
 const props = withDefaults(defineProps<{ basePath?: string }>(), {
   basePath: undefined,
 })
@@ -21,20 +22,18 @@ const { data: posts } = await useAsyncData('dkit-blog-list-cards', () => getPost
 <template>
   <div class="mx-auto max-w-5xl px-6 py-16 sm:py-20">
     <header class="mb-12 max-w-xl">
-      <p class="mb-3 text-xs font-semibold tracking-[0.2em] text-teal-800 uppercase dark:text-teal-300">
+      <p class="mb-3 text-xs font-medium tracking-[0.2em] text-primary uppercase">
         Journal
       </p>
-      <h1 class="font-serif text-4xl tracking-tight text-stone-900 sm:text-5xl dark:text-stone-50">
+      <h1 class="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
         Blog
       </h1>
-      <p class="mt-4 text-stone-500 dark:text-stone-400">
-        Browse posts in a card grid.
-      </p>
+      <p class="mt-4 text-muted-foreground">Browse posts in a card grid.</p>
     </header>
 
     <p
       v-if="!(posts && posts.length)"
-      class="rounded-2xl border border-dashed border-stone-300 px-6 py-12 text-center text-stone-500 dark:border-stone-700"
+      class="rounded-xl border border-dashed border-border px-6 py-12 text-center text-muted-foreground"
     >
       No published posts yet.
     </p>
@@ -44,7 +43,7 @@ const { data: posts } = await useAsyncData('dkit-blog-list-cards', () => getPost
         v-for="post in posts"
         :key="post.id"
         :to="joinModulePath(resolvedBase, post.slug)"
-        class="group relative flex flex-col overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-[0_1px_0_rgba(28,25,23,0.04)] transition hover:-translate-y-0.5 hover:border-teal-700/30 hover:shadow-md dark:border-stone-800 dark:bg-stone-950"
+        class="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
       >
         <img
           v-if="featuredImageUrl(post)"
@@ -54,14 +53,14 @@ const { data: posts } = await useAsyncData('dkit-blog-list-cards', () => getPost
         />
         <div
           v-else
-          class="aspect-[16/9] w-full bg-gradient-to-br from-stone-100 to-stone-200 dark:from-stone-900 dark:to-stone-800"
+          class="aspect-[16/9] w-full bg-muted"
         />
         <div class="flex flex-1 flex-col p-6">
-          <div class="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-teal-700 transition group-hover:scale-x-100" />
+          <div class="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-primary transition group-hover:scale-x-100" />
           <time
             v-if="post.published_at"
             :datetime="post.published_at"
-            class="text-xs font-medium tracking-wide text-stone-400 uppercase"
+            class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
           >
             {{
               new Date(post.published_at).toLocaleDateString(undefined, {
@@ -71,12 +70,12 @@ const { data: posts } = await useAsyncData('dkit-blog-list-cards', () => getPost
               })
             }}
           </time>
-          <h2 class="mt-3 font-serif text-2xl tracking-tight text-stone-900 transition group-hover:text-teal-800 dark:text-stone-50 dark:group-hover:text-teal-300">
+          <h2 class="mt-3 text-2xl font-semibold tracking-tight text-foreground transition-colors group-hover:text-primary">
             {{ post.title }}
           </h2>
           <p
             v-if="post.excerpt"
-            class="mt-3 line-clamp-3 flex-1 text-sm leading-relaxed text-stone-500 dark:text-stone-400"
+            class="mt-3 line-clamp-3 flex-1 text-sm leading-relaxed text-muted-foreground"
           >
             {{ post.excerpt }}
           </p>
@@ -84,18 +83,18 @@ const { data: posts } = await useAsyncData('dkit-blog-list-cards', () => getPost
           <div class="mt-6 flex items-center justify-between gap-3">
             <span
               v-if="authorName(post)"
-              class="inline-flex items-center gap-2 text-xs text-stone-500"
+              class="inline-flex items-center gap-2 text-xs text-muted-foreground"
             >
               <img
                 v-if="authorAvatarUrl(post)"
                 :src="authorAvatarUrl(post)!"
                 alt=""
-                class="h-6 w-6 rounded-full object-cover ring-1 ring-stone-200 dark:ring-stone-700"
+                class="h-6 w-6 rounded-full object-cover ring-1 ring-border"
               />
               {{ authorName(post) }}
             </span>
             <span v-else />
-            <span class="text-sm font-medium text-teal-800 dark:text-teal-300">
+            <span class="text-sm font-medium text-primary">
               Read article →
             </span>
           </div>

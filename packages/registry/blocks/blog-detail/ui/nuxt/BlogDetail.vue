@@ -8,6 +8,7 @@ import {
 } from '@/lib/dkit/blog'
 import { moduleBasePath } from '@/lib/dkit/config'
 
+/** Styled with shadcn-vue theme tokens — inherits your app theme. */
 const props = withDefaults(defineProps<{ slug: string; basePath?: string }>(), {
   basePath: undefined,
 })
@@ -28,14 +29,12 @@ const categories = computed(() =>
 <template>
   <div
     v-if="!post"
-    class="mx-auto max-w-2xl px-6 py-20 text-center text-stone-500"
+    class="mx-auto max-w-2xl px-6 py-20 text-center text-muted-foreground"
   >
-    <p class="font-serif text-2xl text-stone-800 dark:text-stone-200">
-      Post not found
-    </p>
+    <p class="text-2xl font-semibold text-foreground">Post not found</p>
     <NuxtLink
       :to="resolvedBase"
-      class="mt-4 inline-block text-sm text-teal-800 underline-offset-4 hover:underline dark:text-teal-300"
+      class="mt-4 inline-block text-sm text-primary underline-offset-4 hover:underline"
     >
       ← Back to blog
     </NuxtLink>
@@ -44,7 +43,7 @@ const categories = computed(() =>
   <article v-else class="mx-auto max-w-2xl px-6 py-16 sm:py-20">
     <NuxtLink
       :to="resolvedBase"
-      class="mb-10 inline-flex items-center gap-2 text-sm text-stone-500 no-underline transition hover:text-teal-800 dark:hover:text-teal-300"
+      class="mb-10 inline-flex items-center gap-2 text-sm text-muted-foreground no-underline transition-colors hover:text-primary"
     >
       ← All posts
     </NuxtLink>
@@ -53,32 +52,32 @@ const categories = computed(() =>
       v-if="featuredImageUrl(post)"
       :src="featuredImageUrl(post)!"
       alt=""
-      class="mb-10 aspect-[16/9] w-full rounded-3xl object-cover ring-1 ring-stone-200 dark:ring-stone-800"
+      class="mb-10 aspect-[16/9] w-full rounded-xl object-cover ring-1 ring-border"
     />
 
-    <header class="border-b border-stone-200 pb-10 dark:border-stone-800">
+    <header class="border-b border-border pb-10">
       <div v-if="categories.length" class="mb-4 flex flex-wrap gap-2">
         <span
           v-for="c in categories"
           :key="c.id"
-          class="rounded-full bg-teal-50 px-3 py-1 text-xs font-medium text-teal-900 dark:bg-teal-950 dark:text-teal-200"
+          class="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary"
         >
           {{ c.title ?? c.slug }}
         </span>
       </div>
-      <h1 class="font-serif text-4xl leading-[1.15] tracking-tight text-stone-900 sm:text-5xl dark:text-stone-50">
+      <h1 class="text-4xl font-semibold leading-[1.15] tracking-tight text-foreground sm:text-5xl">
         {{ post.title }}
       </h1>
-      <div class="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-stone-500">
+      <div class="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
         <span
           v-if="authorName(post)"
-          class="inline-flex items-center gap-2 font-medium text-stone-700 dark:text-stone-300"
+          class="inline-flex items-center gap-2 font-medium text-foreground"
         >
           <img
             v-if="authorAvatarUrl(post)"
             :src="authorAvatarUrl(post)!"
             alt=""
-            class="h-7 w-7 rounded-full object-cover ring-1 ring-stone-200 dark:ring-stone-700"
+            class="h-7 w-7 rounded-full object-cover ring-1 ring-border"
           />
           {{ authorName(post) }}
         </span>

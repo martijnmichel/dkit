@@ -133,10 +133,11 @@ export function addCommand(): Command {
           uiOnly: opts.uiOnly,
           withBlocks,
           templateOverrides,
+          uiAdapter: config.uiAdapter,
         });
 
         p.log.info(
-          `Plan: modules [${plan.modules.join(", ") || "—"}] · blocks [${plan.blocks.join(", ") || "—"}] · framework ${framework}`,
+          `Plan: modules [${plan.modules.join(", ") || "—"}] · blocks [${plan.blocks.join(", ") || "—"}] · framework ${framework} · ui ${config.uiAdapter}`,
         );
 
         // —— Collection prefix (always ask unless --yes) ——

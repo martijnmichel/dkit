@@ -6,6 +6,7 @@ import {
 } from "@/lib/dkit/blog";
 import { joinModulePath, moduleBasePath } from "@/lib/dkit/config";
 
+/** Styled with shadcn theme tokens — inherits your app theme (Next shadcn/ui). */
 export async function BlogList({
   basePath = moduleBasePath("blog", "/blog"),
 }: {
@@ -15,24 +16,24 @@ export async function BlogList({
 
   return (
     <div className="relative mx-auto max-w-2xl px-6 py-16 sm:py-20">
-      <header className="mb-12 border-b border-stone-200 pb-10 dark:border-stone-800">
-        <p className="mb-3 text-xs font-semibold tracking-[0.2em] text-teal-800 uppercase dark:text-teal-300">
+      <header className="mb-12 border-b border-border pb-10">
+        <p className="mb-3 text-xs font-medium tracking-[0.2em] text-primary uppercase">
           Journal
         </p>
-        <h1 className="font-serif text-4xl leading-tight tracking-tight text-stone-900 sm:text-5xl dark:text-stone-50">
+        <h1 className="text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl">
           Blog
         </h1>
-        <p className="mt-4 max-w-md text-base leading-relaxed text-stone-500 dark:text-stone-400">
+        <p className="mt-4 max-w-md text-base leading-relaxed text-muted-foreground">
           Stories and notes from Directus — newest first.
         </p>
       </header>
 
       {posts.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-6 py-10 text-center text-stone-500 dark:border-stone-700 dark:bg-stone-900/40 dark:text-stone-400">
+        <p className="rounded-xl border border-dashed border-border bg-muted/40 px-6 py-10 text-center text-muted-foreground">
           No published posts yet. Add one in Directus and refresh.
         </p>
       ) : (
-        <ul className="space-y-2">
+        <ul className="space-y-1">
           {posts.map((post, i) => {
             const imageUrl = featuredImageUrl(post);
             const avatar = authorAvatarUrl(post);
@@ -41,30 +42,30 @@ export async function BlogList({
               <li key={post.id}>
                 <a
                   href={joinModulePath(basePath, post.slug)}
-                  className="group flex gap-5 rounded-2xl px-4 py-5 transition hover:bg-stone-100/80 dark:hover:bg-stone-900/60"
+                  className="group flex gap-5 rounded-xl px-4 py-5 transition-colors hover:bg-muted/60"
                 >
                   {imageUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={imageUrl}
                       alt=""
-                      className="mt-0.5 h-16 w-16 shrink-0 rounded-xl object-cover ring-1 ring-stone-200 dark:ring-stone-700"
+                      className="mt-0.5 h-16 w-16 shrink-0 rounded-lg object-cover ring-1 ring-border"
                     />
                   ) : (
-                    <span className="mt-1 w-8 shrink-0 font-mono text-xs text-stone-400 tabular-nums">
+                    <span className="mt-1 w-8 shrink-0 font-mono text-xs text-muted-foreground tabular-nums">
                       {String(i + 1).padStart(2, "0")}
                     </span>
                   )}
                   <span className="min-w-0 flex-1">
-                    <span className="block font-serif text-xl tracking-tight text-stone-900 transition group-hover:text-teal-800 dark:text-stone-50 dark:group-hover:text-teal-300">
+                    <span className="block text-xl font-medium tracking-tight text-foreground transition-colors group-hover:text-primary">
                       {post.title}
                     </span>
                     {post.excerpt ? (
-                      <span className="mt-2 block text-sm leading-relaxed text-stone-500 dark:text-stone-400">
+                      <span className="mt-2 block text-sm leading-relaxed text-muted-foreground">
                         {post.excerpt}
                       </span>
                     ) : null}
-                    <span className="mt-3 flex flex-wrap items-center gap-x-2 text-xs text-stone-400">
+                    <span className="mt-3 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
                       {name ? (
                         <span className="inline-flex items-center gap-1.5">
                           {avatar ? (
@@ -72,7 +73,7 @@ export async function BlogList({
                             <img
                               src={avatar}
                               alt=""
-                              className="h-5 w-5 rounded-full object-cover ring-1 ring-stone-200 dark:ring-stone-700"
+                              className="h-5 w-5 rounded-full object-cover ring-1 ring-border"
                             />
                           ) : null}
                           <span>{name}</span>
@@ -91,7 +92,7 @@ export async function BlogList({
                           )}
                         </time>
                       ) : null}
-                      <span className="ml-auto text-teal-800 opacity-0 transition group-hover:opacity-100 dark:text-teal-300">
+                      <span className="ml-auto text-primary opacity-0 transition group-hover:opacity-100">
                         Read →
                       </span>
                     </span>

@@ -7,9 +7,19 @@ export const ModuleInstallConfigSchema = z.object({
   blocks: z.array(z.string()).optional(),
 });
 
+/**
+ * Visual adapter for installed UI blocks.
+ * - shadcn: theme tokens (bg-background, text-primary, …) — Next shadcn/ui or Nuxt shadcn-vue
+ * - minimal: semantic HTML + dkit-prose only (prefer *-minimal block templates)
+ */
+export const UiAdapterSchema = z.enum(["shadcn", "minimal"]);
+export type UiAdapter = z.infer<typeof UiAdapterSchema>;
+
 export const DkitProjectConfigSchema = z.object({
   $schema: z.string().optional(),
   framework: z.enum(["next", "nuxt"]).default("next"),
+  /** How block UI maps to the host design system */
+  uiAdapter: UiAdapterSchema.default("shadcn"),
   aliases: z
     .object({
       components: z.string().default("@/components/dkit"),
@@ -35,6 +45,7 @@ export type ModuleInstallConfig = z.infer<typeof ModuleInstallConfigSchema>;
 
 export const DEFAULT_PROJECT_CONFIG: DkitProjectConfig = {
   framework: "next",
+  uiAdapter: "shadcn",
   aliases: {
     components: "@/components/dkit",
     lib: "@/lib/dkit",
