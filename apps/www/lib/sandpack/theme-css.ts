@@ -2,21 +2,21 @@
 export const SANDPACK_THEME_CSS = `
 :root {
   --radius: 0.5rem;
-  --background: oklch(0.985 0.002 90);
-  --foreground: oklch(0.2 0.01 60);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.01 60);
+  --background: #ffffff;
+  --foreground: #0a0a0a;
+  --card: #ffffff;
+  --card-foreground: #0a0a0a;
   --primary: oklch(0.72 0.2 155);
   --primary-foreground: oklch(0.18 0.04 155);
-  --secondary: oklch(0.96 0.005 90);
-  --secondary-foreground: oklch(0.25 0.01 60);
-  --muted: oklch(0.95 0.005 90);
-  --muted-foreground: oklch(0.5 0.015 60);
-  --accent: oklch(0.94 0.04 155);
+  --secondary: #f4f4f5;
+  --secondary-foreground: #18181b;
+  --muted: #f4f4f5;
+  --muted-foreground: #52525b;
+  --accent: oklch(0.95 0.04 155);
   --accent-foreground: oklch(0.28 0.08 155);
   --destructive: oklch(0.55 0.2 25);
-  --border: oklch(0.9 0.005 90);
-  --input: oklch(0.9 0.005 90);
+  --border: #e4e4e7;
+  --input: #e4e4e7;
   --ring: oklch(0.72 0.2 155);
 }
 @theme inline {
@@ -43,7 +43,7 @@ export const SANDPACK_THEME_CSS = `
 html, body, #root, #app {
   margin: 0;
   min-height: 100%;
-  background: var(--background);
+  background: #ffffff;
   color: var(--foreground);
   font-family: ui-sans-serif, system-ui, sans-serif;
 }

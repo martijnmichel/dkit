@@ -8,57 +8,56 @@
 @source "../lib/**/*.{js,jsx,ts,tsx}";
 
 /*
- * shadcn-compatible theme tokens so registry block previews inherit the same
- * contract as Next shadcn/ui / Nuxt shadcn-vue apps.
+ * Near-white docs chrome + shadcn-compatible tokens for block previews.
+ * Avoid warm paper tints — keep backgrounds neutral white / gray.
  */
 :root {
   color-scheme: light dark;
   --radius: 0.5rem;
-  --background: oklch(0.985 0.002 90);
-  --foreground: oklch(0.2 0.01 60);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.01 60);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.01 60);
-  /* Vibrant spring mint — high chroma, works on light paper */
+  --background: #ffffff;
+  --foreground: #0a0a0a;
+  --card: #ffffff;
+  --card-foreground: #0a0a0a;
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0a;
+  /* Vibrant spring mint */
   --primary: oklch(0.72 0.2 155);
   --primary-foreground: oklch(0.18 0.04 155);
-  --secondary: oklch(0.96 0.005 90);
-  --secondary-foreground: oklch(0.25 0.01 60);
-  --muted: oklch(0.95 0.005 90);
-  --muted-foreground: oklch(0.5 0.015 60);
-  --accent: oklch(0.94 0.04 155);
+  --secondary: #f4f4f5;
+  --secondary-foreground: #18181b;
+  --muted: #f4f4f5;
+  --muted-foreground: #52525b;
+  --accent: oklch(0.95 0.04 155);
   --accent-foreground: oklch(0.28 0.08 155);
   --destructive: oklch(0.55 0.2 25);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.9 0.005 90);
-  --input: oklch(0.9 0.005 90);
+  --destructive-foreground: #fafafa;
+  --border: #e4e4e7;
+  --input: #e4e4e7;
   --ring: oklch(0.72 0.2 155);
 
-  /* Legacy site chrome (directory chrome, not block UI) */
   --bg: var(--background);
   --fg: var(--foreground);
 }
 
 .dark {
-  --background: oklch(0.16 0.01 60);
-  --foreground: oklch(0.96 0.005 90);
-  --card: oklch(0.2 0.01 60);
-  --card-foreground: oklch(0.96 0.005 90);
-  --popover: oklch(0.2 0.01 60);
-  --popover-foreground: oklch(0.96 0.005 90);
+  --background: #09090b;
+  --foreground: #fafafa;
+  --card: #09090b;
+  --card-foreground: #fafafa;
+  --popover: #09090b;
+  --popover-foreground: #fafafa;
   --primary: oklch(0.78 0.18 155);
   --primary-foreground: oklch(0.16 0.04 155);
-  --secondary: oklch(0.25 0.01 60);
-  --secondary-foreground: oklch(0.96 0.005 90);
-  --muted: oklch(0.25 0.01 60);
-  --muted-foreground: oklch(0.7 0.015 60);
+  --secondary: #27272a;
+  --secondary-foreground: #fafafa;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
   --accent: oklch(0.28 0.05 155);
   --accent-foreground: oklch(0.9 0.06 155);
   --destructive: oklch(0.6 0.2 25);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.3 0.01 60);
-  --input: oklch(0.3 0.01 60);
+  --destructive-foreground: #fafafa;
+  --border: #27272a;
+  --input: #27272a;
   --ring: oklch(0.78 0.18 155);
 }
 
@@ -86,6 +85,8 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 html,
@@ -94,16 +95,15 @@ body {
   min-height: 100vh;
   background: var(--background);
   color: var(--foreground);
-  font-family:
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    Segoe UI,
-    Roboto,
-    Helvetica,
-    Arial,
-    sans-serif;
-  line-height: 1.5;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-feature-settings: "ss01" on, "cv11" on;
 }
 
 a {
@@ -147,11 +147,12 @@ a:hover {
   display: block;
   overflow-x: auto;
   border-radius: var(--radius);
-  background: oklch(0.2 0.01 60);
-  color: oklch(0.96 0.005 90);
+  background: #18181b;
+  color: #fafafa;
   padding: 1rem 1.25rem;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.875rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.55;
 }
 
 .badge {
@@ -160,6 +161,8 @@ a:hover {
   border: 1px solid var(--border);
   padding: 0.15rem 0.55rem;
   font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
 }
 
 .grid-3 {
@@ -169,6 +172,44 @@ a:hover {
 }
 
 .preview-canvas {
-  background: var(--background);
+  background: #ffffff;
   color: var(--foreground);
+}
+
+/* Module detail reading measure */
+.module-prose {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--foreground);
+}
+
+.module-prose .lede {
+  font-size: 1.125rem;
+  line-height: 1.55;
+  color: var(--muted-foreground);
+}
+
+.module-prose h1 {
+  font-size: clamp(1.875rem, 2.5vw, 2.25rem);
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+.module-prose h2 {
+  font-size: 1.25rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+.module-prose code,
+.module-prose .font-mono {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+dialog::backdrop {
+  background: rgb(9 9 11 / 0.45);
+  backdrop-filter: blur(2px);
 }

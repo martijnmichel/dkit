@@ -53,20 +53,18 @@ export default async function ModulePage({
   if (hasFlows) toc.push({ id: "flows", label: "Flows" });
 
   return (
-    <div className="px-6 py-8 lg:px-10">
-      <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_11rem] xl:gap-10">
-        <div className="min-w-0">
+    <div className="bg-background px-6 py-10 lg:px-10">
+      <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_11rem] xl:gap-12">
+        <article className="module-prose min-w-0">
           <OnThisPageMobile items={toc} />
 
           <p className="badge">dkit:module</p>
-          <h1 className="mt-4 text-3xl font-semibold tracking-tight text-foreground">
-            {meta.item.title}
-          </h1>
-          <p className="mt-2 text-muted-foreground">{meta.item.description}</p>
+          <h1 className="mt-4 text-foreground">{meta.item.title}</h1>
+          <p className="lede mt-3 max-w-2xl">{meta.item.description}</p>
 
           <section id="install" className="scroll-mt-24">
             <pre className="code mt-8">{`npx dkit add ${id}`}</pre>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p className="mt-3 text-[0.9375rem] text-muted-foreground">
               Schema only:{" "}
               <code className="font-mono">
                 npx dkit add {id} --schema-only
@@ -77,15 +75,8 @@ export default async function ModulePage({
             </p>
           </section>
 
-          <section id="preview" className="mt-14 scroll-mt-24">
-            <h2 className="text-xl font-semibold tracking-tight text-foreground">
-              UI preview
-            </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Switch framework and UI kit to match your stack. The live sandbox
-              runs the same block sources you get from{" "}
-              <code className="font-mono">dkit add</code>.
-            </p>
+          <section id="preview" className="mt-16 scroll-mt-24">
+            <h2 className="text-foreground">UI preview</h2>
             <div className="mt-6">
               <ModuleBlockPreviews moduleId={id} blocks={blocks} />
             </div>
@@ -94,7 +85,7 @@ export default async function ModulePage({
           <div className="mt-16">
             <SchemaReference schema={schema} access={access} flows={flows} />
           </div>
-        </div>
+        </article>
 
         <aside className="hidden xl:block">
           <OnThisPageRail items={toc} />

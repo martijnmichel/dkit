@@ -5,7 +5,7 @@ export default function HomePage() {
     <div className="relative overflow-hidden">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,color-mix(in_oklab,var(--primary)_22%,transparent),transparent_55%),radial-gradient(ellipse_at_bottom_right,color-mix(in_oklab,var(--primary)_12%,transparent),transparent_50%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,color-mix(in_oklab,var(--primary)_14%,transparent),transparent_50%),radial-gradient(ellipse_at_bottom_right,color-mix(in_oklab,var(--primary)_8%,transparent),transparent_45%)]"
       />
       <div className="relative mx-auto max-w-5xl px-6 py-16 sm:py-24">
         <DkitLogo className="h-14 w-auto text-primary sm:h-16" />
