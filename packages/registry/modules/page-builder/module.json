@@ -10,11 +10,11 @@
   "defaultBlocks": ["page-renderer"],
   "collections": [
     "page_builder",
-    "pages",
+    "builder_pages",
     "block_hero",
     "block_richtext",
     "block_cta",
-    "pages_blocks"
+    "builder_pages_blocks"
   ],
-  "defaultBasePath": "/pages"
+  "defaultBasePath": "/composed"
 }

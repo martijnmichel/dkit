@@ -11,7 +11,7 @@
   "permissions": [
     {
       "policy": "dkit Pages Public Read",
-      "collection": "pages",
+      "collection": "builder_pages",
       "action": "read",
       "fields": ["*"]
     },
@@ -35,7 +35,7 @@
     },
     {
       "policy": "dkit Pages Public Read",
-      "collection": "pages_blocks",
+      "collection": "builder_pages_blocks",
       "action": "read",
       "fields": ["*"]
     }

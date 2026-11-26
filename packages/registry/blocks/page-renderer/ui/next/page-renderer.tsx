@@ -7,7 +7,7 @@ async function getPage(slug: string): Promise<Page | null> {
   if (!url) return null;
   const client = createDirectus(url).with(rest());
   const rows = (await client.request(
-    readItems(collections.pages, {
+    readItems(collections.builder_pages, {
       filter: {
         _and: [{ status: { _eq: "published" } }, { slug: { _eq: slug } }],
       },

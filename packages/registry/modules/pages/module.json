@@ -1,0 +1,19 @@
+{
+  "type": "dkit:module",
+  "id": "pages",
+  "title": "Pages (WYSIWYG)",
+  "description": "Simple published pages with a rich-text body — not the M2A page-builder",
+  "version": "0.1.0",
+  "directus": { "min": "11.0.0" },
+  "dependencies": ["@directus/sdk"],
+  "layers": ["schema", "access", "types"],
+  "defaultBlocks": ["page-detail"],
+  "templates": {
+    "detail": {
+      "default": "page-detail",
+      "options": ["page-detail", "page-detail-minimal"]
+    }
+  },
+  "collections": ["site", "pages"],
+  "defaultBasePath": "/pages"
+}

@@ -19,7 +19,7 @@
       }
     },
     {
-      "collection": "pages",
+      "collection": "builder_pages",
       "schema": {},
       "meta": {
         "icon": "web",
@@ -91,7 +91,11 @@
               ]
             },
             "translations": [{ "language": "en-US", "translation": "Status" }],
-            "note": "Only published pages are public"
+            "note": "Only published pages are public",
+            "validation": {
+              "_and": [{ "status": { "_in": ["published", "draft"] } }]
+            },
+            "validation_message": "Choose Published or Draft."
           },
           "schema": { "default_value": "draft", "is_nullable": false }
         },
@@ -104,9 +108,13 @@
             "width": "half",
             "sort": 3,
             "options": { "trim": true },
-            "translations": [{ "language": "en-US", "translation": "Title" }]
+            "translations": [{ "language": "en-US", "translation": "Title" }],
+            "validation": {
+              "_and": [{ "title": { "_regex": "^.{1,200}$" } }]
+            },
+            "validation_message": "Title is required (max 200 characters)."
           },
-          "schema": { "is_nullable": false }
+          "schema": { "is_nullable": false, "max_length": 200 }
         },
         {
           "field": "slug",
@@ -118,9 +126,19 @@
             "sort": 4,
             "options": { "trim": true, "slug": true },
             "translations": [{ "language": "en-US", "translation": "Slug" }],
-            "note": "URL path segment for this page"
+            "note": "URL path segment for this page",
+            "validation": {
+              "_and": [
+                {
+                  "slug": {
+                    "_regex": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                  }
+                }
+              ]
+            },
+            "validation_message": "Use lowercase letters, numbers, and hyphens only."
           },
-          "schema": { "is_nullable": false, "is_unique": true }
+          "schema": { "is_nullable": false, "is_unique": true, "max_length": 200 }
         },
         {
           "field": "blocks",
@@ -190,9 +208,13 @@
             "width": "full",
             "sort": 2,
             "options": { "trim": true },
-            "translations": [{ "language": "en-US", "translation": "Heading" }]
+            "translations": [{ "language": "en-US", "translation": "Heading" }],
+            "validation": {
+              "_and": [{ "heading": { "_regex": "^.{1,200}$" } }]
+            },
+            "validation_message": "Heading is required (max 200 characters)."
           },
-          "schema": { "is_nullable": false }
+          "schema": { "is_nullable": false, "max_length": 200 }
         },
         {
           "field": "subheading",
@@ -204,7 +226,19 @@
             "translations": [
               { "language": "en-US", "translation": "Subheading" }
             ],
-            "note": "Supporting line under the heading"
+            "note": "Supporting line under the heading",
+            "validation": {
+              "_and": [
+                {
+                  "_or": [
+                    { "subheading": { "_null": true } },
+                    { "subheading": { "_empty": true } },
+                    { "subheading": { "_regex": "^[\\s\\S]{1,500}$" } }
+                  ]
+                }
+              ]
+            },
+            "validation_message": "Subheading must be at most 500 characters."
           },
           "schema": {}
         }
@@ -339,9 +373,13 @@
             "options": { "trim": true, "placeholder": "Get started" },
             "translations": [
               { "language": "en-US", "translation": "Button label" }
-            ]
+            ],
+            "validation": {
+              "_and": [{ "label": { "_regex": "^.{1,80}$" } }]
+            },
+            "validation_message": "Label is required (max 80 characters)."
           },
-          "schema": { "is_nullable": false }
+          "schema": { "is_nullable": false, "max_length": 80 }
         },
         {
           "field": "href",
@@ -359,14 +397,24 @@
             "translations": [
               { "language": "en-US", "translation": "Link URL" }
             ],
-            "note": "Internal path or absolute URL"
+            "note": "Internal path or absolute URL",
+            "validation": {
+              "_and": [
+                {
+                  "href": {
+                    "_regex": "^(?:\\/[A-Za-z0-9\\-._~%!$&'()*+,;=:@\\/]*|https?:\\/\\/[^\\s/$.?#].[^\\s]*)$"
+                  }
+                }
+              ]
+            },
+            "validation_message": "Use a relative path (/page) or absolute URL (https://…)."
           },
-          "schema": { "is_nullable": false }
+          "schema": { "is_nullable": false, "max_length": 500 }
         }
       ]
     },
     {
-      "collection": "pages_blocks",
+      "collection": "builder_pages_blocks",
       "schema": {},
       "meta": {
         "hidden": true,
@@ -395,7 +443,7 @@
           "schema": { "is_primary_key": true, "has_auto_increment": true }
         },
         {
-          "field": "pages_id",
+          "field": "builder_pages_id",
           "type": "uuid",
           "meta": {
             "hidden": true,
@@ -447,13 +495,13 @@
   ],
   "relations": [
     {
-      "collection": "pages_blocks",
-      "field": "pages_id",
-      "related_collection": "pages",
+      "collection": "builder_pages_blocks",
+      "field": "builder_pages_id",
+      "related_collection": "builder_pages",
       "meta": {
-        "many_collection": "pages_blocks",
-        "many_field": "pages_id",
-        "one_collection": "pages",
+        "many_collection": "builder_pages_blocks",
+        "many_field": "builder_pages_id",
+        "one_collection": "builder_pages",
         "one_field": "blocks",
         "junction_field": "item",
         "one_allowed_collections": ["block_hero", "block_richtext", "block_cta"],
@@ -463,15 +511,15 @@
       "schema": { "on_delete": "CASCADE" }
     },
     {
-      "collection": "pages_blocks",
+      "collection": "builder_pages_blocks",
       "field": "item",
       "related_collection": null,
       "meta": {
-        "many_collection": "pages_blocks",
+        "many_collection": "builder_pages_blocks",
         "many_field": "item",
         "one_allowed_collections": ["block_hero", "block_richtext", "block_cta"],
         "one_collection_field": "collection",
-        "junction_field": "pages_id"
+        "junction_field": "builder_pages_id"
       },
       "schema": null
     }

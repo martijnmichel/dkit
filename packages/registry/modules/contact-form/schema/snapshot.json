@@ -15,7 +15,8 @@
             "singular": "Contact",
             "plural": "Contact"
           }
-        ]
+        ],
+        "note": "Inbox for public form submissions. Email notify is optional via the inactive flow."
       }
     },
     {
@@ -26,6 +27,10 @@
         "color": "#0F766E",
         "group": "contact",
         "display_template": "{{name}} — {{email}}",
+        "archive_field": "status",
+        "archive_value": "archived",
+        "unarchive_value": "new",
+        "archive_app_filter": true,
         "sort": 1,
         "translations": [
           {
@@ -35,7 +40,7 @@
             "plural": "Submissions"
           }
         ],
-        "note": "Inbound messages from the public contact form"
+        "note": "Stored in Directus as an inbox. Wire the optional notify flow only if email is configured."
       },
       "fields": [
         {
@@ -57,6 +62,52 @@
           }
         },
         {
+          "field": "status",
+          "type": "string",
+          "meta": {
+            "interface": "select-dropdown",
+            "display": "labels",
+            "width": "half",
+            "sort": 2,
+            "options": {
+              "choices": [
+                { "text": "New", "value": "new" },
+                { "text": "Read", "value": "read" },
+                { "text": "Archived", "value": "archived" }
+              ]
+            },
+            "display_options": {
+              "choices": [
+                {
+                  "text": "New",
+                  "value": "new",
+                  "foreground": "#FFFFFF",
+                  "background": "#0F766E"
+                },
+                {
+                  "text": "Read",
+                  "value": "read",
+                  "foreground": "#44403C",
+                  "background": "#E7E5E4"
+                },
+                {
+                  "text": "Archived",
+                  "value": "archived",
+                  "foreground": "#FFFFFF",
+                  "background": "#A8A29E"
+                }
+              ]
+            },
+            "translations": [{ "language": "en-US", "translation": "Status" }],
+            "note": "Inbox triage in the Directus dashboard",
+            "validation": {
+              "_and": [{ "status": { "_in": ["new", "read", "archived"] } }]
+            },
+            "validation_message": "Choose New, Read, or Archived."
+          },
+          "schema": { "default_value": "new", "is_nullable": false }
+        },
+        {
           "field": "created_at",
           "type": "timestamp",
           "meta": {
@@ -65,7 +116,7 @@
             "special": ["date-created"],
             "readonly": true,
             "width": "half",
-            "sort": 2,
+            "sort": 3,
             "translations": [
               { "language": "en-US", "translation": "Received at" }
             ],
@@ -80,11 +131,15 @@
             "interface": "input",
             "required": true,
             "width": "half",
-            "sort": 3,
+            "sort": 4,
             "options": { "trim": true },
-            "translations": [{ "language": "en-US", "translation": "Name" }]
+            "translations": [{ "language": "en-US", "translation": "Name" }],
+            "validation": {
+              "_and": [{ "name": { "_regex": "^.{1,120}$" } }]
+            },
+            "validation_message": "Name is required (max 120 characters)."
           },
-          "schema": { "is_nullable": false }
+          "schema": { "is_nullable": false, "max_length": 120 }
         },
         {
           "field": "email",
@@ -93,16 +148,26 @@
             "interface": "input",
             "required": true,
             "width": "half",
-            "sort": 4,
+            "sort": 5,
             "options": {
               "trim": true,
               "placeholder": "name@example.com",
               "iconLeft": "email"
             },
             "translations": [{ "language": "en-US", "translation": "Email" }],
-            "note": "Reply-to address"
+            "note": "Reply-to address",
+            "validation": {
+              "_and": [
+                {
+                  "email": {
+                    "_regex": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
+                  }
+                }
+              ]
+            },
+            "validation_message": "Enter a valid email address."
           },
-          "schema": { "is_nullable": false }
+          "schema": { "is_nullable": false, "max_length": 200 }
         },
         {
           "field": "message",
@@ -111,9 +176,13 @@
             "interface": "input-multiline",
             "required": true,
             "width": "full",
-            "sort": 5,
+            "sort": 6,
             "options": { "trim": true },
-            "translations": [{ "language": "en-US", "translation": "Message" }]
+            "translations": [{ "language": "en-US", "translation": "Message" }],
+            "validation": {
+              "_and": [{ "message": { "_regex": "^[\\s\\S]{1,5000}$" } }]
+            },
+            "validation_message": "Message is required (max 5000 characters)."
           },
           "schema": { "is_nullable": false }
         }

@@ -351,35 +351,78 @@ async function applySeed(
   }
   if (options.dryRun) return { applied: false, lines };
 
+  // Directus usually assigns its own file UUIDs — map seed ids → actual ids
+  const fileIdMap = new Map<string, string>();
   for (const file of seed.files ?? []) {
-    const outcome = await upsertSeedFile(client, url, file);
-    if (outcome === "created") log(`→ Seed uploaded file ${file.id}`);
-    else log(`→ Seed reused file ${file.id}`);
+    try {
+      const { id: actualId, created } = await upsertSeedFile(client, url, file);
+      fileIdMap.set(file.id, actualId);
+      if (created) {
+        log(
+          actualId === file.id
+            ? `→ Seed uploaded file ${actualId}`
+            : `→ Seed uploaded file ${file.filename_download} → ${actualId}`,
+        );
+      } else {
+        log(`→ Seed reused file ${actualId}`);
+      }
+    } catch (err) {
+      throw wrapSeedError(`upload file ${file.filename_download}`, err);
+    }
   }
 
   for (const [collection, items] of Object.entries(seed.items ?? {})) {
     for (const item of items) {
-      const outcome = await upsertSeedItem(client, collection, item);
+      const remapped = remapSeedFileRefs(item, fileIdMap);
       const label =
-        typeof item.id === "string" || typeof item.id === "number"
-          ? `${collection}/${item.id}`
+        typeof remapped.id === "string" || typeof remapped.id === "number"
+          ? `${collection}/${remapped.id}`
           : collection;
-      if (outcome === "created") log(`→ Seed created ${label}`);
-      else if (outcome === "updated") log(`→ Seed updated ${label}`);
-      else log(`→ Seed skipped ${label} (already exists)`);
+      try {
+        const outcome = await upsertSeedItem(client, collection, remapped);
+        if (outcome === "created") log(`→ Seed created ${label}`);
+        else if (outcome === "updated") log(`→ Seed updated ${label}`);
+        else log(`→ Seed skipped ${label} (already exists)`);
+      } catch (err) {
+        throw wrapSeedError(`upsert ${label}`, err);
+      }
     }
   }
   log("✓ Seed data applied");
   return { applied: true, lines };
 }
 
+function wrapSeedError(step: string, err: unknown): Error {
+  const msg = err instanceof Error ? err.message : String(err);
+  return new Error(`Seed ${step} failed: ${msg}`);
+}
+
+function remapSeedFileRefs(
+  item: Record<string, unknown>,
+  fileIdMap: Map<string, string>,
+): Record<string, unknown> {
+  if (fileIdMap.size === 0) return item;
+  const next: Record<string, unknown> = { ...item };
+  for (const [key, value] of Object.entries(next)) {
+    if (typeof value === "string" && fileIdMap.has(value)) {
+      next[key] = fileIdMap.get(value);
+    }
+  }
+  return next;
+}
+
 async function upsertSeedFile(
   client: DkitDirectusClient,
   url: string,
   file: NonNullable<SeedBundle["files"]>[number],
-): Promise<"created" | "skipped"> {
-  const exists = await seedFileExists(client, file.id);
-  if (exists) return "skipped";
+): Promise<{ id: string; created: boolean }> {
+  // Prefer stable seed id when Directus accepted it on a prior run
+  if (await seedFileExists(client, file.id)) {
+    return { id: file.id, created: false };
+  }
+
+  const byName = await findSeedFileByFilename(client, file.filename_download);
+  if (byName) return { id: byName, created: false };
 
   const token =
     typeof client.getToken === "function" ? await client.getToken() : null;
@@ -389,18 +432,20 @@ async function upsertSeedFile(
     );
   }
 
+  if (!file.data_base64) {
+    throw new Error(
+      `Seed file ${file.filename_download} has no data_base64 (path not resolved).`,
+    );
+  }
   const bytes = Buffer.from(file.data_base64, "base64");
   const blob = new Blob([bytes], {
     type: file.type ?? "application/octet-stream",
   });
   const form = new FormData();
+  // Hint only — many Directus versions ignore this and mint their own UUID
   form.append("id", file.id);
   form.append("title", file.title ?? file.filename_download);
-  form.append(
-    "file",
-    blob,
-    file.filename_download,
-  );
+  form.append("file", blob, file.filename_download);
 
   const base = url.replace(/\/$/, "");
   const res = await fetch(`${base}/files`, {
@@ -410,10 +455,20 @@ async function upsertSeedFile(
   });
   if (!res.ok) {
     const text = await res.text();
-    if (/RECORD_NOT_UNIQUE/i.test(text)) return "skipped";
     throw new Error(`Seed file upload failed (${res.status}): ${text}`);
   }
-  return "created";
+
+  const payload = (await res.json()) as {
+    data?: { id?: string };
+    id?: string;
+  };
+  const actualId = payload.data?.id ?? payload.id;
+  if (!actualId) {
+    throw new Error(
+      `Seed file upload returned no id for ${file.filename_download}`,
+    );
+  }
+  return { id: actualId, created: true };
 }
 
 async function seedFileExists(
@@ -428,8 +483,33 @@ async function seedFileExists(
     });
     return true;
   } catch (err) {
-    if (isNotFound(err)) return false;
+    // Directus often returns FORBIDDEN (not 404) for missing files
+    if (isNotFound(err) || isForbidden(err)) return false;
     throw err;
+  }
+}
+
+async function findSeedFileByFilename(
+  client: DkitDirectusClient,
+  filename: string,
+): Promise<string | null> {
+  try {
+    const res = await http<
+      Array<{ id: string }> | { data?: Array<{ id: string }> }
+    >(client, {
+      path: "/files",
+      method: "GET",
+      params: {
+        limit: 1,
+        fields: "id",
+        // SDK expects filter as a JSON string
+        filter: JSON.stringify({ filename_download: { _eq: filename } }),
+      },
+    });
+    const list = Array.isArray(res) ? res : (res.data ?? []);
+    return list[0]?.id ?? null;
+  } catch {
+    return null;
   }
 }
 
@@ -459,6 +539,11 @@ async function upsertSeedItem(
     return "created";
   }
 
+  // Junction / rows without a stable id — skip when matching scalars already exist
+  if (await seedItemMatches(client, collection, item)) {
+    return "skipped";
+  }
+
   try {
     await http(client, {
       path: `/items/${collection}`,
@@ -469,6 +554,39 @@ async function upsertSeedItem(
   } catch (err) {
     if (isUniqueViolation(err)) return "skipped";
     throw err;
+  }
+}
+
+/** True when a row already matches all scalar fields (e.g. M2M junction). */
+async function seedItemMatches(
+  client: DkitDirectusClient,
+  collection: string,
+  item: Record<string, unknown>,
+): Promise<boolean> {
+  const filter: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(item)) {
+    if (value === null || value === undefined) continue;
+    if (typeof value === "object") continue;
+    filter[key] = { _eq: value };
+  }
+  if (Object.keys(filter).length === 0) return false;
+
+  try {
+    const res = await http<
+      Array<{ id?: string | number }> | { data?: Array<{ id?: string | number }> }
+    >(client, {
+      path: `/items/${collection}`,
+      method: "GET",
+      params: {
+        limit: 1,
+        fields: "id",
+        filter: JSON.stringify(filter),
+      },
+    });
+    const list = Array.isArray(res) ? res : (res.data ?? []);
+    return list.length > 0;
+  } catch {
+    return false;
   }
 }
 
@@ -485,7 +603,8 @@ async function seedItemExists(
     });
     return true;
   } catch (err) {
-    if (isNotFound(err)) return false;
+    // Missing rows can surface as FORBIDDEN depending on permissions
+    if (isNotFound(err) || isForbidden(err)) return false;
     throw err;
   }
 }
@@ -498,6 +617,11 @@ function isNotFound(err: unknown): boolean {
     /doesn't exist/i.test(msg) ||
     /does not exist/i.test(msg)
   );
+}
+
+function isForbidden(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err);
+  return /\b403\b/.test(msg) || /FORBIDDEN/i.test(msg);
 }
 
 function isUniqueViolation(err: unknown): boolean {

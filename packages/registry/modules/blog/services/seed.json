@@ -1,4 +1,20 @@
 {
+  "files": [
+    {
+      "id": "44444444-4444-4444-8444-444444444444",
+      "filename_download": "ada-lovelace-avatar.png",
+      "title": "Ada Lovelace avatar",
+      "type": "image/png",
+      "path": "assets/ada-lovelace-avatar.png"
+    },
+    {
+      "id": "55555555-5555-4555-8555-555555555555",
+      "filename_download": "hello-from-dkit-cover.png",
+      "title": "Hello from dkit cover",
+      "type": "image/png",
+      "path": "assets/hello-from-dkit-cover.png"
+    }
+  ],
   "items": {
     "authors": [
       {
@@ -6,7 +22,8 @@
         "status": "published",
         "name": "Ada Lovelace",
         "slug": "ada-lovelace",
-        "bio": "Mathematician and first programmer."
+        "bio": "Mathematician and first programmer.",
+        "avatar": "44444444-4444-4444-8444-444444444444"
       }
     ],
     "categories": [
@@ -25,7 +42,8 @@
         "excerpt": "Your first post installed by dkit.",
         "body": "<p>This post was seeded by <strong>dkit add blog --seed</strong>.</p>",
         "published_at": "2026-01-15T10:00:00.000Z",
-        "author": "11111111-1111-4111-8111-111111111111"
+        "author": "11111111-1111-4111-8111-111111111111",
+        "featured_image": "55555555-5555-4555-8555-555555555555"
       }
     ],
     "posts_categories": [

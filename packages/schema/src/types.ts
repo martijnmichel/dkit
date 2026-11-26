@@ -78,13 +78,18 @@ export type OperationRecord = {
 };
 
 export type SeedFile = {
-  /** Stable UUID so re-seed can skip/reuse the same file */
+  /** Stable logical id used in item FK fields (remapped to real Directus file id) */
   id: string;
   filename_download: string;
   title?: string;
   type?: string;
-  /** Raw file bytes as base64 (no data: URL prefix) */
-  data_base64: string;
+  /**
+   * Path relative to the module `services/` folder (preferred).
+   * Loaded into `data_base64` by the CLI before apply.
+   */
+  path?: string;
+  /** Raw file bytes as base64 (no data: URL prefix). Optional if `path` is set. */
+  data_base64?: string;
 };
 
 export type SeedBundle = {

@@ -107,9 +107,42 @@ function loadModuleDir(dir: string): LoadedModule {
     snapshot: readJsonIfExists(snapshotPath),
     access: readJsonIfExists(accessPath),
     flows: readJsonIfExists(flowsPath),
-    seed: readJsonIfExists(seedPath),
+    seed: loadSeedBundle(path.join(dir, "services"), seedPath),
     typesFiles,
   };
+}
+
+/** Load seed.json and inline file bytes from `path` relative to services/. */
+function loadSeedBundle(servicesDir: string, seedPath: string): unknown {
+  if (!fs.existsSync(seedPath)) return undefined;
+  const seed = JSON.parse(fs.readFileSync(seedPath, "utf8")) as {
+    files?: Array<{
+      id: string;
+      filename_download: string;
+      title?: string;
+      type?: string;
+      path?: string;
+      data_base64?: string;
+    }>;
+    items?: Record<string, Record<string, unknown>[]>;
+  };
+  if (!seed.files?.length) return seed;
+
+  seed.files = seed.files.map((file) => {
+    if (file.data_base64 || !file.path) return file;
+    const abs = path.resolve(servicesDir, file.path);
+    if (!abs.startsWith(path.resolve(servicesDir))) {
+      throw new Error(`Seed file path escapes services/: ${file.path}`);
+    }
+    if (!fs.existsSync(abs)) {
+      throw new Error(`Seed file not found: ${abs}`);
+    }
+    return {
+      ...file,
+      data_base64: fs.readFileSync(abs).toString("base64"),
+    };
+  });
+  return seed;
 }
 
 function loadBlockDir(dir: string, framework: Framework): LoadedBlock {

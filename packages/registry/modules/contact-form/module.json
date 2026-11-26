@@ -1,8 +1,8 @@
 {
   "type": "dkit:module",
   "id": "contact-form",
-  "title": "Lead Capture Form",
-  "description": "Write-only submissions + email notification flow",
+  "title": "Contact form",
+  "description": "Public form → Directus inbox. Optional email notify if Directus mail is configured.",
   "version": "0.1.0",
   "directus": { "min": "11.0.0" },
   "dependencies": ["@directus/sdk", "zod"],

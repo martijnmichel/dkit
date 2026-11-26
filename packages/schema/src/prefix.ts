@@ -114,7 +114,11 @@ export function applyCollectionPrefixToSeed(
   for (const [collection, rows] of Object.entries(seed.items ?? {})) {
     items[rename(collection)] = rows;
   }
-  return { items };
+  return {
+    // files are Directus system assets — never prefix; keep as-is
+    files: seed.files,
+    items,
+  };
 }
 
 export function buildCollectionMap(

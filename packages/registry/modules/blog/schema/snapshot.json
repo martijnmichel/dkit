@@ -93,7 +93,11 @@
             "translations": [
               { "language": "en-US", "translation": "Status" }
             ],
-            "note": "Only published authors appear on the public site"
+            "note": "Only published authors appear on the public site",
+            "validation": {
+              "_and": [{ "status": { "_in": ["published", "draft"] } }]
+            },
+            "validation_message": "Choose Published or Draft."
           },
           "schema": { "default_value": "draft", "is_nullable": false }
         },
@@ -109,9 +113,13 @@
             "translations": [
               { "language": "en-US", "translation": "Name" }
             ],
-            "note": "Display name shown on posts"
+            "note": "Display name shown on posts",
+            "validation": {
+              "_and": [{ "name": { "_regex": "^.{1,120}$" } }]
+            },
+            "validation_message": "Name is required (max 120 characters)."
           },
-          "schema": { "is_nullable": false }
+          "schema": { "is_nullable": false, "max_length": 120 }
         },
         {
           "field": "slug",
@@ -125,9 +133,19 @@
             "translations": [
               { "language": "en-US", "translation": "Slug" }
             ],
-            "note": "URL-friendly identifier (unique)"
+            "note": "URL-friendly identifier (unique)",
+            "validation": {
+              "_and": [
+                {
+                  "slug": {
+                    "_regex": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                  }
+                }
+              ]
+            },
+            "validation_message": "Use lowercase letters, numbers, and hyphens only."
           },
-          "schema": { "is_nullable": false, "is_unique": true }
+          "schema": { "is_nullable": false, "is_unique": true, "max_length": 120 }
         },
         {
           "field": "avatar",
@@ -212,9 +230,13 @@
             "options": { "trim": true },
             "translations": [
               { "language": "en-US", "translation": "Title" }
-            ]
+            ],
+            "validation": {
+              "_and": [{ "title": { "_regex": "^.{1,120}$" } }]
+            },
+            "validation_message": "Title is required (max 120 characters)."
           },
-          "schema": { "is_nullable": false }
+          "schema": { "is_nullable": false, "max_length": 120 }
         },
         {
           "field": "slug",
@@ -228,9 +250,19 @@
             "translations": [
               { "language": "en-US", "translation": "Slug" }
             ],
-            "note": "URL-friendly identifier (unique)"
+            "note": "URL-friendly identifier (unique)",
+            "validation": {
+              "_and": [
+                {
+                  "slug": {
+                    "_regex": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                  }
+                }
+              ]
+            },
+            "validation_message": "Use lowercase letters, numbers, and hyphens only."
           },
-          "schema": { "is_nullable": false, "is_unique": true }
+          "schema": { "is_nullable": false, "is_unique": true, "max_length": 120 }
         }
       ]
     },
@@ -318,7 +350,17 @@
             "translations": [
               { "language": "en-US", "translation": "Status" }
             ],
-            "note": "Only published posts appear on the public site"
+            "note": "Only published posts appear on the public site",
+            "validation": {
+              "_and": [
+                {
+                  "status": {
+                    "_in": ["published", "draft", "archived"]
+                  }
+                }
+              ]
+            },
+            "validation_message": "Choose Published, Draft, or Archived."
           },
           "schema": { "default_value": "draft", "is_nullable": false }
         },
@@ -333,7 +375,16 @@
             "translations": [
               { "language": "en-US", "translation": "Published at" }
             ],
-            "note": "Public publish date/time"
+            "note": "Public publish date/time",
+            "conditions": [
+              {
+                "name": "Required when published",
+                "rule": {
+                  "_and": [{ "status": { "_eq": "published" } }]
+                },
+                "required": true
+              }
+            ]
           },
           "schema": {}
         },
@@ -348,9 +399,13 @@
             "options": { "trim": true },
             "translations": [
               { "language": "en-US", "translation": "Title" }
-            ]
+            ],
+            "validation": {
+              "_and": [{ "title": { "_regex": "^.{1,200}$" } }]
+            },
+            "validation_message": "Title is required (max 200 characters)."
           },
-          "schema": { "is_nullable": false }
+          "schema": { "is_nullable": false, "max_length": 200 }
         },
         {
           "field": "slug",
@@ -364,9 +419,19 @@
             "translations": [
               { "language": "en-US", "translation": "Slug" }
             ],
-            "note": "Used in the post URL"
+            "note": "Used in the post URL",
+            "validation": {
+              "_and": [
+                {
+                  "slug": {
+                    "_regex": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                  }
+                }
+              ]
+            },
+            "validation_message": "Use lowercase letters, numbers, and hyphens only."
           },
-          "schema": { "is_nullable": false, "is_unique": true }
+          "schema": { "is_nullable": false, "is_unique": true, "max_length": 200 }
         },
         {
           "field": "author",
@@ -383,7 +448,16 @@
             "translations": [
               { "language": "en-US", "translation": "Author" }
             ],
-            "note": "Primary author of this post"
+            "note": "Primary author of this post",
+            "conditions": [
+              {
+                "name": "Required when published",
+                "rule": {
+                  "_and": [{ "status": { "_eq": "published" } }]
+                },
+                "required": true
+              }
+            ]
           },
           "schema": {}
         },
@@ -433,7 +507,19 @@
             "translations": [
               { "language": "en-US", "translation": "Excerpt" }
             ],
-            "note": "Short summary shown on listing pages"
+            "note": "Short summary shown on listing pages",
+            "validation": {
+              "_and": [
+                {
+                  "_or": [
+                    { "excerpt": { "_null": true } },
+                    { "excerpt": { "_empty": true } },
+                    { "excerpt": { "_regex": "^[\\s\\S]{1,500}$" } }
+                  ]
+                }
+              ]
+            },
+            "validation_message": "Excerpt must be at most 500 characters."
           },
           "schema": {}
         },
@@ -462,7 +548,16 @@
             "translations": [
               { "language": "en-US", "translation": "Body" }
             ],
-            "note": "Main post content"
+            "note": "Main post content",
+            "conditions": [
+              {
+                "name": "Required when published",
+                "rule": {
+                  "_and": [{ "status": { "_eq": "published" } }]
+                },
+                "required": true
+              }
+            ]
           },
           "schema": {}
         }
