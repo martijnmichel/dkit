@@ -7,6 +7,8 @@ type BlogPost = {
   slug: string
   excerpt?: string | null
   published_at?: string | null
+  featured_image?: string | { id: string } | null
+  author?: { name?: string; avatar?: string | { id: string } | null } | string | null
 }
 
 const props = withDefaults(defineProps<{ basePath?: string }>(), {
@@ -18,18 +20,45 @@ const resolvedBase = computed(
 )
 
 const config = useRuntimeConfig()
+const directusUrl = (config.public.directusUrl as string | undefined)?.replace(/\/$/, '')
+
+function fileId(value: string | { id: string } | null | undefined) {
+  if (!value) return null
+  return typeof value === 'string' ? value : value.id
+}
+
+function assetUrl(value: string | { id: string } | null | undefined) {
+  const id = fileId(value)
+  return id && directusUrl ? `${directusUrl}/assets/${id}` : null
+}
+
+function authorOf(post: BlogPost) {
+  return typeof post.author === 'object' && post.author?.name ? post.author : null
+}
+
 const { data: posts } = await useAsyncData('dkit-blog-list-cards', async () => {
-  const url = config.public.directusUrl as string | undefined
-  if (!url) return [] as BlogPost[]
-  const { createDirectus, rest, readItems } = await import('@directus/sdk')
-  const client = createDirectus(url).with(rest())
-  return client.request(
-    readItems(collections.posts, {
-      filter: { status: { _eq: 'published' } },
-      fields: ['id', 'title', 'slug', 'excerpt', 'published_at'],
-      sort: ['-published_at'],
-    }),
-  ) as Promise<BlogPost[]>
+  if (!directusUrl) return [] as BlogPost[]
+  try {
+    const { createDirectus, rest, readItems } = await import('@directus/sdk')
+    const client = createDirectus(directusUrl).with(rest())
+    return (await client.request(
+      readItems(collections.posts, {
+        filter: { status: { _eq: 'published' } },
+        fields: [
+          'id',
+          'title',
+          'slug',
+          'excerpt',
+          'published_at',
+          'featured_image',
+          { author: ['name', 'avatar'] },
+        ],
+        sort: ['-published_at'],
+      }),
+    )) as BlogPost[]
+  } catch {
+    return [] as BlogPost[]
+  }
 })
 </script>
 
@@ -57,35 +86,62 @@ const { data: posts } = await useAsyncData('dkit-blog-list-cards', async () => {
         v-for="post in posts"
         :key="post.id"
         :to="`${resolvedBase}/${post.slug}`"
-        class="group relative flex flex-col overflow-hidden rounded-3xl border border-stone-200 bg-white p-6 shadow-[0_1px_0_rgba(28,25,23,0.04)] transition hover:-translate-y-0.5 hover:border-teal-700/30 hover:shadow-md dark:border-stone-800 dark:bg-stone-950"
+        class="group relative flex flex-col overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-[0_1px_0_rgba(28,25,23,0.04)] transition hover:-translate-y-0.5 hover:border-teal-700/30 hover:shadow-md dark:border-stone-800 dark:bg-stone-950"
       >
-        <div class="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-teal-700 transition group-hover:scale-x-100" />
-        <time
-          v-if="post.published_at"
-          :datetime="post.published_at"
-          class="text-xs font-medium tracking-wide text-stone-400 uppercase"
-        >
-          {{
-            new Date(post.published_at).toLocaleDateString(undefined, {
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric',
-            })
-          }}
-        </time>
-        <h2 class="mt-3 font-serif text-2xl tracking-tight text-stone-900 transition group-hover:text-teal-800 dark:text-stone-50 dark:group-hover:text-teal-300">
-          {{ post.title }}
-        </h2>
-        <p
-          v-if="post.excerpt"
-          class="mt-3 line-clamp-3 flex-1 text-sm leading-relaxed text-stone-500 dark:text-stone-400"
-        >
-          {{ post.excerpt }}
-        </p>
-        <span v-else class="flex-1" />
-        <span class="mt-6 text-sm font-medium text-teal-800 dark:text-teal-300">
-          Read article →
-        </span>
+        <img
+          v-if="assetUrl(post.featured_image)"
+          :src="assetUrl(post.featured_image)!"
+          alt=""
+          class="aspect-[16/9] w-full object-cover"
+        />
+        <div
+          v-else
+          class="aspect-[16/9] w-full bg-gradient-to-br from-stone-100 to-stone-200 dark:from-stone-900 dark:to-stone-800"
+        />
+        <div class="flex flex-1 flex-col p-6">
+          <div class="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-teal-700 transition group-hover:scale-x-100" />
+          <time
+            v-if="post.published_at"
+            :datetime="post.published_at"
+            class="text-xs font-medium tracking-wide text-stone-400 uppercase"
+          >
+            {{
+              new Date(post.published_at).toLocaleDateString(undefined, {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })
+            }}
+          </time>
+          <h2 class="mt-3 font-serif text-2xl tracking-tight text-stone-900 transition group-hover:text-teal-800 dark:text-stone-50 dark:group-hover:text-teal-300">
+            {{ post.title }}
+          </h2>
+          <p
+            v-if="post.excerpt"
+            class="mt-3 line-clamp-3 flex-1 text-sm leading-relaxed text-stone-500 dark:text-stone-400"
+          >
+            {{ post.excerpt }}
+          </p>
+          <span v-else class="flex-1" />
+          <div class="mt-6 flex items-center justify-between gap-3">
+            <span
+              v-if="authorOf(post)"
+              class="inline-flex items-center gap-2 text-xs text-stone-500"
+            >
+              <img
+                v-if="assetUrl(authorOf(post)!.avatar)"
+                :src="assetUrl(authorOf(post)!.avatar)!"
+                alt=""
+                class="h-6 w-6 rounded-full object-cover ring-1 ring-stone-200 dark:ring-stone-700"
+              />
+              {{ authorOf(post)!.name }}
+            </span>
+            <span v-else />
+            <span class="text-sm font-medium text-teal-800 dark:text-teal-300">
+              Read article →
+            </span>
+          </div>
+        </div>
       </NuxtLink>
     </div>
   </div>

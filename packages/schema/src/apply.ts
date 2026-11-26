@@ -97,8 +97,13 @@ export async function applyModule(
     result.flowsApplied = plan.applied;
   }
 
-  if (options.seed && payload.seed?.items) {
-    const plan = await applySeed(client, payload.seed, options, log);
+  if (
+    options.seed &&
+    payload.seed &&
+    ((payload.seed.files?.length ?? 0) > 0 ||
+      Object.keys(payload.seed.items ?? {}).length > 0)
+  ) {
+    const plan = await applySeed(client, url, payload.seed, options, log);
     dryRunPlan.push(...plan.lines);
     result.seedApplied = plan.applied;
   }
@@ -332,25 +337,170 @@ async function applyFlows(
 
 async function applySeed(
   client: DkitDirectusClient,
+  url: string,
   seed: SeedBundle,
   options: ApplyOptions,
   log: (m: string) => void,
 ): Promise<{ applied: boolean; lines: string[] }> {
   const lines: string[] = [];
+  if (seed.files?.length) {
+    lines.push(`seed: ${seed.files.length} file(s)`);
+  }
   for (const [collection, items] of Object.entries(seed.items ?? {})) {
     lines.push(`seed: ${items.length} item(s) → ${collection}`);
   }
   if (options.dryRun) return { applied: false, lines };
 
+  for (const file of seed.files ?? []) {
+    const outcome = await upsertSeedFile(client, url, file);
+    if (outcome === "created") log(`→ Seed uploaded file ${file.id}`);
+    else log(`→ Seed reused file ${file.id}`);
+  }
+
   for (const [collection, items] of Object.entries(seed.items ?? {})) {
     for (const item of items) {
-      await http(client, {
-        path: `/items/${collection}`,
-        method: "POST",
-        body: item,
-      });
+      const outcome = await upsertSeedItem(client, collection, item);
+      const label =
+        typeof item.id === "string" || typeof item.id === "number"
+          ? `${collection}/${item.id}`
+          : collection;
+      if (outcome === "created") log(`→ Seed created ${label}`);
+      else if (outcome === "updated") log(`→ Seed updated ${label}`);
+      else log(`→ Seed skipped ${label} (already exists)`);
     }
   }
   log("✓ Seed data applied");
   return { applied: true, lines };
+}
+
+async function upsertSeedFile(
+  client: DkitDirectusClient,
+  url: string,
+  file: NonNullable<SeedBundle["files"]>[number],
+): Promise<"created" | "skipped"> {
+  const exists = await seedFileExists(client, file.id);
+  if (exists) return "skipped";
+
+  const token =
+    typeof client.getToken === "function" ? await client.getToken() : null;
+  if (!token) {
+    throw new Error(
+      "Cannot upload seed files: Directus client has no static token.",
+    );
+  }
+
+  const bytes = Buffer.from(file.data_base64, "base64");
+  const blob = new Blob([bytes], {
+    type: file.type ?? "application/octet-stream",
+  });
+  const form = new FormData();
+  form.append("id", file.id);
+  form.append("title", file.title ?? file.filename_download);
+  form.append(
+    "file",
+    blob,
+    file.filename_download,
+  );
+
+  const base = url.replace(/\/$/, "");
+  const res = await fetch(`${base}/files`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: form,
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    if (/RECORD_NOT_UNIQUE/i.test(text)) return "skipped";
+    throw new Error(`Seed file upload failed (${res.status}): ${text}`);
+  }
+  return "created";
+}
+
+async function seedFileExists(
+  client: DkitDirectusClient,
+  id: string,
+): Promise<boolean> {
+  try {
+    await http(client, {
+      path: `/files/${id}`,
+      method: "GET",
+      params: { fields: "id" },
+    });
+    return true;
+  } catch (err) {
+    if (isNotFound(err)) return false;
+    throw err;
+  }
+}
+
+/** Create-or-update seed rows so `dkit add --seed` is safe to re-run. */
+async function upsertSeedItem(
+  client: DkitDirectusClient,
+  collection: string,
+  item: Record<string, unknown>,
+): Promise<"created" | "updated" | "skipped"> {
+  const id = item.id;
+  if (typeof id === "string" || typeof id === "number") {
+    const exists = await seedItemExists(client, collection, id);
+    if (exists) {
+      const { id: _id, ...rest } = item;
+      await http(client, {
+        path: `/items/${collection}/${id}`,
+        method: "PATCH",
+        body: rest,
+      });
+      return "updated";
+    }
+    await http(client, {
+      path: `/items/${collection}`,
+      method: "POST",
+      body: item,
+    });
+    return "created";
+  }
+
+  try {
+    await http(client, {
+      path: `/items/${collection}`,
+      method: "POST",
+      body: item,
+    });
+    return "created";
+  } catch (err) {
+    if (isUniqueViolation(err)) return "skipped";
+    throw err;
+  }
+}
+
+async function seedItemExists(
+  client: DkitDirectusClient,
+  collection: string,
+  id: string | number,
+): Promise<boolean> {
+  try {
+    await http(client, {
+      path: `/items/${collection}/${id}`,
+      method: "GET",
+      params: { fields: "id" },
+    });
+    return true;
+  } catch (err) {
+    if (isNotFound(err)) return false;
+    throw err;
+  }
+}
+
+function isNotFound(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err);
+  return (
+    /\b404\b/.test(msg) ||
+    /RECORD_NOT_FOUND/i.test(msg) ||
+    /doesn't exist/i.test(msg) ||
+    /does not exist/i.test(msg)
+  );
+}
+
+function isUniqueViolation(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err);
+  return /RECORD_NOT_UNIQUE/i.test(msg) || /has to be unique/i.test(msg);
 }

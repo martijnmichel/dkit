@@ -2,11 +2,40 @@
   "format": "dkit.rest",
   "collections": [
     {
+      "collection": "contact",
+      "schema": null,
+      "meta": {
+        "icon": "mail",
+        "color": "#0F766E",
+        "collapse": "open",
+        "translations": [
+          {
+            "language": "en-US",
+            "translation": "Contact",
+            "singular": "Contact",
+            "plural": "Contact"
+          }
+        ]
+      }
+    },
+    {
       "collection": "form_submissions",
       "schema": {},
       "meta": {
         "icon": "inbox",
-        "display_template": "{{email}} — {{created_at}}"
+        "color": "#0F766E",
+        "group": "contact",
+        "display_template": "{{name}} — {{email}}",
+        "sort": 1,
+        "translations": [
+          {
+            "language": "en-US",
+            "translation": "Form submissions",
+            "singular": "Submission",
+            "plural": "Submissions"
+          }
+        ],
+        "note": "Inbound messages from the public contact form"
       },
       "fields": [
         {
@@ -16,7 +45,10 @@
             "hidden": true,
             "readonly": true,
             "interface": "input",
-            "special": ["uuid"]
+            "special": ["uuid"],
+            "sort": 1,
+            "width": "full",
+            "translations": [{ "language": "en-US", "translation": "ID" }]
           },
           "schema": {
             "is_primary_key": true,
@@ -25,32 +57,65 @@
           }
         },
         {
+          "field": "created_at",
+          "type": "timestamp",
+          "meta": {
+            "interface": "datetime",
+            "display": "datetime",
+            "special": ["date-created"],
+            "readonly": true,
+            "width": "half",
+            "sort": 2,
+            "translations": [
+              { "language": "en-US", "translation": "Received at" }
+            ],
+            "note": "Set automatically when the submission is created"
+          },
+          "schema": {}
+        },
+        {
           "field": "name",
           "type": "string",
-          "meta": { "interface": "input", "required": true },
+          "meta": {
+            "interface": "input",
+            "required": true,
+            "width": "half",
+            "sort": 3,
+            "options": { "trim": true },
+            "translations": [{ "language": "en-US", "translation": "Name" }]
+          },
           "schema": { "is_nullable": false }
         },
         {
           "field": "email",
           "type": "string",
-          "meta": { "interface": "input", "required": true },
+          "meta": {
+            "interface": "input",
+            "required": true,
+            "width": "half",
+            "sort": 4,
+            "options": {
+              "trim": true,
+              "placeholder": "name@example.com",
+              "iconLeft": "email"
+            },
+            "translations": [{ "language": "en-US", "translation": "Email" }],
+            "note": "Reply-to address"
+          },
           "schema": { "is_nullable": false }
         },
         {
           "field": "message",
           "type": "text",
-          "meta": { "interface": "input-multiline", "required": true },
-          "schema": { "is_nullable": false }
-        },
-        {
-          "field": "created_at",
-          "type": "timestamp",
           "meta": {
-            "interface": "datetime",
-            "special": ["date-created"],
-            "readonly": true
+            "interface": "input-multiline",
+            "required": true,
+            "width": "full",
+            "sort": 5,
+            "options": { "trim": true },
+            "translations": [{ "language": "en-US", "translation": "Message" }]
           },
-          "schema": {}
+          "schema": { "is_nullable": false }
         }
       ]
     }

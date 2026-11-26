@@ -9,6 +9,7 @@
   "layers": ["schema", "access", "services", "types"],
   "defaultBlocks": ["page-renderer"],
   "collections": [
+    "page_builder",
     "pages",
     "block_hero",
     "block_richtext",

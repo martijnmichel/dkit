@@ -1,5 +1,6 @@
 import { createDirectus, readItems, rest } from "@directus/sdk";
 import type { BlogPost } from "@/lib/dkit/blog";
+import { directusAssetUrl, directusFileId } from "@/lib/dkit/blog";
 import { collections, moduleBasePath } from "@/lib/dkit/config";
 
 async function getPosts(): Promise<BlogPost[]> {
@@ -16,7 +17,8 @@ async function getPosts(): Promise<BlogPost[]> {
           "slug",
           "excerpt",
           "published_at",
-          { author: ["id", "name", "slug"] },
+          "featured_image",
+          { author: ["id", "name", "slug", "avatar"] },
         ],
         sort: ["-published_at"],
       }),
@@ -30,6 +32,12 @@ function authorName(post: BlogPost): string | null {
   return typeof post.author === "object" && post.author?.name
     ? post.author.name
     : null;
+}
+
+function authorAvatarUrl(post: BlogPost): string | null {
+  if (typeof post.author !== "object" || !post.author) return null;
+  const id = directusFileId(post.author.avatar);
+  return id ? directusAssetUrl(id) : null;
 }
 
 export async function BlogList({
@@ -59,49 +67,74 @@ export async function BlogList({
         </p>
       ) : (
         <ul className="space-y-2">
-          {posts.map((post, i) => (
-            <li key={post.id}>
-              <a
-                href={`${basePath}/${post.slug}`}
-                className="group flex gap-5 rounded-2xl px-4 py-5 transition hover:bg-stone-100/80 dark:hover:bg-stone-900/60"
-              >
-                <span className="mt-1 w-8 shrink-0 font-mono text-xs text-stone-400 tabular-nums">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block font-serif text-xl tracking-tight text-stone-900 transition group-hover:text-teal-800 dark:text-stone-50 dark:group-hover:text-teal-300">
-                    {post.title}
-                  </span>
-                  {post.excerpt ? (
-                    <span className="mt-2 block text-sm leading-relaxed text-stone-500 dark:text-stone-400">
-                      {post.excerpt}
+          {posts.map((post, i) => {
+            const imageId = directusFileId(post.featured_image);
+            const imageUrl = imageId ? directusAssetUrl(imageId) : null;
+            return (
+              <li key={post.id}>
+                <a
+                  href={`${basePath}/${post.slug}`}
+                  className="group flex gap-5 rounded-2xl px-4 py-5 transition hover:bg-stone-100/80 dark:hover:bg-stone-900/60"
+                >
+                  {imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={imageUrl}
+                      alt=""
+                      className="mt-0.5 h-16 w-16 shrink-0 rounded-xl object-cover ring-1 ring-stone-200 dark:ring-stone-700"
+                    />
+                  ) : (
+                    <span className="mt-1 w-8 shrink-0 font-mono text-xs text-stone-400 tabular-nums">
+                      {String(i + 1).padStart(2, "0")}
                     </span>
-                  ) : null}
-                  <span className="mt-3 flex flex-wrap items-center gap-x-2 text-xs text-stone-400">
-                    {authorName(post) ? <span>{authorName(post)}</span> : null}
-                    {authorName(post) && post.published_at ? (
-                      <span aria-hidden>·</span>
+                  )}
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-serif text-xl tracking-tight text-stone-900 transition group-hover:text-teal-800 dark:text-stone-50 dark:group-hover:text-teal-300">
+                      {post.title}
+                    </span>
+                    {post.excerpt ? (
+                      <span className="mt-2 block text-sm leading-relaxed text-stone-500 dark:text-stone-400">
+                        {post.excerpt}
+                      </span>
                     ) : null}
-                    {post.published_at ? (
-                      <time dateTime={post.published_at}>
-                        {new Date(post.published_at).toLocaleDateString(
-                          undefined,
-                          {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          },
-                        )}
-                      </time>
-                    ) : null}
-                    <span className="ml-auto text-teal-800 opacity-0 transition group-hover:opacity-100 dark:text-teal-300">
-                      Read →
+                    <span className="mt-3 flex flex-wrap items-center gap-x-2 text-xs text-stone-400">
+                      {authorName(post) ? (
+                        <span className="inline-flex items-center gap-1.5">
+                          {authorAvatarUrl(post) ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={authorAvatarUrl(post)!}
+                              alt=""
+                              className="h-5 w-5 rounded-full object-cover ring-1 ring-stone-200 dark:ring-stone-700"
+                            />
+                          ) : null}
+                          <span>{authorName(post)}</span>
+                        </span>
+                      ) : null}
+                      {authorName(post) && post.published_at ? (
+                        <span aria-hidden>·</span>
+                      ) : null}
+                      {post.published_at ? (
+                        <time dateTime={post.published_at}>
+                          {new Date(post.published_at).toLocaleDateString(
+                            undefined,
+                            {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                            },
+                          )}
+                        </time>
+                      ) : null}
+                      <span className="ml-auto text-teal-800 opacity-0 transition group-hover:opacity-100 dark:text-teal-300">
+                        Read →
+                      </span>
                     </span>
                   </span>
-                </span>
-              </a>
-            </li>
-          ))}
+                </a>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

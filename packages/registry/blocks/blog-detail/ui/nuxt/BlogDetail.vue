@@ -8,7 +8,8 @@ type BlogPost = {
   slug: string
   body?: string | null
   published_at?: string | null
-  author?: { name?: string } | string | null
+  featured_image?: string | { id: string } | null
+  author?: { name?: string; avatar?: string | { id: string } | null } | string | null
   categories?: Array<BlogCategory | { categories_id?: BlogCategory | string | null }> | null
 }
 
@@ -21,12 +22,13 @@ const resolvedBase = computed(
 )
 
 const config = useRuntimeConfig()
+const directusUrl = (config.public.directusUrl as string | undefined)?.replace(/\/$/, '')
+
 const { data: post } = await useAsyncData(`dkit-blog-${props.slug}`, async () => {
-  const url = config.public.directusUrl as string | undefined
-  if (!url) return null
+  if (!directusUrl) return null
   try {
     const { createDirectus, rest, readItems } = await import('@directus/sdk')
-    const client = createDirectus(url).with(rest())
+    const client = createDirectus(directusUrl).with(rest())
     const rows = (await client.request(
       readItems(collections.posts, {
         filter: {
@@ -38,7 +40,8 @@ const { data: post } = await useAsyncData(`dkit-blog-${props.slug}`, async () =>
           'slug',
           'body',
           'published_at',
-          { author: ['name'] },
+          'featured_image',
+          { author: ['name', 'avatar'] },
           { categories: ['id', { categories_id: ['id', 'title', 'slug'] }] },
         ],
         limit: 1,
@@ -52,9 +55,16 @@ const { data: post } = await useAsyncData(`dkit-blog-${props.slug}`, async () =>
 
 const author = computed(() =>
   post.value && typeof post.value.author === 'object' && post.value.author?.name
-    ? post.value.author.name
+    ? post.value.author
     : null,
 )
+
+const authorAvatarUrl = computed(() => {
+  const avatar = author.value?.avatar
+  if (!avatar || !directusUrl) return null
+  const id = typeof avatar === 'string' ? avatar : avatar.id
+  return id ? `${directusUrl}/assets/${id}` : null
+})
 
 const categories = computed(() => {
   const raw = post.value?.categories ?? []
@@ -69,6 +79,13 @@ const categories = computed(() => {
     if (related && typeof related === 'object' && 'id' in related) out.push(related)
   }
   return out
+})
+
+const imageUrl = computed(() => {
+  const value = post.value?.featured_image
+  if (!value || !directusUrl) return null
+  const id = typeof value === 'string' ? value : value.id
+  return id ? `${directusUrl}/assets/${id}` : null
 })
 </script>
 
@@ -91,6 +108,13 @@ const categories = computed(() => {
       ← All posts
     </NuxtLink>
 
+    <img
+      v-if="imageUrl"
+      :src="imageUrl"
+      alt=""
+      class="mb-10 aspect-[16/9] w-full rounded-3xl object-cover ring-1 ring-stone-200 dark:ring-stone-800"
+    />
+
     <header class="border-b border-stone-200 pb-10 dark:border-stone-800">
       <div v-if="categories.length" class="mb-4 flex flex-wrap gap-2">
         <span
@@ -105,7 +129,18 @@ const categories = computed(() => {
         {{ post.title }}
       </h1>
       <div class="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-stone-500">
-        <span v-if="author" class="font-medium text-stone-700 dark:text-stone-300">{{ author }}</span>
+        <span
+          v-if="author"
+          class="inline-flex items-center gap-2 font-medium text-stone-700 dark:text-stone-300"
+        >
+          <img
+            v-if="authorAvatarUrl"
+            :src="authorAvatarUrl"
+            alt=""
+            class="h-7 w-7 rounded-full object-cover ring-1 ring-stone-200 dark:ring-stone-700"
+          />
+          {{ author.name }}
+        </span>
         <span v-if="author && post.published_at" aria-hidden>·</span>
         <time v-if="post.published_at" :datetime="post.published_at">
           {{

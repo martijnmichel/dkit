@@ -2,13 +2,42 @@
   "format": "dkit.rest",
   "collections": [
     {
+      "collection": "blog",
+      "schema": null,
+      "meta": {
+        "icon": "auto_stories",
+        "color": "#0F766E",
+        "collapse": "open",
+        "translations": [
+          {
+            "language": "en-US",
+            "translation": "Blog",
+            "singular": "Blog",
+            "plural": "Blog"
+          }
+        ]
+      }
+    },
+    {
       "collection": "authors",
       "schema": {},
       "meta": {
         "icon": "person",
+        "color": "#0F766E",
+        "group": "blog",
         "display_template": "{{name}}",
         "archive_field": null,
-        "singleton": false
+        "singleton": false,
+        "sort": 2,
+        "translations": [
+          {
+            "language": "en-US",
+            "translation": "Authors",
+            "singular": "Author",
+            "plural": "Authors"
+          }
+        ],
+        "note": "People who write blog posts"
       },
       "fields": [
         {
@@ -18,7 +47,12 @@
             "hidden": true,
             "readonly": true,
             "interface": "input",
-            "special": ["uuid"]
+            "special": ["uuid"],
+            "sort": 1,
+            "width": "full",
+            "translations": [
+              { "language": "en-US", "translation": "ID" }
+            ]
           },
           "schema": {
             "is_primary_key": true,
@@ -30,34 +64,99 @@
           "field": "status",
           "type": "string",
           "meta": {
-            "width": "full",
+            "interface": "select-dropdown",
+            "display": "labels",
+            "width": "half",
+            "sort": 2,
             "options": {
               "choices": [
                 { "text": "Published", "value": "published" },
                 { "text": "Draft", "value": "draft" }
               ]
             },
-            "interface": "select-dropdown",
-            "display": "labels"
+            "display_options": {
+              "choices": [
+                {
+                  "text": "Published",
+                  "value": "published",
+                  "foreground": "#FFFFFF",
+                  "background": "#0F766E"
+                },
+                {
+                  "text": "Draft",
+                  "value": "draft",
+                  "foreground": "#44403C",
+                  "background": "#E7E5E4"
+                }
+              ]
+            },
+            "translations": [
+              { "language": "en-US", "translation": "Status" }
+            ],
+            "note": "Only published authors appear on the public site"
           },
           "schema": { "default_value": "draft", "is_nullable": false }
         },
         {
           "field": "name",
           "type": "string",
-          "meta": { "interface": "input", "required": true },
+          "meta": {
+            "interface": "input",
+            "required": true,
+            "width": "half",
+            "sort": 3,
+            "options": { "trim": true },
+            "translations": [
+              { "language": "en-US", "translation": "Name" }
+            ],
+            "note": "Display name shown on posts"
+          },
           "schema": { "is_nullable": false }
         },
         {
           "field": "slug",
           "type": "string",
-          "meta": { "interface": "input", "required": true },
+          "meta": {
+            "interface": "input",
+            "required": true,
+            "width": "half",
+            "sort": 4,
+            "options": { "trim": true, "slug": true },
+            "translations": [
+              { "language": "en-US", "translation": "Slug" }
+            ],
+            "note": "URL-friendly identifier (unique)"
+          },
           "schema": { "is_nullable": false, "is_unique": true }
+        },
+        {
+          "field": "avatar",
+          "type": "uuid",
+          "meta": {
+            "interface": "file-image",
+            "special": ["file"],
+            "display": "image",
+            "width": "half",
+            "sort": 5,
+            "translations": [
+              { "language": "en-US", "translation": "Avatar" }
+            ],
+            "note": "Author profile photo shown next to bylines"
+          },
+          "schema": {}
         },
         {
           "field": "bio",
           "type": "text",
-          "meta": { "interface": "input-multiline" },
+          "meta": {
+            "interface": "input-multiline",
+            "width": "full",
+            "sort": 6,
+            "translations": [
+              { "language": "en-US", "translation": "Bio" }
+            ],
+            "note": "Short author biography"
+          },
           "schema": {}
         }
       ]
@@ -66,8 +165,20 @@
       "collection": "categories",
       "schema": {},
       "meta": {
-        "icon": "category",
-        "display_template": "{{title}}"
+        "icon": "sell",
+        "color": "#0F766E",
+        "group": "blog",
+        "display_template": "{{title}}",
+        "sort": 3,
+        "translations": [
+          {
+            "language": "en-US",
+            "translation": "Categories",
+            "singular": "Category",
+            "plural": "Categories"
+          }
+        ],
+        "note": "Topics used to organize posts"
       },
       "fields": [
         {
@@ -77,7 +188,12 @@
             "hidden": true,
             "readonly": true,
             "interface": "input",
-            "special": ["uuid"]
+            "special": ["uuid"],
+            "sort": 1,
+            "width": "full",
+            "translations": [
+              { "language": "en-US", "translation": "ID" }
+            ]
           },
           "schema": {
             "is_primary_key": true,
@@ -88,13 +204,32 @@
         {
           "field": "title",
           "type": "string",
-          "meta": { "interface": "input", "required": true },
+          "meta": {
+            "interface": "input",
+            "required": true,
+            "width": "half",
+            "sort": 2,
+            "options": { "trim": true },
+            "translations": [
+              { "language": "en-US", "translation": "Title" }
+            ]
+          },
           "schema": { "is_nullable": false }
         },
         {
           "field": "slug",
           "type": "string",
-          "meta": { "interface": "input", "required": true },
+          "meta": {
+            "interface": "input",
+            "required": true,
+            "width": "half",
+            "sort": 3,
+            "options": { "trim": true, "slug": true },
+            "translations": [
+              { "language": "en-US", "translation": "Slug" }
+            ],
+            "note": "URL-friendly identifier (unique)"
+          },
           "schema": { "is_nullable": false, "is_unique": true }
         }
       ]
@@ -104,10 +239,23 @@
       "schema": {},
       "meta": {
         "icon": "article",
+        "color": "#0F766E",
+        "group": "blog",
         "display_template": "{{title}}",
         "archive_field": "status",
         "archive_value": "archived",
-        "unarchive_value": "draft"
+        "unarchive_value": "draft",
+        "archive_app_filter": true,
+        "sort": 1,
+        "translations": [
+          {
+            "language": "en-US",
+            "translation": "Posts",
+            "singular": "Post",
+            "plural": "Posts"
+          }
+        ],
+        "note": "Blog articles published to the site"
       },
       "fields": [
         {
@@ -117,7 +265,12 @@
             "hidden": true,
             "readonly": true,
             "interface": "input",
-            "special": ["uuid"]
+            "special": ["uuid"],
+            "sort": 1,
+            "width": "full",
+            "translations": [
+              { "language": "en-US", "translation": "ID" }
+            ]
           },
           "schema": {
             "is_primary_key": true,
@@ -129,7 +282,10 @@
           "field": "status",
           "type": "string",
           "meta": {
-            "width": "full",
+            "interface": "select-dropdown",
+            "display": "labels",
+            "width": "half",
+            "sort": 2,
             "options": {
               "choices": [
                 { "text": "Published", "value": "published" },
@@ -137,47 +293,113 @@
                 { "text": "Archived", "value": "archived" }
               ]
             },
-            "interface": "select-dropdown",
-            "display": "labels"
+            "display_options": {
+              "choices": [
+                {
+                  "text": "Published",
+                  "value": "published",
+                  "foreground": "#FFFFFF",
+                  "background": "#0F766E"
+                },
+                {
+                  "text": "Draft",
+                  "value": "draft",
+                  "foreground": "#44403C",
+                  "background": "#E7E5E4"
+                },
+                {
+                  "text": "Archived",
+                  "value": "archived",
+                  "foreground": "#FFFFFF",
+                  "background": "#A8A29E"
+                }
+              ]
+            },
+            "translations": [
+              { "language": "en-US", "translation": "Status" }
+            ],
+            "note": "Only published posts appear on the public site"
           },
           "schema": { "default_value": "draft", "is_nullable": false }
         },
         {
+          "field": "published_at",
+          "type": "timestamp",
+          "meta": {
+            "interface": "datetime",
+            "display": "datetime",
+            "width": "half",
+            "sort": 3,
+            "translations": [
+              { "language": "en-US", "translation": "Published at" }
+            ],
+            "note": "Public publish date/time"
+          },
+          "schema": {}
+        },
+        {
           "field": "title",
           "type": "string",
-          "meta": { "interface": "input", "required": true },
+          "meta": {
+            "interface": "input",
+            "required": true,
+            "width": "full",
+            "sort": 4,
+            "options": { "trim": true },
+            "translations": [
+              { "language": "en-US", "translation": "Title" }
+            ]
+          },
           "schema": { "is_nullable": false }
         },
         {
           "field": "slug",
           "type": "string",
-          "meta": { "interface": "input", "required": true },
+          "meta": {
+            "interface": "input",
+            "required": true,
+            "width": "half",
+            "sort": 5,
+            "options": { "trim": true, "slug": true },
+            "translations": [
+              { "language": "en-US", "translation": "Slug" }
+            ],
+            "note": "Used in the post URL"
+          },
           "schema": { "is_nullable": false, "is_unique": true }
-        },
-        {
-          "field": "excerpt",
-          "type": "text",
-          "meta": { "interface": "input-multiline" },
-          "schema": {}
-        },
-        {
-          "field": "body",
-          "type": "text",
-          "meta": { "interface": "input-rich-text-html" },
-          "schema": {}
-        },
-        {
-          "field": "published_at",
-          "type": "timestamp",
-          "meta": { "interface": "datetime" },
-          "schema": {}
         },
         {
           "field": "author",
           "type": "uuid",
           "meta": {
             "interface": "select-dropdown-m2o",
-            "special": ["m2o"]
+            "special": ["m2o"],
+            "display": "related-values",
+            "display_options": {
+              "template": "{{name}}"
+            },
+            "width": "half",
+            "sort": 6,
+            "translations": [
+              { "language": "en-US", "translation": "Author" }
+            ],
+            "note": "Primary author of this post"
+          },
+          "schema": {}
+        },
+        {
+          "field": "featured_image",
+          "type": "uuid",
+          "meta": {
+            "interface": "file-image",
+            "special": ["file"],
+            "display": "image",
+            "width": "half",
+            "sort": 7,
+            "translations": [
+              { "language": "en-US", "translation": "Featured image" }
+            ],
+            "note": "Cover image shown on list and detail pages"
           },
           "schema": {}
         },
@@ -186,9 +408,63 @@
           "type": "alias",
           "meta": {
             "interface": "list-m2m",
-            "special": ["m2m"]
+            "special": ["m2m"],
+            "width": "full",
+            "sort": 8,
+            "options": {
+              "enableCreate": true,
+              "enableSelect": true,
+              "template": "{{categories_id.title}}"
+            },
+            "translations": [
+              { "language": "en-US", "translation": "Categories" }
+            ],
+            "note": "Optional topics for this post"
           },
           "schema": null
+        },
+        {
+          "field": "excerpt",
+          "type": "text",
+          "meta": {
+            "interface": "input-multiline",
+            "width": "full",
+            "sort": 9,
+            "translations": [
+              { "language": "en-US", "translation": "Excerpt" }
+            ],
+            "note": "Short summary shown on listing pages"
+          },
+          "schema": {}
+        },
+        {
+          "field": "body",
+          "type": "text",
+          "meta": {
+            "interface": "input-rich-text-html",
+            "width": "fill",
+            "sort": 10,
+            "options": {
+              "toolbar": [
+                "bold",
+                "italic",
+                "underline",
+                "h2",
+                "h3",
+                "numlist",
+                "bullist",
+                "blockquote",
+                "link",
+                "code",
+                "empty"
+              ]
+            },
+            "translations": [
+              { "language": "en-US", "translation": "Body" }
+            ],
+            "note": "Main post content"
+          },
+          "schema": {}
         }
       ]
     },
@@ -197,13 +473,30 @@
       "schema": {},
       "meta": {
         "hidden": true,
-        "icon": "import_export"
+        "icon": "import_export",
+        "group": "blog",
+        "translations": [
+          {
+            "language": "en-US",
+            "translation": "Posts ↔ Categories",
+            "singular": "Post category link",
+            "plural": "Post category links"
+          }
+        ]
       },
       "fields": [
         {
           "field": "id",
           "type": "integer",
-          "meta": { "hidden": true, "interface": "input" },
+          "meta": {
+            "hidden": true,
+            "interface": "input",
+            "sort": 1,
+            "width": "full",
+            "translations": [
+              { "language": "en-US", "translation": "ID" }
+            ]
+          },
           "schema": {
             "is_primary_key": true,
             "has_auto_increment": true
@@ -212,13 +505,27 @@
         {
           "field": "posts_id",
           "type": "uuid",
-          "meta": { "hidden": true },
+          "meta": {
+            "hidden": true,
+            "sort": 2,
+            "width": "half",
+            "translations": [
+              { "language": "en-US", "translation": "Post" }
+            ]
+          },
           "schema": {}
         },
         {
           "field": "categories_id",
           "type": "uuid",
-          "meta": { "hidden": true },
+          "meta": {
+            "hidden": true,
+            "sort": 3,
+            "width": "half",
+            "translations": [
+              { "language": "en-US", "translation": "Category" }
+            ]
+          },
           "schema": {}
         }
       ]
@@ -233,6 +540,34 @@
         "many_collection": "posts",
         "many_field": "author",
         "one_collection": "authors",
+        "one_field": null
+      },
+      "schema": {
+        "on_delete": "SET NULL"
+      }
+    },
+    {
+      "collection": "authors",
+      "field": "avatar",
+      "related_collection": "directus_files",
+      "meta": {
+        "many_collection": "authors",
+        "many_field": "avatar",
+        "one_collection": "directus_files",
+        "one_field": null
+      },
+      "schema": {
+        "on_delete": "SET NULL"
+      }
+    },
+    {
+      "collection": "posts",
+      "field": "featured_image",
+      "related_collection": "directus_files",
+      "meta": {
+        "many_collection": "posts",
+        "many_field": "featured_image",
+        "one_collection": "directus_files",
         "one_field": null
       },
       "schema": {

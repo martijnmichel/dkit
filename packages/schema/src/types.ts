@@ -77,7 +77,19 @@ export type OperationRecord = {
   [key: string]: unknown;
 };
 
+export type SeedFile = {
+  /** Stable UUID so re-seed can skip/reuse the same file */
+  id: string;
+  filename_download: string;
+  title?: string;
+  type?: string;
+  /** Raw file bytes as base64 (no data: URL prefix) */
+  data_base64: string;
+};
+
 export type SeedBundle = {
+  /** Uploaded to /files before items; use file ids on image/file fields */
+  files?: SeedFile[];
   items?: Record<string, Record<string, unknown>[]>;
 };
 

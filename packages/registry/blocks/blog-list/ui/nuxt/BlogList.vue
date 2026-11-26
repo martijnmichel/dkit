@@ -7,7 +7,8 @@ type BlogPost = {
   slug: string
   excerpt?: string | null
   published_at?: string | null
-  author?: { name?: string } | string | null
+  featured_image?: string | { id: string } | null
+  author?: { name?: string; avatar?: string | { id: string } | null } | string | null
 }
 
 const props = withDefaults(defineProps<{ basePath?: string }>(), {
@@ -19,16 +20,35 @@ const resolvedBase = computed(
 )
 
 const config = useRuntimeConfig()
+const directusUrl = (config.public.directusUrl as string | undefined)?.replace(/\/$/, '')
+
+function fileId(value: BlogPost['featured_image']) {
+  if (!value) return null
+  return typeof value === 'string' ? value : value.id
+}
+
+function assetUrl(post: BlogPost) {
+  const id = fileId(post.featured_image)
+  return id && directusUrl ? `${directusUrl}/assets/${id}` : null
+}
+
 const { data: posts } = await useAsyncData('dkit-blog-list', async () => {
-  const url = config.public.directusUrl as string | undefined
-  if (!url) return [] as BlogPost[]
+  if (!directusUrl) return [] as BlogPost[]
   try {
     const { createDirectus, rest, readItems } = await import('@directus/sdk')
-    const client = createDirectus(url).with(rest())
+    const client = createDirectus(directusUrl).with(rest())
     return (await client.request(
       readItems(collections.posts, {
         filter: { status: { _eq: 'published' } },
-        fields: ['id', 'title', 'slug', 'excerpt', 'published_at', { author: ['name'] }],
+        fields: [
+          'id',
+          'title',
+          'slug',
+          'excerpt',
+          'published_at',
+          'featured_image',
+          { author: ['name', 'avatar'] },
+        ],
         sort: ['-published_at'],
       }),
     )) as BlogPost[]
@@ -39,6 +59,13 @@ const { data: posts } = await useAsyncData('dkit-blog-list', async () => {
 
 function authorName(post: BlogPost) {
   return typeof post.author === 'object' && post.author?.name ? post.author.name : null
+}
+
+function authorAvatarUrl(post: BlogPost) {
+  if (typeof post.author !== 'object' || !post.author?.avatar || !directusUrl) return null
+  const id =
+    typeof post.author.avatar === 'string' ? post.author.avatar : post.author.avatar.id
+  return id ? `${directusUrl}/assets/${id}` : null
 }
 </script>
 
@@ -69,7 +96,16 @@ function authorName(post: BlogPost) {
           :to="`${resolvedBase}/${post.slug}`"
           class="group flex gap-5 rounded-2xl px-4 py-5 transition hover:bg-stone-100/80 dark:hover:bg-stone-900/60"
         >
-          <span class="mt-1 w-8 shrink-0 font-mono text-xs text-stone-400 tabular-nums">
+          <img
+            v-if="assetUrl(post)"
+            :src="assetUrl(post)!"
+            alt=""
+            class="mt-0.5 h-16 w-16 shrink-0 rounded-xl object-cover ring-1 ring-stone-200 dark:ring-stone-700"
+          />
+          <span
+            v-else
+            class="mt-1 w-8 shrink-0 font-mono text-xs text-stone-400 tabular-nums"
+          >
             {{ String(i + 1).padStart(2, '0') }}
           </span>
           <span class="min-w-0 flex-1">
@@ -83,7 +119,15 @@ function authorName(post: BlogPost) {
               {{ post.excerpt }}
             </span>
             <span class="mt-3 flex flex-wrap items-center gap-x-2 text-xs text-stone-400">
-              <span v-if="authorName(post)">{{ authorName(post) }}</span>
+              <span v-if="authorName(post)" class="inline-flex items-center gap-1.5">
+                <img
+                  v-if="authorAvatarUrl(post)"
+                  :src="authorAvatarUrl(post)!"
+                  alt=""
+                  class="h-5 w-5 rounded-full object-cover ring-1 ring-stone-200 dark:ring-stone-700"
+                />
+                <span>{{ authorName(post) }}</span>
+              </span>
               <span v-if="authorName(post) && post.published_at" aria-hidden>·</span>
               <time v-if="post.published_at" :datetime="post.published_at">
                 {{

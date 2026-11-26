@@ -61,6 +61,8 @@ export function prefixedCollection(
 ): string {
   const p = normalizeCollectionPrefix(prefix);
   if (!p) return logicalName;
+  // Never prefix Directus system collections (e.g. directus_files)
+  if (logicalName.startsWith("directus_")) return logicalName;
   if (logicalName.startsWith(p)) return logicalName;
   return `${p}${logicalName}`;
 }

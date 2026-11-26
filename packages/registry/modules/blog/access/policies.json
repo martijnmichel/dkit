@@ -32,6 +32,12 @@
       "collection": "posts_categories",
       "action": "read",
       "fields": ["*"]
+    },
+    {
+      "policy": "dkit Blog Public Read",
+      "collection": "directus_files",
+      "action": "read",
+      "fields": ["*"]
     }
   ],
   "access": [

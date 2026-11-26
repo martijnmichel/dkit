@@ -49,34 +49,58 @@ export function writeModuleTypes(
   return written;
 }
 
-export function writeBlockUi(
+function blockUiOutDir(
   projectRoot: string,
   config: DkitProjectConfig,
   block: LoadedBlock,
-  overwrite: boolean,
-): string[] {
-  // Nuxt often uses ~/components — map @/ the same way for examples
+): string {
   const componentsDir = resolveAliasPath(
     config.framework === "nuxt" && !config.aliases.components.includes("nuxt")
       ? (config.aliases.components || "@/components/dkit")
       : config.aliases.components,
     projectRoot,
   );
-  const outDir = path.join(componentsDir, block.manifest.id);
+  return path.join(componentsDir, block.manifest.id);
+}
+
+/** Dest paths that already exist for this block (relative to project root). */
+export function listBlockUiConflicts(
+  projectRoot: string,
+  config: DkitProjectConfig,
+  block: LoadedBlock,
+): string[] {
+  const outDir = blockUiOutDir(projectRoot, config, block);
+  const conflicts: string[] = [];
+  for (const file of block.uiFiles) {
+    const dest = path.join(outDir, file.rel);
+    if (fs.existsSync(dest)) {
+      conflicts.push(path.relative(projectRoot, dest) || dest);
+    }
+  }
+  return conflicts;
+}
+
+export function writeBlockUi(
+  projectRoot: string,
+  config: DkitProjectConfig,
+  block: LoadedBlock,
+  overwrite: boolean,
+): { written: string[]; skipped: string[] } {
+  const outDir = blockUiOutDir(projectRoot, config, block);
   fs.mkdirSync(outDir, { recursive: true });
   const written: string[] = [];
+  const skipped: string[] = [];
   for (const file of block.uiFiles) {
     const dest = path.join(outDir, file.rel);
     fs.mkdirSync(path.dirname(dest), { recursive: true });
     if (fs.existsSync(dest) && !overwrite) {
-      throw new Error(
-        `File already exists: ${dest}. Re-run with --force to overwrite.`,
-      );
+      skipped.push(dest);
+      continue;
     }
     fs.copyFileSync(file.abs, dest);
     written.push(dest);
   }
-  return written;
+  return { written, skipped };
 }
 
 export function writeProjectConfig(

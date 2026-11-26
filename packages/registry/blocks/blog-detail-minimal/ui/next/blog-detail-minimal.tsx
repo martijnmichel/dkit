@@ -1,5 +1,6 @@
 import { createDirectus, readItems, rest } from "@directus/sdk";
 import type { BlogPost } from "@/lib/dkit/blog";
+import { directusAssetUrl, directusFileId } from "@/lib/dkit/blog";
 import { collections } from "@/lib/dkit/config";
 
 /**
@@ -16,7 +17,7 @@ async function getPost(slug: string): Promise<BlogPost | null> {
         filter: {
           _and: [{ status: { _eq: "published" } }, { slug: { _eq: slug } }],
         },
-        fields: ["id", "title", "slug", "body", "published_at"],
+        fields: ["id", "title", "slug", "body", "published_at", "featured_image"],
         limit: 1,
       }),
     )) as BlogPost[];
@@ -32,8 +33,12 @@ export async function BlogDetailMinimal({ slug }: { slug: string }) {
     return <p>Post not found.</p>;
   }
 
+  const imageId = directusFileId(post.featured_image);
+  const imageUrl = imageId ? directusAssetUrl(imageId) : null;
+
   return (
     <article>
+      {imageUrl ? <img src={imageUrl} alt="" /> : null}
       <h1>{post.title}</h1>
       {post.published_at ? (
         <p>

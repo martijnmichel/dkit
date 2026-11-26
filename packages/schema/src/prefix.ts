@@ -23,6 +23,16 @@ export function applyCollectionPrefixToRestSchema(
     collections: schema.collections.map((col) => ({
       ...col,
       collection: rename(col.collection),
+      meta: col.meta
+        ? {
+            ...col.meta,
+            // Folder groups reference another collection name
+            group:
+              typeof col.meta.group === "string" && col.meta.group
+                ? rename(col.meta.group)
+                : col.meta.group,
+          }
+        : col.meta,
       fields: col.fields?.map((field) => {
         // relation-ish string fields that point at collection names are rare in field defs;
         // M2A one_allowed_collections live on relations.meta

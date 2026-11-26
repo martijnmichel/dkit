@@ -111,13 +111,6 @@ pnpm example:nuxt:reset
 
 `directus:reset` wipes the Directus DB volumes for a clean schema re-apply.
 
-## Deploy docs (Ubuntu + Docker)
-
-1. Point your domain DNS at the VPS.
-2. Put Caddy/Traefik in front for TLS.
-3. CI pushes `ghcr.io/<you>/dkit-www` on changes to `apps/www` / registry.
-4. On the server: `docker compose -f deploy/compose.yaml pull && up -d`
-
 ## Auth
 
 Install-time auth uses a **static admin token** (or email/password then paste a token). Browser OAuth is not used for schema apply — Directus MCP OAuth only covers `/mcp`, not Admin API schema endpoints.

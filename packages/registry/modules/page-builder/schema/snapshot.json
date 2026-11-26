@@ -2,100 +2,446 @@
   "format": "dkit.rest",
   "collections": [
     {
-      "collection": "block_hero",
-      "schema": {},
-      "meta": { "icon": "title", "display_template": "{{heading}}" },
-      "fields": [
-        {
-          "field": "id",
-          "type": "uuid",
-          "meta": { "hidden": true, "readonly": true, "interface": "input", "special": ["uuid"] },
-          "schema": { "is_primary_key": true, "length": 36, "has_auto_increment": false }
-        },
-        { "field": "heading", "type": "string", "meta": { "interface": "input", "required": true }, "schema": { "is_nullable": false } },
-        { "field": "subheading", "type": "text", "meta": { "interface": "input-multiline" }, "schema": {} }
-      ]
-    },
-    {
-      "collection": "block_richtext",
-      "schema": {},
-      "meta": { "icon": "text_fields", "display_template": "{{title}}" },
-      "fields": [
-        {
-          "field": "id",
-          "type": "uuid",
-          "meta": { "hidden": true, "readonly": true, "interface": "input", "special": ["uuid"] },
-          "schema": { "is_primary_key": true, "length": 36, "has_auto_increment": false }
-        },
-        { "field": "title", "type": "string", "meta": { "interface": "input" }, "schema": {} },
-        { "field": "content", "type": "text", "meta": { "interface": "input-rich-text-html" }, "schema": {} }
-      ]
-    },
-    {
-      "collection": "block_cta",
-      "schema": {},
-      "meta": { "icon": "smart_button", "display_template": "{{label}}" },
-      "fields": [
-        {
-          "field": "id",
-          "type": "uuid",
-          "meta": { "hidden": true, "readonly": true, "interface": "input", "special": ["uuid"] },
-          "schema": { "is_primary_key": true, "length": 36, "has_auto_increment": false }
-        },
-        { "field": "label", "type": "string", "meta": { "interface": "input", "required": true }, "schema": { "is_nullable": false } },
-        { "field": "href", "type": "string", "meta": { "interface": "input", "required": true }, "schema": { "is_nullable": false } }
-      ]
+      "collection": "page_builder",
+      "schema": null,
+      "meta": {
+        "icon": "dashboard_customize",
+        "color": "#0F766E",
+        "collapse": "open",
+        "translations": [
+          {
+            "language": "en-US",
+            "translation": "Page builder",
+            "singular": "Page builder",
+            "plural": "Page builder"
+          }
+        ]
+      }
     },
     {
       "collection": "pages",
       "schema": {},
-      "meta": { "icon": "web", "display_template": "{{title}}" },
+      "meta": {
+        "icon": "web",
+        "color": "#0F766E",
+        "group": "page_builder",
+        "display_template": "{{title}}",
+        "archive_field": "status",
+        "archive_value": "draft",
+        "unarchive_value": "published",
+        "archive_app_filter": true,
+        "sort": 1,
+        "translations": [
+          {
+            "language": "en-US",
+            "translation": "Pages",
+            "singular": "Page",
+            "plural": "Pages"
+          }
+        ],
+        "note": "Composable pages built from content blocks"
+      },
       "fields": [
         {
           "field": "id",
           "type": "uuid",
-          "meta": { "hidden": true, "readonly": true, "interface": "input", "special": ["uuid"] },
-          "schema": { "is_primary_key": true, "length": 36, "has_auto_increment": false }
+          "meta": {
+            "hidden": true,
+            "readonly": true,
+            "interface": "input",
+            "special": ["uuid"],
+            "sort": 1,
+            "width": "full",
+            "translations": [{ "language": "en-US", "translation": "ID" }]
+          },
+          "schema": {
+            "is_primary_key": true,
+            "length": 36,
+            "has_auto_increment": false
+          }
         },
         {
           "field": "status",
           "type": "string",
           "meta": {
             "interface": "select-dropdown",
+            "display": "labels",
+            "width": "half",
+            "sort": 2,
             "options": {
               "choices": [
                 { "text": "Published", "value": "published" },
                 { "text": "Draft", "value": "draft" }
               ]
-            }
+            },
+            "display_options": {
+              "choices": [
+                {
+                  "text": "Published",
+                  "value": "published",
+                  "foreground": "#FFFFFF",
+                  "background": "#0F766E"
+                },
+                {
+                  "text": "Draft",
+                  "value": "draft",
+                  "foreground": "#44403C",
+                  "background": "#E7E5E4"
+                }
+              ]
+            },
+            "translations": [{ "language": "en-US", "translation": "Status" }],
+            "note": "Only published pages are public"
           },
           "schema": { "default_value": "draft", "is_nullable": false }
         },
-        { "field": "title", "type": "string", "meta": { "interface": "input", "required": true }, "schema": { "is_nullable": false } },
-        { "field": "slug", "type": "string", "meta": { "interface": "input", "required": true }, "schema": { "is_nullable": false, "is_unique": true } },
+        {
+          "field": "title",
+          "type": "string",
+          "meta": {
+            "interface": "input",
+            "required": true,
+            "width": "half",
+            "sort": 3,
+            "options": { "trim": true },
+            "translations": [{ "language": "en-US", "translation": "Title" }]
+          },
+          "schema": { "is_nullable": false }
+        },
+        {
+          "field": "slug",
+          "type": "string",
+          "meta": {
+            "interface": "input",
+            "required": true,
+            "width": "half",
+            "sort": 4,
+            "options": { "trim": true, "slug": true },
+            "translations": [{ "language": "en-US", "translation": "Slug" }],
+            "note": "URL path segment for this page"
+          },
+          "schema": { "is_nullable": false, "is_unique": true }
+        },
         {
           "field": "blocks",
           "type": "alias",
-          "meta": { "interface": "list-m2a", "special": ["m2a"] },
+          "meta": {
+            "interface": "list-m2a",
+            "special": ["m2a"],
+            "width": "full",
+            "sort": 5,
+            "options": {
+              "enableCreate": true,
+              "enableSelect": true
+            },
+            "translations": [
+              { "language": "en-US", "translation": "Content blocks" }
+            ],
+            "note": "Ordered sections that make up the page"
+          },
           "schema": null
+        }
+      ]
+    },
+    {
+      "collection": "block_hero",
+      "schema": {},
+      "meta": {
+        "icon": "view_agenda",
+        "color": "#0F766E",
+        "group": "page_builder",
+        "display_template": "{{heading}}",
+        "sort": 2,
+        "translations": [
+          {
+            "language": "en-US",
+            "translation": "Hero blocks",
+            "singular": "Hero block",
+            "plural": "Hero blocks"
+          }
+        ],
+        "note": "Large heading section"
+      },
+      "fields": [
+        {
+          "field": "id",
+          "type": "uuid",
+          "meta": {
+            "hidden": true,
+            "readonly": true,
+            "interface": "input",
+            "special": ["uuid"],
+            "sort": 1,
+            "width": "full",
+            "translations": [{ "language": "en-US", "translation": "ID" }]
+          },
+          "schema": {
+            "is_primary_key": true,
+            "length": 36,
+            "has_auto_increment": false
+          }
+        },
+        {
+          "field": "heading",
+          "type": "string",
+          "meta": {
+            "interface": "input",
+            "required": true,
+            "width": "full",
+            "sort": 2,
+            "options": { "trim": true },
+            "translations": [{ "language": "en-US", "translation": "Heading" }]
+          },
+          "schema": { "is_nullable": false }
+        },
+        {
+          "field": "subheading",
+          "type": "text",
+          "meta": {
+            "interface": "input-multiline",
+            "width": "full",
+            "sort": 3,
+            "translations": [
+              { "language": "en-US", "translation": "Subheading" }
+            ],
+            "note": "Supporting line under the heading"
+          },
+          "schema": {}
+        }
+      ]
+    },
+    {
+      "collection": "block_richtext",
+      "schema": {},
+      "meta": {
+        "icon": "notes",
+        "color": "#0F766E",
+        "group": "page_builder",
+        "display_template": "{{title}}",
+        "sort": 3,
+        "translations": [
+          {
+            "language": "en-US",
+            "translation": "Rich text blocks",
+            "singular": "Rich text block",
+            "plural": "Rich text blocks"
+          }
+        ],
+        "note": "Formatted text section"
+      },
+      "fields": [
+        {
+          "field": "id",
+          "type": "uuid",
+          "meta": {
+            "hidden": true,
+            "readonly": true,
+            "interface": "input",
+            "special": ["uuid"],
+            "sort": 1,
+            "width": "full",
+            "translations": [{ "language": "en-US", "translation": "ID" }]
+          },
+          "schema": {
+            "is_primary_key": true,
+            "length": 36,
+            "has_auto_increment": false
+          }
+        },
+        {
+          "field": "title",
+          "type": "string",
+          "meta": {
+            "interface": "input",
+            "width": "full",
+            "sort": 2,
+            "options": { "trim": true },
+            "translations": [
+              { "language": "en-US", "translation": "Section title" }
+            ],
+            "note": "Optional heading above the content"
+          },
+          "schema": {}
+        },
+        {
+          "field": "content",
+          "type": "text",
+          "meta": {
+            "interface": "input-rich-text-html",
+            "width": "fill",
+            "sort": 3,
+            "options": {
+              "toolbar": [
+                "bold",
+                "italic",
+                "h2",
+                "h3",
+                "numlist",
+                "bullist",
+                "blockquote",
+                "link",
+                "code",
+                "empty"
+              ]
+            },
+            "translations": [{ "language": "en-US", "translation": "Content" }]
+          },
+          "schema": {}
+        }
+      ]
+    },
+    {
+      "collection": "block_cta",
+      "schema": {},
+      "meta": {
+        "icon": "smart_button",
+        "color": "#0F766E",
+        "group": "page_builder",
+        "display_template": "{{label}}",
+        "sort": 4,
+        "translations": [
+          {
+            "language": "en-US",
+            "translation": "CTA blocks",
+            "singular": "CTA block",
+            "plural": "CTA blocks"
+          }
+        ],
+        "note": "Call-to-action button"
+      },
+      "fields": [
+        {
+          "field": "id",
+          "type": "uuid",
+          "meta": {
+            "hidden": true,
+            "readonly": true,
+            "interface": "input",
+            "special": ["uuid"],
+            "sort": 1,
+            "width": "full",
+            "translations": [{ "language": "en-US", "translation": "ID" }]
+          },
+          "schema": {
+            "is_primary_key": true,
+            "length": 36,
+            "has_auto_increment": false
+          }
+        },
+        {
+          "field": "label",
+          "type": "string",
+          "meta": {
+            "interface": "input",
+            "required": true,
+            "width": "half",
+            "sort": 2,
+            "options": { "trim": true, "placeholder": "Get started" },
+            "translations": [
+              { "language": "en-US", "translation": "Button label" }
+            ]
+          },
+          "schema": { "is_nullable": false }
+        },
+        {
+          "field": "href",
+          "type": "string",
+          "meta": {
+            "interface": "input",
+            "required": true,
+            "width": "half",
+            "sort": 3,
+            "options": {
+              "trim": true,
+              "placeholder": "/pricing",
+              "iconLeft": "link"
+            },
+            "translations": [
+              { "language": "en-US", "translation": "Link URL" }
+            ],
+            "note": "Internal path or absolute URL"
+          },
+          "schema": { "is_nullable": false }
         }
       ]
     },
     {
       "collection": "pages_blocks",
       "schema": {},
-      "meta": { "hidden": true, "icon": "import_export" },
+      "meta": {
+        "hidden": true,
+        "icon": "import_export",
+        "group": "page_builder",
+        "translations": [
+          {
+            "language": "en-US",
+            "translation": "Pages ↔ Blocks",
+            "singular": "Page block link",
+            "plural": "Page block links"
+          }
+        ]
+      },
       "fields": [
         {
           "field": "id",
           "type": "integer",
-          "meta": { "hidden": true, "interface": "input" },
+          "meta": {
+            "hidden": true,
+            "interface": "input",
+            "sort": 1,
+            "width": "full",
+            "translations": [{ "language": "en-US", "translation": "ID" }]
+          },
           "schema": { "is_primary_key": true, "has_auto_increment": true }
         },
-        { "field": "pages_id", "type": "uuid", "meta": { "hidden": true }, "schema": {} },
-        { "field": "item", "type": "string", "meta": { "hidden": true }, "schema": {} },
-        { "field": "collection", "type": "string", "meta": { "hidden": true }, "schema": {} },
-        { "field": "sort", "type": "integer", "meta": { "hidden": true }, "schema": {} }
+        {
+          "field": "pages_id",
+          "type": "uuid",
+          "meta": {
+            "hidden": true,
+            "sort": 2,
+            "width": "half",
+            "translations": [{ "language": "en-US", "translation": "Page" }]
+          },
+          "schema": {}
+        },
+        {
+          "field": "item",
+          "type": "string",
+          "meta": {
+            "hidden": true,
+            "sort": 3,
+            "width": "half",
+            "translations": [
+              { "language": "en-US", "translation": "Block item" }
+            ]
+          },
+          "schema": {}
+        },
+        {
+          "field": "collection",
+          "type": "string",
+          "meta": {
+            "hidden": true,
+            "sort": 4,
+            "width": "half",
+            "translations": [
+              { "language": "en-US", "translation": "Block type" }
+            ]
+          },
+          "schema": {}
+        },
+        {
+          "field": "sort",
+          "type": "integer",
+          "meta": {
+            "hidden": true,
+            "sort": 5,
+            "width": "half",
+            "translations": [{ "language": "en-US", "translation": "Sort" }]
+          },
+          "schema": {}
+        }
       ]
     }
   ],

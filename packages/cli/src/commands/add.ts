@@ -34,6 +34,7 @@ import {
 } from "../lib/routes.js";
 import { writeDkitRuntimeConfig } from "../lib/write-config.js";
 import {
+  listBlockUiConflicts,
   readProjectConfig,
   writeBlockUi,
   writeModuleTypes,
@@ -67,7 +68,10 @@ export function addCommand(): Command {
       "--prefix <prefix>",
       "Prefill collection prefix (default dkit_; empty string = none)",
     )
-    .option("--seed", "Import seed data when present")
+    .option(
+      "--seed",
+      "Import seed data when present (create-or-update by id; safe to re-run)",
+    )
     .option("--dry-run", "Print plan without applying")
     .option("--force", "Overwrite existing UI files")
     .option(
@@ -258,6 +262,42 @@ export function addCommand(): Command {
           }
         }
 
+        // Detect existing UI up front (shadcn-style) so schema isn't applied then aborted
+        let overwriteUi = Boolean(opts.force);
+        const pendingBlocks: LoadedBlock[] = [];
+        if (!opts.schemaOnly) {
+          for (const blockId of plan.blocks) {
+            const loaded = await loadItem(blockId, config.registry, framework);
+            if (loaded.kind !== "block") continue;
+            pendingBlocks.push(loaded.item);
+          }
+          if (!opts.dryRun && pendingBlocks.length) {
+            const conflicts = pendingBlocks.flatMap((b) =>
+              listBlockUiConflicts(projectRoot, config, b),
+            );
+            if (conflicts.length && !overwriteUi) {
+              p.log.warn(
+                `The following UI file(s) already exist:\n  ${conflicts.join("\n  ")}`,
+              );
+              if (opts.yes) {
+                p.log.warn(
+                  "Keeping existing UI (--yes). Pass --force to overwrite.",
+                );
+              } else {
+                const answer = await p.confirm({
+                  message: `Overwrite ${conflicts.length} existing UI file(s)?`,
+                  initialValue: false,
+                });
+                cancelIf(answer);
+                overwriteUi = Boolean(answer);
+                if (!overwriteUi) {
+                  p.log.info("Keeping existing UI files.");
+                }
+              }
+            }
+          }
+        }
+
         const { url, token } = getDirectusCreds(projectRoot);
         const needsDirectus = plan.modules.length > 0 && !opts.uiOnly;
 
@@ -362,26 +402,24 @@ export function addCommand(): Command {
           }
         }
 
-        const installedBlocks: LoadedBlock[] = [];
+        const installedBlocks: LoadedBlock[] = [...pendingBlocks];
 
         if (!opts.schemaOnly) {
-          for (const blockId of plan.blocks) {
-            const loaded = await loadItem(blockId, config.registry, framework);
-            if (loaded.kind !== "block") continue;
-            installedBlocks.push(loaded.item);
+          for (const block of pendingBlocks) {
             if (opts.dryRun) {
               p.log.info(
-                `ui: would write ${loaded.item.uiFiles.length} file(s) for ${blockId} (${framework})`,
+                `ui: would write ${block.uiFiles.length} file(s) for ${block.manifest.id} (${framework})`,
               );
               continue;
             }
-            const files = writeBlockUi(
+            const { written, skipped } = writeBlockUi(
               projectRoot,
               config,
-              loaded.item,
-              Boolean(opts.force),
+              block,
+              overwriteUi,
             );
-            for (const f of files) p.log.step(`wrote ${f}`);
+            for (const f of written) p.log.step(`wrote ${f}`);
+            for (const f of skipped) p.log.info(`skipped ${f}`);
           }
         }
 

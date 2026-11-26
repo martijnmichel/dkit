@@ -1,5 +1,6 @@
 import { createDirectus, readItems, rest } from "@directus/sdk";
 import type { BlogCategory, BlogPost } from "@/lib/dkit/blog";
+import { directusAssetUrl, directusFileId } from "@/lib/dkit/blog";
 import { collections, moduleBasePath } from "@/lib/dkit/config";
 
 type JunctionCategory = {
@@ -42,7 +43,8 @@ async function getPost(slug: string): Promise<BlogPost | null> {
           "slug",
           "body",
           "published_at",
-          { author: ["id", "name", "slug"] },
+          "featured_image",
+          { author: ["id", "name", "slug", "avatar"] },
           // M2M goes through junction — nest related collection fields
           { categories: ["id", { categories_id: ["id", "title", "slug"] }] },
         ],
@@ -82,9 +84,17 @@ export async function BlogDetail({
 
   const author =
     typeof post.author === "object" && post.author?.name
-      ? post.author.name
+      ? post.author
       : null;
+  const authorAvatar = author
+    ? (() => {
+        const id = directusFileId(author.avatar);
+        return id ? directusAssetUrl(id) : null;
+      })()
+    : null;
   const categories = normalizeCategories(post.categories);
+  const imageId = directusFileId(post.featured_image);
+  const imageUrl = imageId ? directusAssetUrl(imageId) : null;
 
   return (
     <article className="mx-auto max-w-2xl px-6 py-16 sm:py-20">
@@ -94,6 +104,15 @@ export async function BlogDetail({
       >
         ← All posts
       </a>
+
+      {imageUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={imageUrl}
+          alt=""
+          className="mb-10 aspect-[16/9] w-full rounded-3xl object-cover ring-1 ring-stone-200 dark:ring-stone-800"
+        />
+      ) : null}
 
       <header className="border-b border-stone-200 pb-10 dark:border-stone-800">
         {categories.length > 0 ? (
@@ -113,8 +132,16 @@ export async function BlogDetail({
         </h1>
         <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-stone-500">
           {author ? (
-            <span className="font-medium text-stone-700 dark:text-stone-300">
-              {author}
+            <span className="inline-flex items-center gap-2 font-medium text-stone-700 dark:text-stone-300">
+              {authorAvatar ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={authorAvatar}
+                  alt=""
+                  className="h-7 w-7 rounded-full object-cover ring-1 ring-stone-200 dark:ring-stone-700"
+                />
+              ) : null}
+              {author.name}
             </span>
           ) : null}
           {author && post.published_at ? <span aria-hidden>·</span> : null}
