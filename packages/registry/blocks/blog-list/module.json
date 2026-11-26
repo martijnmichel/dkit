@@ -2,9 +2,10 @@
   "type": "dkit:block",
   "id": "blog-list",
   "title": "Blog list",
-  "description": "Index of published posts",
+  "description": "Simple stacked list of published posts",
   "version": "0.1.0",
-  "frameworks": ["next"],
+  "frameworks": ["next", "nuxt"],
+  "slot": "list",
   "registryDependencies": ["blog"],
   "dependencies": ["@directus/sdk"],
   "layers": ["ui"]

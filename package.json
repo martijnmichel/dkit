@@ -17,7 +17,13 @@
     "directus:up": "docker compose -f docker/directus/compose.yaml up -d",
     "directus:down": "docker compose -f docker/directus/compose.yaml down",
     "directus:reset": "docker compose -f docker/directus/compose.yaml down -v && docker compose -f docker/directus/compose.yaml up -d",
-    "directus:logs": "docker compose -f docker/directus/compose.yaml logs -f"
+    "directus:logs": "docker compose -f docker/directus/compose.yaml logs -f",
+    "example:next:setup": "pnpm --filter dkit build && pnpm --filter @dkit/example-next exec node ../../packages/cli/dist/bin.js init --url ${DIRECTUS_URL:-http://localhost:8055} --token ${DIRECTUS_TOKEN:?set DIRECTUS_TOKEN} && pnpm --filter @dkit/example-next dkit:add-blog",
+    "example:next:clear": "pnpm --filter @dkit/example-next dkit:clear",
+    "example:next:reset": "pnpm example:next:clear && pnpm --filter @dkit/example-next dkit:add-blog",
+    "example:nuxt:setup": "pnpm --filter dkit build && pnpm --filter @dkit/example-nuxt exec node ../../packages/cli/dist/bin.js init --framework nuxt --url ${DIRECTUS_URL:-http://localhost:8055} --token ${DIRECTUS_TOKEN:?set DIRECTUS_TOKEN} && pnpm --filter @dkit/example-nuxt dkit:add-blog",
+    "example:nuxt:clear": "pnpm --filter @dkit/example-nuxt dkit:clear",
+    "example:nuxt:reset": "pnpm example:nuxt:clear && pnpm --filter @dkit/example-nuxt dkit:add-blog"
   },
   "devDependencies": {
     "typescript": "^5.7.2"

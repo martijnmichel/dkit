@@ -1,0 +1,6 @@
+node_modules
+.next
+.env.local
+components/dkit
+lib/dkit
+dkit.json

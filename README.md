@@ -1,6 +1,6 @@
 # dkit
 
-**Install Directus modules you own** — schema, permissions, flows, and Next.js UI blocks in one command.
+**Install Directus modules you own** — schema, permissions, flows, and frontend UI blocks (Next.js + Nuxt) in one command.
 
 ```bash
 npx dkit init
@@ -38,14 +38,17 @@ npx dkit add blog --seed
 ## Install modes
 
 ```bash
-dkit add blog                 # module + default blocks
-dkit add blog --schema-only   # Directus only
-dkit add blog-detail          # one UI block (+ module if missing)
-dkit add blog --with list,detail
+dkit add blog
+dkit add blog --template list=blog-list-cards,detail=blog-detail-minimal
+dkit add blog --with blog-list-cards,blog-detail
+dkit add blog --framework nuxt
+dkit add blog --schema-only
 dkit add blog --dry-run
 dkit list
 dkit doctor
 ```
+
+Blog ships multiple **templates per slot** (`list`, `detail`). Defaults are used unless you pass `--template` or `--with`.
 
 ## Develop
 
@@ -56,6 +59,27 @@ pnpm --filter @dkit/schema build
 pnpm --filter dkit build
 pnpm --filter @dkit/www dev
 ```
+
+## Example apps (re-testable)
+
+```bash
+pnpm directus:up
+export DIRECTUS_TOKEN=<static-admin-token>
+
+# Next.js playground (:3001)
+pnpm example:next:setup
+pnpm --filter @dkit/example-next dev
+pnpm example:next:clear    # wipe generated components/dkit + lib/dkit
+pnpm example:next:reset    # clear + re-add blog
+
+# Nuxt playground (:3002)
+pnpm example:nuxt:setup
+pnpm --filter @dkit/example-nuxt dev
+pnpm example:nuxt:clear
+pnpm example:nuxt:reset
+```
+
+`directus:reset` wipes the Directus DB volumes for a clean schema re-apply.
 
 ## Deploy docs (Ubuntu + Docker)
 

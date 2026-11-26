@@ -21,7 +21,8 @@ export function initCommand(): Command {
     .description("Initialize dkit in this Next.js project")
     .option("--url <url>", "Directus URL")
     .option("--token <token>", "Directus static admin token")
-    .action(async (opts: { url?: string; token?: string }) => {
+    .option("--framework <name>", "UI framework (next|nuxt)", "next")
+    .action(async (opts: { url?: string; token?: string; framework?: string }) => {
       p.intro(pc.bgCyan(pc.black(" dkit init ")));
       const projectRoot = findProjectRoot();
 
@@ -125,9 +126,14 @@ export function initCommand(): Command {
         DIRECTUS_TOKEN: token,
       });
 
+      const framework = opts.framework === "nuxt" ? "nuxt" : "next";
       const config = DkitProjectConfigSchema.parse({
         ...DEFAULT_PROJECT_CONFIG,
-        framework: "next",
+        framework,
+        aliases:
+          framework === "nuxt"
+            ? { components: "@/components/dkit", lib: "@/lib/dkit" }
+            : DEFAULT_PROJECT_CONFIG.aliases,
       });
       writeProjectConfig(projectRoot, config);
       const clientFile = writeClientHelper(projectRoot, config);

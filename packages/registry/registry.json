@@ -10,25 +10,57 @@
       "description": "Posts, authors, and categories with M2O/M2M relations",
       "version": "0.1.0",
       "path": "modules/blog",
-      "defaultBlocks": ["blog-list", "blog-detail"]
+      "defaultBlocks": ["blog-list", "blog-detail"],
+      "templates": {
+        "list": {
+          "default": "blog-list",
+          "options": ["blog-list", "blog-list-cards"]
+        },
+        "detail": {
+          "default": "blog-detail",
+          "options": ["blog-detail", "blog-detail-minimal"]
+        }
+      }
     },
     {
       "id": "blog-list",
       "type": "dkit:block",
       "title": "Blog list",
-      "description": "Index of published posts",
+      "description": "Simple stacked list of published posts",
       "version": "0.1.0",
       "path": "blocks/blog-list",
-      "registryDependencies": ["blog"]
+      "registryDependencies": ["blog"],
+      "slot": "list"
+    },
+    {
+      "id": "blog-list-cards",
+      "type": "dkit:block",
+      "title": "Blog list (cards)",
+      "description": "Card grid template for published posts",
+      "version": "0.1.0",
+      "path": "blocks/blog-list-cards",
+      "registryDependencies": ["blog"],
+      "slot": "list"
     },
     {
       "id": "blog-detail",
       "type": "dkit:block",
       "title": "Blog detail",
-      "description": "Single post page with rich text",
+      "description": "Full post page with rich text",
       "version": "0.1.0",
       "path": "blocks/blog-detail",
-      "registryDependencies": ["blog"]
+      "registryDependencies": ["blog"],
+      "slot": "detail"
+    },
+    {
+      "id": "blog-detail-minimal",
+      "type": "dkit:block",
+      "title": "Blog detail (minimal)",
+      "description": "Compact post template",
+      "version": "0.1.0",
+      "path": "blocks/blog-detail-minimal",
+      "registryDependencies": ["blog"],
+      "slot": "detail"
     },
     {
       "id": "contact-form",
@@ -46,7 +78,8 @@
       "description": "Validated Next.js Server Action form",
       "version": "0.1.0",
       "path": "blocks/contact-form-ui",
-      "registryDependencies": ["contact-form"]
+      "registryDependencies": ["contact-form"],
+      "slot": "form"
     },
     {
       "id": "changelog",
@@ -64,7 +97,8 @@
       "description": "Timeline UI with status badges",
       "version": "0.1.0",
       "path": "blocks/changelog-timeline",
-      "registryDependencies": ["changelog"]
+      "registryDependencies": ["changelog"],
+      "slot": "timeline"
     },
     {
       "id": "page-builder",
@@ -82,7 +116,8 @@
       "description": "Dynamic M2A block renderer",
       "version": "0.1.0",
       "path": "blocks/page-renderer",
-      "registryDependencies": ["page-builder"]
+      "registryDependencies": ["page-builder"],
+      "slot": "renderer"
     }
   ]
 }

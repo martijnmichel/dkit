@@ -1,0 +1,12 @@
+{
+  "type": "dkit:block",
+  "id": "blog-detail-minimal",
+  "title": "Blog detail (minimal)",
+  "description": "Compact post template",
+  "version": "0.1.0",
+  "frameworks": ["next", "nuxt"],
+  "slot": "detail",
+  "registryDependencies": ["blog"],
+  "dependencies": ["@directus/sdk"],
+  "layers": ["ui"]
+}

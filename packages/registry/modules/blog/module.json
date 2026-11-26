@@ -8,5 +8,15 @@
   "dependencies": ["@directus/sdk"],
   "layers": ["schema", "access", "services", "types"],
   "defaultBlocks": ["blog-list", "blog-detail"],
+  "templates": {
+    "list": {
+      "default": "blog-list",
+      "options": ["blog-list", "blog-list-cards"]
+    },
+    "detail": {
+      "default": "blog-detail",
+      "options": ["blog-detail", "blog-detail-minimal"]
+    }
+  },
   "collections": ["authors", "categories", "posts", "posts_categories"]
 }

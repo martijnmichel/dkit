@@ -1,0 +1,12 @@
+{
+  "type": "dkit:block",
+  "id": "blog-list-cards",
+  "title": "Blog list (cards)",
+  "description": "Card grid template for published posts",
+  "version": "0.1.0",
+  "frameworks": ["next", "nuxt"],
+  "slot": "list",
+  "registryDependencies": ["blog"],
+  "dependencies": ["@directus/sdk"],
+  "layers": ["ui"]
+}

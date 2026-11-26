@@ -55,7 +55,13 @@ export function writeBlockUi(
   block: LoadedBlock,
   overwrite: boolean,
 ): string[] {
-  const componentsDir = resolveAliasPath(config.aliases.components, projectRoot);
+  // Nuxt often uses ~/components — map @/ the same way for examples
+  const componentsDir = resolveAliasPath(
+    config.framework === "nuxt" && !config.aliases.components.includes("nuxt")
+      ? (config.aliases.components || "@/components/dkit")
+      : config.aliases.components,
+    projectRoot,
+  );
   const outDir = path.join(componentsDir, block.manifest.id);
   fs.mkdirSync(outDir, { recursive: true });
   const written: string[] = [];

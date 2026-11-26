@@ -1,5 +1,7 @@
 import { Command } from "commander";
 import pc from "picocolors";
+import fs from "node:fs";
+import path from "node:path";
 import { DkitProjectConfigSchema } from "@dkit/shared";
 import { findProjectRoot } from "../lib/paths.js";
 import { loadRegistryIndex } from "../lib/registry.js";
@@ -13,7 +15,7 @@ export function listCommand(): Command {
       const config = DkitProjectConfigSchema.parse(
         readProjectConfig(projectRoot) ?? {},
       );
-      const { index } = await loadRegistryIndex(config.registry);
+      const { index, root } = await loadRegistryIndex(config.registry);
 
       console.log(pc.bold(`\n${index.name} registry\n`));
       const modules = index.items.filter((i) => i.type === "dkit:module");
@@ -24,17 +26,45 @@ export function listCommand(): Command {
         console.log(
           `  ${pc.green(m.id.padEnd(18))} ${m.description} ${pc.dim(`v${m.version}`)}`,
         );
-        if (m.defaultBlocks?.length) {
-          console.log(pc.dim(`    default blocks: ${m.defaultBlocks.join(", ")}`));
+        const manifestPath = path.join(root, m.path, "module.json");
+        if (fs.existsSync(manifestPath)) {
+          const manifest = JSON.parse(
+            fs.readFileSync(manifestPath, "utf8"),
+          ) as {
+            templates?: Record<string, { default: string; options?: string[] }>;
+            defaultBlocks?: string[];
+          };
+          if (manifest.templates) {
+            for (const [slot, def] of Object.entries(manifest.templates)) {
+              const opts = (def.options ?? [def.default]).join(" | ");
+              console.log(
+                pc.dim(
+                  `    ${slot}: default=${def.default} · options: ${opts}`,
+                ),
+              );
+            }
+          } else if (m.defaultBlocks?.length) {
+            console.log(
+              pc.dim(`    default blocks: ${m.defaultBlocks.join(", ")}`),
+            );
+          }
         }
       }
 
-      console.log(pc.cyan("\nBlocks"));
+      console.log(pc.cyan("\nBlocks / templates"));
       for (const b of blocks) {
+        const slot = b.slot ? pc.dim(` [${b.slot}]`) : "";
         console.log(
-          `  ${pc.green(b.id.padEnd(18))} ${b.description} ${pc.dim(`v${b.version}`)}`,
+          `  ${pc.green(b.id.padEnd(22))} ${b.description}${slot} ${pc.dim(`v${b.version}`)}`,
         );
       }
-      console.log();
+      console.log(
+        pc.dim(
+          "\nOverride: dkit add blog --template list=blog-list-cards,detail=blog-detail-minimal",
+        ),
+      );
+      console.log(
+        pc.dim("Or pick explicitly: dkit add blog --with blog-list-cards,blog-detail\n"),
+      );
     });
 }

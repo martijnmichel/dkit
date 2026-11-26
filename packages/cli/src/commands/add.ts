@@ -6,7 +6,7 @@ import {
   createTokenClient,
   type ModulePayload,
 } from "@dkit/schema";
-import { DkitProjectConfigSchema } from "@dkit/shared";
+import { DkitProjectConfigSchema, type Framework } from "@dkit/shared";
 import { findProjectRoot } from "../lib/paths.js";
 import { getDirectusCreds } from "../lib/env.js";
 import {
@@ -14,6 +14,7 @@ import {
   loadRegistryIndex,
   resolveInstallPlan,
 } from "../lib/registry.js";
+import { parseTemplateFlag } from "../lib/templates.js";
 import {
   readProjectConfig,
   writeBlockUi,
@@ -23,15 +24,22 @@ import {
 export function addCommand(): Command {
   return new Command("add")
     .description("Add a module and/or UI blocks from the registry")
-    .argument("<id>", "module or block id (e.g. blog, blog-list)")
+    .argument("<id>", "module or block id (e.g. blog, blog-list-cards)")
     .option("--schema-only", "Apply Directus layers only (no UI)")
     .option("--ui-only", "Copy UI only (skip schema if possible)")
-    .option("--with <blocks>", "Comma-separated block ids to install with a module")
+    .option(
+      "--with <blocks>",
+      "Comma-separated block ids (overrides default templates)",
+    )
+    .option(
+      "--template <slots>",
+      "Override slots: list=blog-list-cards,detail=blog-detail-minimal",
+    )
     .option("--seed", "Import seed data when present")
     .option("--dry-run", "Print plan without applying")
     .option("--force", "Overwrite existing UI files")
     .option("--yes", "Confirm reduced-safety schema apply on Directus < 12.2")
-    .option("--framework <name>", "UI framework adapter", "next")
+    .option("--framework <name>", "UI framework adapter (next|nuxt)", "next")
     .action(
       async (
         id: string,
@@ -39,6 +47,7 @@ export function addCommand(): Command {
           schemaOnly?: boolean;
           uiOnly?: boolean;
           with?: string;
+          template?: string;
           seed?: boolean;
           dryRun?: boolean;
           force?: boolean;
@@ -47,31 +56,35 @@ export function addCommand(): Command {
         },
       ) => {
         p.intro(pc.bgCyan(pc.black(" dkit add ")));
-        if (opts.framework && opts.framework !== "next") {
+        const framework = (opts.framework ?? "next") as Framework;
+        if (framework !== "next" && framework !== "nuxt") {
           p.cancel(
-            `Framework "${opts.framework}" is not published yet. MVP ships next only.`,
+            `Framework "${framework}" is not published yet. Use next or nuxt.`,
           );
           process.exit(1);
         }
 
         const projectRoot = findProjectRoot();
-        const config = DkitProjectConfigSchema.parse(
-          readProjectConfig(projectRoot) ?? {},
-        );
+        const config = DkitProjectConfigSchema.parse({
+          ...(readProjectConfig(projectRoot) ?? {}),
+          framework,
+        });
 
-        const { index } = await loadRegistryIndex(config.registry);
+        const { index, root } = await loadRegistryIndex(config.registry);
         const withBlocks = opts.with
           ? opts.with.split(",").map((s) => s.trim()).filter(Boolean)
           : undefined;
+        const templateOverrides = parseTemplateFlag(opts.template);
 
-        const plan = resolveInstallPlan(id, index, {
+        const plan = resolveInstallPlan(id, index, root, {
           schemaOnly: opts.schemaOnly,
           uiOnly: opts.uiOnly,
           withBlocks,
+          templateOverrides,
         });
 
         p.log.info(
-          `Plan: modules [${plan.modules.join(", ") || "—"}] · blocks [${plan.blocks.join(", ") || "—"}]`,
+          `Plan: modules [${plan.modules.join(", ") || "—"}] · blocks [${plan.blocks.join(", ") || "—"}] · framework ${framework}`,
         );
 
         const { url, token } = getDirectusCreds(projectRoot);
@@ -95,7 +108,7 @@ export function addCommand(): Command {
           url && token ? createTokenClient(url, token) : null;
 
         for (const moduleId of plan.modules) {
-          const loaded = await loadItem(moduleId, config.registry);
+          const loaded = await loadItem(moduleId, config.registry, framework);
           if (loaded.kind !== "module") continue;
           const mod = loaded.item;
 
@@ -119,9 +132,6 @@ export function addCommand(): Command {
             for (const w of result.warnings) p.log.warn(w);
           }
 
-          if (!opts.dryRun && !opts.schemaOnly) {
-            // types go with module even for schema-only? include always when module installs
-          }
           if (!opts.dryRun) {
             const types = writeModuleTypes(projectRoot, config, mod);
             for (const t of types) p.log.step(`wrote ${t}`);
@@ -130,11 +140,11 @@ export function addCommand(): Command {
 
         if (!opts.schemaOnly) {
           for (const blockId of plan.blocks) {
-            const loaded = await loadItem(blockId, config.registry);
+            const loaded = await loadItem(blockId, config.registry, framework);
             if (loaded.kind !== "block") continue;
             if (opts.dryRun) {
               p.log.info(
-                `ui: would write ${loaded.item.uiFiles.length} file(s) for ${blockId}`,
+                `ui: would write ${loaded.item.uiFiles.length} file(s) for ${blockId} (${framework})`,
               );
               continue;
             }
