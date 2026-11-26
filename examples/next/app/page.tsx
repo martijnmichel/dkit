@@ -1,31 +1,29 @@
 export default function HomePage() {
   return (
-    <main style={{ maxWidth: 720, margin: "0 auto", padding: "48px 24px" }}>
-      <h1 style={{ fontSize: 32, margin: 0 }}>Next.js example</h1>
-      <p style={{ color: "#666", marginTop: 12 }}>
-        Use the repo scripts to install / clear dkit modules against local Directus.
+    <main className="mx-auto max-w-2xl px-6 py-16">
+      <h1 className="font-serif text-4xl tracking-tight text-stone-900">
+        Next.js example
+      </h1>
+      <p className="mt-3 text-stone-500">
+        Use the repo scripts to install / clear dkit modules against local
+        Directus.
       </p>
-      <pre
-        style={{
-          marginTop: 24,
-          padding: 16,
-          background: "#111",
-          color: "#f5f5f5",
-          borderRadius: 8,
-          overflow: "auto",
-          fontSize: 13,
-        }}
-      >{`# from repo root
+      <pre className="mt-8 overflow-auto rounded-2xl bg-stone-900 p-5 text-sm leading-relaxed text-stone-100">{`# from repo root
 pnpm directus:up
 export DIRECTUS_TOKEN=<static-admin-token>
 
-pnpm example:next:setup     # init + add blog --seed
+pnpm example:next:setup
 pnpm --filter @dkit/example-next dev
 
-pnpm example:next:clear     # remove generated dkit files
-pnpm example:next:reset     # clear + re-add blog`}</pre>
-      <p style={{ marginTop: 24 }}>
-        <a href="/blog">Open /blog</a>
+pnpm example:next:clear
+pnpm example:next:reset`}</pre>
+      <p className="mt-8">
+        <a
+          href="/blog"
+          className="text-sm font-medium text-teal-800 underline-offset-4 hover:underline"
+        >
+          Open /blog →
+        </a>
       </p>
     </main>
   );

@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* dkit UI lives in gitignored folders — register for Tailwind v4 source detection */
+@source "../../components/dkit/**/*.{vue,js,ts}";
+@source "../../lib/dkit/**/*.{js,ts}";
+
 html {
   background: #f7f4ef;
   color: #1c1917;

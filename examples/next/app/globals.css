@@ -1,8 +1,12 @@
 @import "tailwindcss";
 
+/* dkit copies UI into gitignored folders — v4 skips .gitignore paths unless registered */
+@source "../components/dkit/**/*.{js,jsx,ts,tsx}";
+@source "../lib/dkit/**/*.{js,jsx,ts,tsx}";
+
 @theme {
   --font-display: "Fraunces", "Times New Roman", serif;
-  --font-sans: "Satoshi", "Avenir Next", "Segoe UI", sans-serif;
+  --font-sans: "DM Sans", "Avenir Next", "Segoe UI", sans-serif;
   --color-ink: #1c1917;
   --color-ink-muted: #57534e;
   --color-paper: #f7f4ef;
