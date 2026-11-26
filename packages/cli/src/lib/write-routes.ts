@@ -77,7 +77,7 @@ export default function Dkit${exportId}Page() {
     return <p>Form is not installed yet.</p>;
   }
   return (
-    <main className="container mx-auto px-6 py-16">
+    <main className="container py-16">
       <h1 className="mb-8 text-2xl font-semibold tracking-tight">${heading}</h1>
       <Form />
     </main>
@@ -102,7 +102,7 @@ import { Form, installed } from "${componentsAlias}/${moduleId}"
 </script>
 
 <template>
-  <main class="container mx-auto px-6 py-16">
+  <main class="container py-16">
     <p v-if="!installed">Form is not installed yet.</p>
     <template v-else>
       <h1 class="mb-8 text-2xl font-semibold tracking-tight">${heading}</h1>
@@ -128,7 +128,7 @@ export default function Dkit${exportId}Page() {
     return <p>Form is not installed yet.</p>;
   }
   return (
-    <main className="container mx-auto px-6 py-16">
+    <main className="container py-16">
       <h1 className="mb-8 text-2xl font-semibold tracking-tight">${heading}</h1>
       <Form />
     </main>

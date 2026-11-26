@@ -15,6 +15,7 @@ import {
   buildPageBuilderMockSource,
   buildPagesMockSource,
 } from "@/lib/sandpack/mocks";
+import { sandpackUiStubFiles } from "@/lib/sandpack/ui-stubs";
 
 export type {
   BlockSandpackProject,
@@ -181,6 +182,7 @@ export default function App() {
 
   return {
     ...sharedLibFiles(meta.module, "/lib"),
+    ...sandpackUiStubFiles(kit),
     "/components/Block.tsx": component,
     "/App.tsx": isClientOnly ? appClient : appAsync,
     "/styles.css": SANDPACK_THEME_CSS,

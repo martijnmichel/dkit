@@ -41,6 +41,7 @@ import {
   writeModuleLib,
   writeProjectConfig,
 } from "../lib/write-files.js";
+import { ensureShadcnComponents } from "../lib/shadcn.js";
 import {
   joinModulePath,
   writeModuleFormRoute,
@@ -270,7 +271,7 @@ export function addCommand(): Command {
           }
         }
 
-        // Detect existing UI up front (shadcn-style) so schema isn't applied then aborted
+        // Detect existing UI up front so schema isn't applied then aborted
         let overwriteUi = Boolean(opts.force);
         const pendingBlocks: LoadedBlock[] = [];
         if (!opts.schemaOnly) {
@@ -284,6 +285,34 @@ export function addCommand(): Command {
             if (loaded.kind !== "block") continue;
             pendingBlocks.push(loaded.item);
           }
+
+          // shadcn kit → ensure real @/components/ui pieces exist (auto init/add)
+          if (
+            !opts.dryRun &&
+            config.uiAdapter === "shadcn" &&
+            pendingBlocks.some((b) => b.uiKit === "shadcn")
+          ) {
+            const needed = [
+              ...new Set(
+                pendingBlocks
+                  .filter((b) => b.uiKit === "shadcn")
+                  .flatMap((b) => b.manifest.shadcnComponents ?? []),
+              ),
+            ];
+            if (needed.length) {
+              const shadcn = ensureShadcnComponents(
+                projectRoot,
+                framework,
+                needed,
+                (msg) => p.log.step(msg),
+              );
+              if (!shadcn.ok) {
+                p.cancel(shadcn.error ?? "shadcn setup failed");
+                process.exit(1);
+              }
+            }
+          }
+
           if (!opts.dryRun && pendingBlocks.length) {
             const conflicts = pendingBlocks.flatMap((b) =>
               listBlockUiConflicts(projectRoot, config, b),

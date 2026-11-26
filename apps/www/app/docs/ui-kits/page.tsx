@@ -4,7 +4,7 @@ export default function UiKitsPage() {
   return (
     <DocsPage
       title="UI kits"
-      description="Components ship under ui/{kit}/{framework}/. Prefer minimal for any codebase; add shadcn when you want polished tokens."
+      description="Components ship under ui/{kit}/{framework}/. Use shadcn for real @/components/ui pieces, or minimal for plain HTML."
       toc={[
         { id: "model", label: "Model" },
         { id: "shadcn", label: "shadcn" },
@@ -15,17 +15,15 @@ export default function UiKitsPage() {
       <DocsSection id="model" title="Model">
         <ul className="list-disc space-y-2 pl-5">
           <li>
-            <strong>Component</strong> — e.g. <code className="font-mono">blog-list</code>,{" "}
-            <code className="font-mono">blog-detail</code>
+            <strong>Component</strong> — e.g. <code>blog-list</code>,{" "}
+            <code>blog-detail</code>
           </li>
           <li>
-            <strong>Framework</strong> — <code className="font-mono">next</code> |{" "}
-            <code className="font-mono">nuxt</code>
+            <strong>Framework</strong> — <code>next</code> | <code>nuxt</code>
           </li>
           <li>
-            <strong>UI kit</strong> — <code className="font-mono">shadcn</code> |{" "}
-            <code className="font-mono">minimal</code> (declared per block as{" "}
-            <code className="font-mono">uiKits</code>)
+            <strong>UI kit</strong> — <code>shadcn</code> | <code>minimal</code>{" "}
+            (declared per block as <code>uiKits</code>)
           </li>
         </ul>
         <p>
@@ -39,18 +37,22 @@ export default function UiKitsPage() {
 
       <DocsSection id="shadcn" title="shadcn">
         <p>
-          Theme tokens only (<code className="font-mono">bg-background</code>,{" "}
-          <code className="font-mono">text-primary</code>, …). On Nuxt the same
-          kit id means <strong>shadcn-vue</strong>. Module previews can switch
-          Neutral / Zinc / Stone / dkit themes in the sandbox.
+          Blocks import your project&apos;s <code>@/components/ui/*</code>{" "}
+          (Button, Input, Card, …) and theme tokens. On Nuxt the same kit id
+          means <strong>shadcn-vue</strong>.
+        </p>
+        <p>
+          When you <code>dkit add</code> with <code>uiAdapter: &quot;shadcn&quot;</code>,
+          the CLI auto-runs <code>shadcn init --defaults</code> if needed, then{" "}
+          <code>shadcn add</code> for any missing components listed on the
+          block.
         </p>
       </DocsSection>
 
       <DocsSection id="minimal" title="minimal">
         <p>
-          Semantic HTML + <code className="font-mono">.dkit-prose</code> for
-          rich text. Fits apps that are not on shadcn. Every current registry
-          block ships minimal.
+          Semantic HTML + <code>.dkit-prose</code> for rich text. No shadcn
+          dependency. Every current registry block ships minimal.
         </p>
       </DocsSection>
 

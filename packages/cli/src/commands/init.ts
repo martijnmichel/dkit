@@ -207,9 +207,9 @@ export function initCommand(): Command {
                 value: "shadcn" as const,
                 label:
                   framework === "nuxt"
-                    ? "shadcn (Vue / shadcn-vue tokens)"
-                    : "shadcn (React / shadcn-ui tokens)",
-                hint: "recommended — inherits your theme CSS variables",
+                    ? "shadcn (shadcn-vue components)"
+                    : "shadcn (shadcn/ui components)",
+                hint: "recommended — auto-installs missing UI components on add",
               },
               {
                 value: "minimal" as const,
@@ -389,8 +389,8 @@ async function finishInit(args: {
   const uiHint =
     args.uiAdapter === "shadcn"
       ? args.framework === "nuxt"
-        ? "Ensure shadcn-vue CSS variables are in your theme."
-        : "Ensure shadcn/ui CSS variables are in your theme."
+        ? "UI kit shadcn: dkit add will auto-install missing shadcn-vue components."
+        : "UI kit shadcn: dkit add will auto-install missing shadcn/ui components."
       : "Minimal kit: semantic HTML + dkit-prose (blocks fall back if they only ship shadcn).";
 
   p.note(

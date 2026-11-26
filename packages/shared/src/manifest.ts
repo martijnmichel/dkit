@@ -73,6 +73,11 @@ export const BlockManifestSchema = z.object({
    * Not every block needs every kit — omit unsupported ones.
    */
   uiKits: z.array(UiKitSchema).default(["shadcn"]),
+  /**
+   * shadcn/ui (or shadcn-vue) component ids required when uiAdapter is shadcn.
+   * CLI auto-runs `shadcn add` for any that are missing (e.g. button, input).
+   */
+  shadcnComponents: z.array(z.string()).default([]),
   /** Which module slot this template fills (list | detail | form | …) */
   slot: z.string().optional(),
   layers: z.array(LayerSchema).default(["ui"]),

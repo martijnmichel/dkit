@@ -1,8 +1,9 @@
 import type { PageBlock } from "@/lib/dkit/page-builder";
 import { getBuilderPage } from "@/lib/dkit/page-builder";
 import { collections } from "@/lib/dkit/config";
+import { Button } from "@/components/ui/button";
 
-/** Styled with shadcn theme tokens — inherits your app theme (Next shadcn/ui). */
+/** Uses your project's shadcn/ui components. */
 function BlockView({ block }: { block: PageBlock }) {
   switch (block.collection) {
     case collections.block_hero:
@@ -39,12 +40,11 @@ function BlockView({ block }: { block: PageBlock }) {
     case collections.block_cta:
       return (
         <section className="flex justify-center py-8">
-          <a
-            href={(block.item as { href?: string }).href}
-            className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
-          >
-            {(block.item as { label?: string }).label}
-          </a>
+          <Button asChild>
+            <a href={(block.item as { href?: string }).href}>
+              {(block.item as { label?: string }).label}
+            </a>
+          </Button>
         </section>
       );
     default:

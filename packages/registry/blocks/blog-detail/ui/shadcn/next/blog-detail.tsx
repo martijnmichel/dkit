@@ -6,8 +6,10 @@ import {
   normalizeCategories,
 } from "@/lib/dkit/blog";
 import { moduleBasePath } from "@/lib/dkit/config";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
-/** Styled with shadcn theme tokens — inherits your app theme (Next shadcn/ui). */
+/** Uses your project's shadcn/ui components. */
 export async function BlogDetail({
   slug,
   basePath = moduleBasePath("blog", "/blog"),
@@ -20,12 +22,9 @@ export async function BlogDetail({
     return (
       <div className="mx-auto max-w-2xl px-6 py-20 text-center text-muted-foreground">
         <p className="text-2xl font-semibold text-foreground">Post not found</p>
-        <a
-          href={basePath}
-          className="mt-4 inline-block text-sm text-primary underline-offset-4 hover:underline"
-        >
-          ← Back to blog
-        </a>
+        <Button asChild variant="link" className="mt-4">
+          <a href={basePath}>← Back to blog</a>
+        </Button>
       </div>
     );
   }
@@ -37,12 +36,9 @@ export async function BlogDetail({
 
   return (
     <article className="mx-auto max-w-2xl px-6 py-16 sm:py-20">
-      <a
-        href={basePath}
-        className="mb-10 inline-flex items-center gap-2 text-sm text-muted-foreground no-underline transition-colors hover:text-primary"
-      >
-        ← All posts
-      </a>
+      <Button asChild variant="ghost" className="mb-10 px-0">
+        <a href={basePath}>← All posts</a>
+      </Button>
 
       {imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
@@ -57,12 +53,9 @@ export async function BlogDetail({
         {categories.length > 0 ? (
           <div className="mb-4 flex flex-wrap gap-2">
             {categories.map((c) => (
-              <span
-                key={c.id}
-                className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary"
-              >
+              <Badge key={c.id} variant="secondary">
                 {c.title ?? c.slug}
-              </span>
+              </Badge>
             ))}
           </div>
         ) : null}

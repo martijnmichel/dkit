@@ -5,8 +5,16 @@ import {
   getPosts,
 } from "@/lib/dkit/blog";
 import { joinModulePath, moduleBasePath } from "@/lib/dkit/config";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
-/** Styled with shadcn theme tokens — inherits your app theme (Next shadcn/ui). */
+/** Uses your project's shadcn/ui components. */
 export async function BlogListCards({
   basePath = moduleBasePath("blog", "/blog"),
 }: {
@@ -28,7 +36,7 @@ export async function BlogListCards({
 
       {posts.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border px-6 py-12 text-center text-muted-foreground">
-          No published posts yet.
+          No posts yet.
         </p>
       ) : (
         <div className="grid gap-5 sm:grid-cols-2">
@@ -40,43 +48,46 @@ export async function BlogListCards({
               <a
                 key={post.id}
                 href={joinModulePath(basePath, post.slug)}
-                className="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
+                className="group block no-underline transition hover:-translate-y-0.5"
               >
-                {imageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={imageUrl}
-                    alt=""
-                    className="aspect-[16/9] w-full object-cover"
-                  />
-                ) : (
-                  <div className="aspect-[16/9] w-full bg-muted" />
-                )}
-                <div className="flex flex-1 flex-col p-6">
-                  <div className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-primary transition group-hover:scale-x-100" />
-                  {post.published_at ? (
-                    <time
-                      dateTime={post.published_at}
-                      className="text-xs font-medium tracking-wide text-muted-foreground uppercase"
-                    >
-                      {new Date(post.published_at).toLocaleDateString(undefined, {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </time>
-                  ) : null}
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-foreground transition-colors group-hover:text-primary">
-                    {post.title}
-                  </h2>
-                  {post.excerpt ? (
-                    <p className="mt-3 line-clamp-3 flex-1 text-sm leading-relaxed text-muted-foreground">
-                      {post.excerpt}
-                    </p>
+                <Card className="h-full overflow-hidden py-0 shadow-sm transition group-hover:border-primary/40 group-hover:shadow-md">
+                  {imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={imageUrl}
+                      alt=""
+                      className="aspect-[16/9] w-full object-cover"
+                    />
                   ) : (
-                    <span className="flex-1" />
+                    <div className="aspect-[16/9] w-full bg-muted" />
                   )}
-                  <div className="mt-6 flex items-center justify-between gap-3">
+                  <CardHeader>
+                    {post.published_at ? (
+                      <CardDescription>
+                        <time dateTime={post.published_at}>
+                          {new Date(post.published_at).toLocaleDateString(
+                            undefined,
+                            {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            },
+                          )}
+                        </time>
+                      </CardDescription>
+                    ) : null}
+                    <CardTitle className="text-2xl transition-colors group-hover:text-primary">
+                      {post.title}
+                    </CardTitle>
+                  </CardHeader>
+                  {post.excerpt ? (
+                    <CardContent>
+                      <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+                        {post.excerpt}
+                      </p>
+                    </CardContent>
+                  ) : null}
+                  <CardFooter className="justify-between gap-3">
                     {name ? (
                       <span className="inline-flex items-center gap-2 text-xs text-muted-foreground">
                         {avatar ? (
@@ -95,8 +106,8 @@ export async function BlogListCards({
                     <span className="text-sm font-medium text-primary">
                       Read article →
                     </span>
-                  </div>
-                </div>
+                  </CardFooter>
+                </Card>
               </a>
             );
           })}

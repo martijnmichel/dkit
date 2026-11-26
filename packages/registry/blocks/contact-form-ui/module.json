@@ -11,6 +11,7 @@
     "shadcn",
     "minimal"
   ],
+  "shadcnComponents": ["button", "input", "label", "textarea"],
   "slot": "form",
   "registryDependencies": [
     "contact-form"

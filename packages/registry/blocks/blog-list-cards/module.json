@@ -12,6 +12,7 @@
     "shadcn",
     "minimal"
   ],
+  "shadcnComponents": ["card"],
   "slot": "list",
   "registryDependencies": [
     "blog"

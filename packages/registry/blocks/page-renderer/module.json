@@ -11,6 +11,7 @@
     "shadcn",
     "minimal"
   ],
+  "shadcnComponents": ["button"],
   "slot": "renderer",
   "registryDependencies": [
     "page-builder"

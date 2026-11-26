@@ -6,6 +6,10 @@ import { createTokenClient, detectDirectusVersion } from "@dkit/schema";
 import { findProjectRoot } from "../lib/paths.js";
 import { getDirectusCreds } from "../lib/env.js";
 import {
+  hasShadcnConfig,
+  listInstalledShadcnComponents,
+} from "../lib/shadcn.js";
+import {
   ensurePackageDependency,
   readProjectConfig,
 } from "../lib/write-files.js";
@@ -21,14 +25,26 @@ export function doctorCommand(): Command {
         ok: fs.existsSync(path.join(projectRoot, "package.json")),
         label: "package.json",
       });
+      const config = readProjectConfig(projectRoot);
       checks.push({
-        ok: Boolean(readProjectConfig(projectRoot)),
+        ok: Boolean(config),
         label: "dkit.json",
       });
       checks.push({
         ok: ensurePackageDependency(projectRoot, "@directus/sdk"),
         label: "@directus/sdk installed",
       });
+
+      if (config?.uiAdapter === "shadcn") {
+        const shadcnOk = hasShadcnConfig(projectRoot);
+        const count = listInstalledShadcnComponents(projectRoot).size;
+        checks.push({
+          ok: true,
+          label: shadcnOk
+            ? `shadcn configured (${count} ui component file(s))`
+            : "shadcn not initialized yet (dkit add will auto-install)",
+        });
+      }
 
       const { url, token } = getDirectusCreds(projectRoot);
       checks.push({ ok: Boolean(url), label: "DIRECTUS_URL" });

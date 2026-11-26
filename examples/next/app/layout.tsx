@@ -1,16 +1,14 @@
 import type { ReactNode } from "react";
-import { Fraunces, DM_Sans } from "next/font/google";
+import { Fraunces, DM_Sans, Geist } from "next/font/google";
 import "./globals.css";
+import { cn } from "@/lib/utils";
 
 const display = Fraunces({
   subsets: ["latin"],
   variable: "--font-display",
 });
 
-const sans = DM_Sans({
-  subsets: ["latin"],
-  variable: "--font-sans",
-});
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata = {
   title: "dkit example (Next.js)",
@@ -19,10 +17,10 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${display.variable} ${sans.variable}`}>
+    <html lang="en" className={cn(display.variable, "font-sans", geist.variable)}>
       <body className="min-h-screen font-[family-name:var(--font-sans)] antialiased">
         <header className="sticky top-0 z-10 border-b border-[color:var(--color-line)] bg-[color:var(--color-paper)]/80 backdrop-blur-md">
-          <div className="mx-auto flex max-w-5xl items-center gap-6 px-6 py-4">
+          <div className="container flex items-center gap-6 py-4">
             <a
               href="/"
               className="font-[family-name:var(--font-display)] text-lg font-semibold tracking-tight text-[color:var(--color-ink)] no-underline"

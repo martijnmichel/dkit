@@ -12,6 +12,7 @@
     "shadcn",
     "minimal"
   ],
+  "shadcnComponents": ["badge", "button"],
   "slot": "detail",
   "registryDependencies": [
     "blog"

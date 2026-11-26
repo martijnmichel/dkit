@@ -37,7 +37,7 @@ const FEATURES = [
   },
   {
     title: "Owned UI",
-    body: "Unbundled React or Vue blocks in your repo — restyle or replace freely.",
+    body: "shadcn components or minimal HTML in your repo — restyle or replace freely.",
     href: "/docs/ui-kits/",
     icon: Code2,
   },
