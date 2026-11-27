@@ -178,10 +178,15 @@
             "width": "full",
             "sort": 6,
             "options": {
-              "template": "{{label}}"
+              "template": "{{label}}",
+              "enableCreate": true,
+              "enableSelect": true,
+              "filter": {
+                "parent": { "_null": true }
+              }
             },
             "translations": [{ "language": "en-US", "translation": "Items" }],
-            "note": "Links belonging to this menu"
+            "note": "Top-level links only. Open an item to add nested Sub-items (dropdown)."
           }
         }
       ]
@@ -294,7 +299,7 @@
               "template": "{{name}} ({{key}})"
             },
             "translations": [{ "language": "en-US", "translation": "Menu" }],
-            "note": "Which menu this link belongs to"
+            "note": "Same menu for nested Sub-items as their parent"
           },
           "schema": { "is_nullable": false }
         },
@@ -304,13 +309,14 @@
           "meta": {
             "interface": "select-dropdown-m2o",
             "special": ["m2o"],
+            "hidden": true,
             "width": "half",
             "sort": 4,
             "options": {
               "template": "{{label}}"
             },
             "translations": [{ "language": "en-US", "translation": "Parent" }],
-            "note": "Optional parent for dropdown / nested items"
+            "note": "Set automatically when you add Sub-items on a parent item"
           },
           "schema": {}
         },
@@ -381,12 +387,18 @@
           "meta": {
             "interface": "list-o2m",
             "special": ["o2m"],
-            "hidden": true,
+            "hidden": false,
             "width": "full",
             "sort": 9,
+            "options": {
+              "template": "{{label}}",
+              "enableCreate": true,
+              "enableSelect": true
+            },
             "translations": [
-              { "language": "en-US", "translation": "Children" }
-            ]
+              { "language": "en-US", "translation": "Sub-items" }
+            ],
+            "note": "Nested links under this item (header dropdown). Pick the same Menu as this item when creating."
           }
         }
       ]

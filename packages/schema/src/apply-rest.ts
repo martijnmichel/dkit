@@ -79,16 +79,21 @@ export async function applyRestSchema(
     if (existingSet.has(col.collection)) {
       log(`→ Updating collection meta ${col.collection}…`);
       await updateCollectionMeta(client, col);
-      await upsertFields(client, col, log);
+      // Concrete columns first — O2M/M2M aliases need the relation to exist
+      await upsertFields(client, col, log, { aliases: false });
       continue;
     }
 
     log(`→ Creating collection ${col.collection}…`);
     const { fields, ...rest } = col;
+    // Create without alias fields; add those after relations
     await http(client, {
       path: "/collections",
       method: "POST",
-      body: { ...rest, fields: fields ?? [] },
+      body: {
+        ...rest,
+        fields: (fields ?? []).filter((f) => !isAliasField(f)),
+      },
     });
     existingSet.add(col.collection);
   }
@@ -97,7 +102,8 @@ export async function applyRestSchema(
   for (const rel of prepared.relations ?? []) {
     const key = `${rel.collection}.${rel.field}`;
     if (existingRelations.has(key)) {
-      log(`→ Relation ${key} already exists — skipping`);
+      log(`→ Updating relation meta ${key}…`);
+      await updateRelationMeta(client, rel);
       continue;
     }
     log(`→ Creating relation ${rel.collection}.${rel.field}…`);
@@ -108,8 +114,23 @@ export async function applyRestSchema(
     });
   }
 
+  // Alias O2M/M2M fields (e.g. nav_items.children) after relations so one_field is live
+  for (const col of ordered) {
+    if (!col.fields?.some(isAliasField)) continue;
+    await upsertFields(client, col, log, { aliases: true });
+  }
+
   log("✓ REST schema applied");
   return lines;
+}
+
+function isAliasField(field: RestField): boolean {
+  if (field.type === "alias") return true;
+  const special = field.meta?.special;
+  if (!Array.isArray(special)) return false;
+  return special.some(
+    (s) => s === "o2m" || s === "m2m" || s === "m2a" || s === "files",
+  );
 }
 
 /** Expand en-US translations on every collection/field to DKIT_LOCALES. */
@@ -147,10 +168,12 @@ async function upsertFields(
   client: DkitDirectusClient,
   col: RestCollection,
   log: (m: string) => void,
+  opts: { aliases: boolean },
 ): Promise<void> {
   if (!col.fields?.length) return;
   const existingFields = await listFieldNames(client, col.collection);
   for (const field of col.fields) {
+    if (isAliasField(field) !== opts.aliases) continue;
     if (existingFields.has(field.field)) {
       log(`→ Updating field ${col.collection}.${field.field}…`);
       await http(client, {
@@ -168,7 +191,32 @@ async function upsertFields(
         method: "POST",
         body: field,
       });
+      existingFields.add(field.field);
     }
+  }
+}
+
+async function updateRelationMeta(
+  client: DkitDirectusClient,
+  rel: RestRelation,
+): Promise<void> {
+  if (!rel.meta) return;
+  try {
+    await http(client, {
+      path: `/relations/${rel.collection}/${rel.field}`,
+      method: "PATCH",
+      body: {
+        meta: rel.meta,
+        ...(rel.schema ? { schema: rel.schema } : {}),
+      },
+    });
+  } catch {
+    // Some Directus builds reject schema patches on existing relations — meta-only retry
+    await http(client, {
+      path: `/relations/${rel.collection}/${rel.field}`,
+      method: "PATCH",
+      body: { meta: rel.meta },
+    });
   }
 }
 
