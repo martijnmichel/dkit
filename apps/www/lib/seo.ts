@@ -5,7 +5,7 @@ export const SITE = {
   url: "https://dkit.run",
   tagline: "The foundation for your Directus projects",
   description:
-    "Composable schema, access, services, and UI for Next.js and Nuxt. Install Directus modules into your repo as code you own.",
+    "Composable schema, access, services, and UI for Next.js. Install Directus modules into your repo as code you own.",
   locale: "en_US",
   github: "https://github.com/martijnmichel/dkit",
 } as const;
@@ -169,7 +169,7 @@ export function moduleJsonLd({
     url: absoluteUrl(path),
     codeRepository: SITE.github,
     programmingLanguage: ["TypeScript", "JavaScript"],
-    runtimePlatform: ["Next.js", "Nuxt", "Directus"],
+    runtimePlatform: ["Next.js", "Directus"],
     isPartOf: { "@id": `${SITE.url}/#software` },
   };
 }

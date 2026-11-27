@@ -44,7 +44,7 @@ export default function CliPage() {
     >
       <DocsSection id="init" title="dkit init" icon={Terminal}>
         <p>
-          Detects Next/Nuxt (or scaffolds), stores Directus connection and UI
+          Detects Next.js (or scaffolds), stores Directus connection and UI
           kit preference in <code className="font-mono">dkit.json</code>.
         </p>
         <pre className="code">{`dkit init
@@ -74,7 +74,6 @@ dkit add blog --with blog-list-cards,blog-detail
 dkit add blog --template list=blog-list-cards
 dkit add blog --yes --path /blog --prefix dkit_
 
-dkit add blog --framework nuxt
 dkit add blog --schema-only
 dkit add blog --dry-run`}</pre>
         <p>

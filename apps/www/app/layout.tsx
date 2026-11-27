@@ -34,7 +34,6 @@ export const metadata: Metadata = {
   keywords: [
     "Directus",
     "Next.js",
-    "Nuxt",
     "CMS",
     "schema",
     "dkit",

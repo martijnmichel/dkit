@@ -19,7 +19,10 @@ import {
 } from "@dkit/shared";
 import { findProjectRoot } from "../lib/paths.js";
 import { getDirectusCreds } from "../lib/env.js";
-import { detectFramework } from "../lib/framework.js";
+import {
+  assertPublicFramework,
+  detectFramework,
+} from "../lib/framework.js";
 import {
   loadItem,
   loadRegistryIndex,
@@ -100,7 +103,7 @@ export function addCommand(): Command {
       "--yes",
       "Non-interactive: use defaults / flags; also confirms Directus < 12.2 apply",
     )
-    .option("--framework <name>", "UI framework adapter (next|nuxt); default: dkit.json or auto-detect")
+    .option("--framework <name>", "UI framework adapter (next); default: dkit.json or auto-detect")
     .action(
       async (
         id: string,
@@ -126,10 +129,10 @@ export function addCommand(): Command {
           existingConfig?.framework ??
           detected ??
           "next") as Framework;
-        if (framework !== "next" && framework !== "nuxt") {
-          p.cancel(
-            `Framework "${framework}" is not published yet. Use next or nuxt.`,
-          );
+        try {
+          assertPublicFramework(framework);
+        } catch (e) {
+          p.cancel(e instanceof Error ? e.message : String(e));
           process.exit(1);
         }
         if (!opts.framework && !existingConfig?.framework && detected) {

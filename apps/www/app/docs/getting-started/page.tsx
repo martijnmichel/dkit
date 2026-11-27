@@ -10,7 +10,7 @@ import { CheckCircle2, PackagePlus, Rocket, Sparkles } from "lucide-react";
 
 const TITLE = "Getting started";
 const DESCRIPTION =
-  "Go from an empty folder (or an existing Next/Nuxt app) to a module running against your Directus project.";
+  "Go from an empty folder (or an existing Next.js app) to a module running against your Directus project.";
 const PATH = "/docs/getting-started/";
 
 export const metadata = pageMetadata({
@@ -58,7 +58,7 @@ export default function GettingStartedPage() {
 
       <DocsSection id="init" title="Init your app" icon={Sparkles}>
         <p>
-          <code className="font-mono">dkit init</code> detects Next or Nuxt, or
+          <code className="font-mono">dkit init</code> detects Next.js, or
           scaffolds one if the folder is empty. It writes{" "}
           <code className="font-mono">dkit.json</code> with your Directus URL,
           framework, and preferred UI kit.

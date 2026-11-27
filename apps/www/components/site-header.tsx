@@ -89,7 +89,7 @@ export function SiteFooter() {
             </a>
             <p className="mt-3 max-w-xs text-sm text-muted-foreground">
               Install Directus modules you own — schema, access, flows, and UI
-              for Next.js and Nuxt.
+              for Next.js.
             </p>
           </div>
 

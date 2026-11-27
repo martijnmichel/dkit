@@ -85,7 +85,7 @@ export default function HomePage() {
           The foundation for your Directus projects
         </p>
         <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-          Composable schema, access, services, and UI for Next.js and Nuxt —
+          Composable schema, access, services, and UI for Next.js —
           with thoughtful defaults. Install into your repo as code you can
           customize, extend, and make your own.
         </p>

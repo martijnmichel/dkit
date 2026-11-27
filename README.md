@@ -1,8 +1,8 @@
 # dkit
 
-**Install Directus modules you own** — schema, permissions, flows, and frontend UI blocks (Next.js + Nuxt) in one command.
+**Install Directus modules you own** — schema, permissions, flows, and frontend UI blocks for **Next.js** in one command.
 
-**[dkit.run](https://dkit.run)** · npm `@kurbo/dkit` · MCP `@dkit/mcp`
+**[dkit.run](https://dkit.run)** · npm [`@kurbo/dkit`](https://www.npmjs.com/package/@kurbo/dkit) · MCP `@dkit/mcp`
 
 ```bash
 npx @kurbo/dkit init
@@ -13,13 +13,14 @@ Requires **Directus 11+** (best on **12.2+** for additive schema merge). Always 
 
 **Directus 12 Core (no license):** public permissions use flat rules (`fields: ["*"]`). Row filters / field subsets need a Directus license; UI blocks already filter `status = published` in queries.
 
+**Supported today:** Next.js + UI kits `shadcn` | `minimal`. Nuxt/Vue registry files exist in the monorepo but are **not** offered by the published CLI yet.
+
 ## Install modes
 
 ```bash
 dkit add blog
 dkit add blog --template list=blog-list-cards
 dkit add blog --with blog-list-cards,blog-detail
-dkit add blog --framework nuxt
 dkit add blog --schema-only
 dkit add blog --dry-run
 dkit add blog --yes --path /blog --prefix dkit_   # CI / non-interactive
@@ -36,7 +37,7 @@ Interactive `dkit add` **always asks** for:
 
 Generated `lib/dkit/config.ts` exposes `collections` and `moduleBasePath()` for UI blocks.
 
-Anonymous CLI usage (command name, flags, version — no paths/tokens) goes to Umami. Opt out: `DKIT_TELEMETRY=0`, `DO_NOT_TRACK=1`, or `dkit --no-telemetry …`.
+Anonymous CLI usage (command name, flags, version — no paths/tokens) goes to Umami. Opt out: `DKIT_TELEMETRY=0`, `DO_NOT_TRACK=1`, or `dkit --no-telemetry …`. Privacy: [dkit.run/privacy](https://dkit.run/privacy/).
 
 ## Auth
 
@@ -132,15 +133,11 @@ pnpm example:next:setup
 pnpm --filter @dkit/example-next dev
 pnpm example:next:clear    # wipe generated components/dkit + lib/dkit
 pnpm example:next:reset    # clear + re-add blog
-
-# Nuxt playground (:3002) — see examples/nuxt/README.md
-pnpm example:nuxt:setup
-pnpm example:nuxt:dev
-pnpm example:nuxt:clear
-pnpm example:nuxt:reset
 ```
 
 `directus:reset` wipes the Directus DB volumes for a clean schema re-apply.
+
+> **Contributors:** a Nuxt playground still lives under `examples/nuxt` for internal testing. The public CLI rejects `--framework nuxt` until that path is re-enabled.
 
 ## License
 

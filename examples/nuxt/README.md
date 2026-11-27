@@ -1,4 +1,7 @@
-# dkit — Nuxt example
+# dkit — Nuxt example (internal)
+
+> **Not in the published CLI yet.** `@kurbo/dkit` currently supports Next.js only.
+> This playground is for monorepo contributors re-enabling Nuxt later.
 
 Playground to install / clear / re-test Nuxt UI blocks against local Directus.
 

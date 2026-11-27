@@ -69,7 +69,7 @@ export default function OpenGraphImage() {
               lineHeight: 1.35,
             }}
           >
-            Schema, access, services, and UI for Next.js and Nuxt — installed as
+            Schema, access, services, and UI for Next.js — installed as
             code you own.
           </div>
         </div>

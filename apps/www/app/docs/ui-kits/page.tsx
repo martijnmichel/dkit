@@ -49,7 +49,7 @@ export default function UiKitsPage() {
             <code>blog-detail</code>
           </li>
           <li>
-            <strong>Framework</strong> — <code>next</code> | <code>nuxt</code>
+            <strong>Framework</strong> — <code>next</code>
           </li>
           <li>
             <strong>UI kit</strong> — <code>shadcn</code> | <code>minimal</code>{" "}
@@ -68,8 +68,7 @@ export default function UiKitsPage() {
       <DocsSection id="shadcn" title="shadcn" icon={Sparkles}>
         <p>
           Blocks import your project&apos;s <code>@/components/ui/*</code>{" "}
-          (Button, Input, Card, …) and theme tokens. On Nuxt the same kit id
-          means <strong>shadcn-vue</strong>.
+          (Button, Input, Card, …) and theme tokens via shadcn/ui.
         </p>
         <p>
           When you <code>dkit add</code> with <code>uiAdapter: &quot;shadcn&quot;</code>,
@@ -90,9 +89,8 @@ export default function UiKitsPage() {
         <p>
           On each <a href="/docs/modules/">module page</a>, Sandpack runs the
           real block sources with seed mocks. Preview kit primitives live in the
-          registry at <code>ui-kits/&lt;kit&gt;/&lt;framework&gt;/</code> (separate
-          from www site chrome), so Next and Nuxt each get their own components.
-          Use Framework / UI kit / Theme controls to match your target app.
+          registry at <code>ui-kits/&lt;kit&gt;/next/</code> (separate from www
+          site chrome). Use UI kit / Theme controls to match your target app.
         </p>
       </DocsSection>
     </DocsPage>

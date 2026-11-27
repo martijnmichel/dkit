@@ -13,8 +13,11 @@ import {
 import { createAuthClient, createTokenClient } from "@dkit/schema";
 import { getDirectusCreds, upsertEnvLocal } from "../lib/env.js";
 import {
+  assertPublicFramework,
   detectFramework,
+  isPublicFramework,
   isScaffoldableDir,
+  NUXT_UNAVAILABLE,
 } from "../lib/framework.js";
 import { scaffoldFrameworkApp } from "../lib/scaffold.js";
 import {
@@ -40,17 +43,17 @@ function cancelIfAny(value: unknown): asserts value is Exclude<typeof value, sym
 export function initCommand(): Command {
   return new Command("init")
     .description(
-      "Initialize dkit. Auto-detects Next/Nuxt, or scaffolds a new app if the folder is empty.",
+      "Initialize dkit. Auto-detects Next.js, or scaffolds a new app if the folder is empty.",
     )
     .option("--url <url>", "Prefill Directus URL")
     .option(
       "--token <token>",
       "Prefill static admin token (skips token prompt with --yes)",
     )
-    .option("--framework <name>", "Force framework (next|nuxt); skips detect")
+    .option("--framework <name>", "Force framework (next); skips detect")
     .option(
       "--ui <adapter>",
-      "UI kit: shadcn (Next shadcn/ui · Nuxt shadcn-vue) | minimal",
+      "UI kit: shadcn (shadcn/ui) | minimal",
     )
     .option("--yes", "Non-interactive: require --url and --token (CI)")
     .action(
@@ -75,7 +78,7 @@ export function initCommand(): Command {
         const pkgPath = path.join(projectRoot, "package.json");
         if (!fs.existsSync(pkgPath)) {
           p.cancel(
-            "No package.json found. Scaffold a Next/Nuxt app first, or run init in a project folder.",
+            "No package.json found. Scaffold a Next.js app first, or run init in a project folder.",
           );
           process.exit(1);
         }
@@ -205,10 +208,7 @@ export function initCommand(): Command {
             options: [
               {
                 value: "shadcn" as const,
-                label:
-                  framework === "nuxt"
-                    ? "shadcn (shadcn-vue components)"
-                    : "shadcn (shadcn/ui components)",
+                label: "shadcn (shadcn/ui components)",
                 hint: "recommended — auto-installs missing UI components on add",
               },
               {
@@ -246,9 +246,15 @@ function parseUiAdapterFlag(raw?: string): UiAdapter | undefined {
 async function resolveFramework(
   projectRoot: string,
   opts: { framework?: string; yes?: boolean },
-): Promise<"next" | "nuxt"> {
+): Promise<"next"> {
   const forced = parseFrameworkFlag(opts.framework);
   if (forced) {
+    try {
+      assertPublicFramework(forced);
+    } catch (e) {
+      p.cancel(e instanceof Error ? e.message : String(e));
+      process.exit(1);
+    }
     p.log.step(`Framework: ${forced} (--framework)`);
     if (
       isScaffoldableDir(projectRoot) &&
@@ -260,30 +266,38 @@ async function resolveFramework(
   }
 
   const detected = detectFramework(projectRoot);
-  if (detected.framework === "next" || detected.framework === "nuxt") {
+  if (detected.framework) {
+    if (!isPublicFramework(detected.framework)) {
+      p.cancel(
+        detected.framework === "nuxt"
+          ? NUXT_UNAVAILABLE
+          : `Detected ${detected.framework}, which is not available yet. Use Next.js.`,
+      );
+      process.exit(1);
+    }
     p.log.step(
       `Detected ${detected.framework} (${detected.reasons.join(", ")})`,
     );
     return detected.framework;
   }
 
-  // Empty / scaffoldable folder → ask + create
+  // Empty / scaffoldable folder → create Next
   if (isScaffoldableDir(projectRoot)) {
     if (opts.yes) {
       p.cancel(
-        "Empty project: pass --framework next|nuxt with --yes to scaffold, or create the app first.",
+        "Empty project: pass --framework next with --yes to scaffold, or create the app first.",
       );
       process.exit(1);
     }
 
-    p.log.info("No Next.js or Nuxt app detected — this folder looks empty.");
+    p.log.info("No Next.js app detected — this folder looks empty.");
     const pick = await p.select({
-      message: "Create a new project with which framework?",
+      message: "Create a new project?",
       options: [
         { value: "next", label: "Next.js (create-next-app defaults)" },
-        { value: "nuxt", label: "Nuxt 3 (nuxi init defaults)" },
+        // { value: "nuxt", label: "Nuxt 3 (nuxi init defaults)" },
       ],
-      initialValue: "next" as "next" | "nuxt",
+      initialValue: "next" as const,
     });
     cancelIf(pick);
     await runScaffold(projectRoot, pick, false);
@@ -292,7 +306,9 @@ async function resolveFramework(
 
   // Existing non-empty project without clear framework
   if (opts.yes) {
-    p.log.warn("Could not detect framework — defaulting to next. Pass --framework to override.");
+    p.log.warn(
+      "Could not detect framework — defaulting to next. Pass --framework next to override.",
+    );
     return "next";
   }
 
@@ -300,9 +316,9 @@ async function resolveFramework(
     message: "Which frontend framework? (could not auto-detect)",
     options: [
       { value: "next", label: "Next.js (App Router)" },
-      { value: "nuxt", label: "Nuxt 3" },
+      // { value: "nuxt", label: "Nuxt 3" },
     ],
-    initialValue: "next" as "next" | "nuxt",
+    initialValue: "next" as const,
   });
   cancelIf(pick);
   return pick;
@@ -333,7 +349,7 @@ async function runScaffold(
 function parseFrameworkFlag(value?: string): "next" | "nuxt" | null {
   if (!value) return null;
   if (value === "next" || value === "nuxt") return value;
-  p.cancel(`Unknown framework "${value}". Use next or nuxt.`);
+  p.cancel(`Unknown framework "${value}". Use next.`);
   process.exit(1);
 }
 
@@ -345,8 +361,10 @@ async function finishInit(args: {
   uiAdapter: UiAdapter;
   collectionPrefix: string;
 }): Promise<void> {
-  if (args.framework !== "next" && args.framework !== "nuxt") {
-    p.cancel(`Framework "${args.framework}" is not supported yet.`);
+  try {
+    assertPublicFramework(args.framework);
+  } catch (e) {
+    p.cancel(e instanceof Error ? e.message : String(e));
     process.exit(1);
   }
 

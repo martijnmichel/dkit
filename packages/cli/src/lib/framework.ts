@@ -12,6 +12,31 @@ const IGNORE_EMPTY = new Set([
   "Thumbs.db",
 ]);
 
+/**
+ * Frameworks offered by the public CLI today.
+ * Nuxt/Vue install paths still exist in the codebase; gated until ready.
+ */
+export const PUBLIC_FRAMEWORKS = ["next"] as const;
+export type PublicFramework = (typeof PUBLIC_FRAMEWORKS)[number];
+
+export const NUXT_UNAVAILABLE =
+  "Nuxt is not available in this release yet. Use a Next.js app (or omit --framework).";
+
+export function isPublicFramework(value: string): value is PublicFramework {
+  return (PUBLIC_FRAMEWORKS as readonly string[]).includes(value);
+}
+
+/** Exit with a clear message when Nuxt (or another unpublished framework) is requested. */
+export function assertPublicFramework(framework: string): asserts framework is PublicFramework {
+  if (isPublicFramework(framework)) return;
+  if (framework === "nuxt") {
+    throw new Error(NUXT_UNAVAILABLE);
+  }
+  throw new Error(
+    `Framework "${framework}" is not published yet. Use: ${PUBLIC_FRAMEWORKS.join(", ")}.`,
+  );
+}
+
 export type DetectedFramework = {
   framework: Framework | null;
   reasons: string[];

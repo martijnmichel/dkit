@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  PUBLIC_PREVIEW_FRAMEWORKS,
   type PreviewFramework,
   type PreviewTheme,
   type PreviewUiKit,
@@ -22,12 +23,12 @@ const FRAMEWORK_OPTIONS: Array<{
   label: string;
 }> = [
   { value: "next", label: "Next.js" },
-  { value: "nuxt", label: "Nuxt" },
+  // { value: "nuxt", label: "Nuxt" },
 ];
 
-function uiKitLabel(kit: PreviewUiKit, framework: PreviewFramework): string {
+function uiKitLabel(kit: PreviewUiKit, _framework: PreviewFramework): string {
   if (kit === "minimal") return "Minimal";
-  return framework === "nuxt" ? "shadcn (Vue)" : "shadcn";
+  return "shadcn";
 }
 
 function SelectField({
@@ -90,15 +91,17 @@ export function PreviewSelectBar({
 }) {
   const { prefs, setFramework, setUi, setTheme } = usePreviewPrefs();
 
-  const frameworks = availableFrameworks?.length
+  const frameworks = (availableFrameworks?.length
     ? availableFrameworks
-    : (["next", "nuxt"] as PreviewFramework[]);
+    : PUBLIC_PREVIEW_FRAMEWORKS
+  ).filter((fw) => PUBLIC_PREVIEW_FRAMEWORKS.includes(fw));
   const kits = availableUiKits?.length
     ? availableUiKits
     : (["shadcn", "minimal"] as PreviewUiKit[]);
 
   const activeUi = kits.includes(prefs.ui) ? prefs.ui : kits[0]!;
   const showTheme = activeUi === "shadcn";
+  const showFramework = frameworks.length > 1;
 
   return (
     <div
@@ -107,20 +110,22 @@ export function PreviewSelectBar({
         className,
       )}
     >
-      <SelectField
-        id={`${idPrefix}-framework`}
-        label="Framework"
-        value={
-          frameworks.includes(prefs.framework)
-            ? prefs.framework
-            : frameworks[0]!
-        }
-        options={FRAMEWORK_OPTIONS.map((o) => ({
-          ...o,
-          disabled: !frameworks.includes(o.value),
-        }))}
-        onChange={(v) => setFramework(v as PreviewFramework)}
-      />
+      {showFramework ? (
+        <SelectField
+          id={`${idPrefix}-framework`}
+          label="Framework"
+          value={
+            frameworks.includes(prefs.framework)
+              ? prefs.framework
+              : frameworks[0]!
+          }
+          options={FRAMEWORK_OPTIONS.map((o) => ({
+            ...o,
+            disabled: !frameworks.includes(o.value),
+          }))}
+          onChange={(v) => setFramework(v as PreviewFramework)}
+        />
+      ) : null}
       <SelectField
         id={`${idPrefix}-ui`}
         label="UI kit"

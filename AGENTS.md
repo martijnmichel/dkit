@@ -2,7 +2,7 @@
 
 ## Audience
 
-`apps/www` and published docs/copy are for **developers installing dkit into their own Next/Nuxt + Directus project**.
+`apps/www` and published docs/copy are for **developers installing dkit into their own Next.js + Directus project**.
 
 - Write for `npx @kurbo/dkit` / `npm i -g @kurbo/dkit` consumers.
 - Do **not** document monorepo contributor workflows (`pnpm dkit:link`, `pnpm directus:up`, working from this repo) on the site.

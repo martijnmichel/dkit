@@ -10,6 +10,9 @@ export type PreviewPrefs = {
 
 export const PREVIEW_PREFS_KEY = "dkit.www.preview";
 
+/** Soft-disable Nuxt in the public directory UI (registry Vue files remain). */
+export const PUBLIC_PREVIEW_FRAMEWORKS: PreviewFramework[] = ["next"];
+
 export const DEFAULT_PREVIEW_PREFS: PreviewPrefs = {
   framework: "next",
   ui: "shadcn",
@@ -26,7 +29,8 @@ export function parsePreviewPrefs(raw: unknown): PreviewPrefs {
       ? (o.theme as PreviewTheme)
       : DEFAULT_PREVIEW_PREFS.theme;
   return {
-    framework: o.framework === "nuxt" ? "nuxt" : "next",
+    // Nuxt previews are gated; always land on Next for now.
+    framework: "next",
     ui: o.ui === "minimal" ? "minimal" : "shadcn",
     theme,
   };
