@@ -4,12 +4,12 @@ import { registryRoot } from "@/lib/registry";
 import type { PreviewFramework, PreviewUiKit } from "@/lib/preview-prefs";
 import { rewriteAtImports } from "@/lib/sandpack/rewrite-at-imports";
 
-/** Transitive `@/components/ui/*` needs for example-next base-nova sources. */
+/** Transitive `@/components/ui/*` needs for base-nova sources. */
 const UI_TRANSITIVE: Record<string, string[]> = {
   sheet: ["button"],
 };
 
-/** shadcn-vue folders under ui-kits/shadcn/nuxt (from shadcn-vue registry). */
+/** shadcn-vue folders under ui-kits/shadcn/nuxt. */
 const NUXT_UI_DIRS = [
   "button",
   "badge",
@@ -21,44 +21,6 @@ const NUXT_UI_DIRS = [
 
 function stripUseClient(source: string): string {
   return source.replace(/^["']use client["'];?\s*/m, "");
-}
-
-/** example-next uses `import { cn } from "cn"` — Sandpack resolves via `@/lib/utils`. */
-function rewriteCnImport(source: string): string {
-  return source.replace(/from\s+["']cn["']/g, 'from "@/lib/utils"');
-}
-
-function prepareNextUiSource(source: string, sandpackPath: string): string {
-  return rewriteAtImports(
-    rewriteCnImport(stripUseClient(source)),
-    sandpackPath,
-  );
-}
-
-function monorepoRoot(): string {
-  return path.resolve(process.cwd(), "../..");
-}
-
-function exampleNextUiDir(): string {
-  return path.join(monorepoRoot(), "examples/next/components/ui");
-}
-
-function exampleNextUtils(): string | null {
-  const abs = path.join(monorepoRoot(), "examples/next/lib/utils.ts");
-  if (fs.existsSync(abs)) {
-    const raw = fs.readFileSync(abs, "utf8");
-    if (/from\s+["']cn["']/.test(raw)) {
-      return `import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
-`;
-    }
-    return stripUseClient(raw);
-  }
-  return null;
 }
 
 function kitDir(kit: PreviewUiKit, framework: PreviewFramework): string {
@@ -85,7 +47,7 @@ function walkFiles(dir: string, base = ""): Array<{ rel: string; abs: string }> 
   return out;
 }
 
-/** Expand `button` → button.tsx names, including transitive kit deps. */
+/** Expand `button` → ids, including transitive kit deps. */
 export function expandShadcnComponents(components: string[]): string[] {
   const out = new Set<string>();
   const queue = [...components];
@@ -99,9 +61,9 @@ export function expandShadcnComponents(components: string[]): string[] {
 }
 
 /**
- * Inject real shadcn sources into Sandpack so `@/components/ui/*` resolves.
- * Next: only the components this block needs from `examples/next/components/ui`.
- * Nuxt: registry ui-kits until a Nuxt example ships real components.
+ * Inject registry `ui-kits/shadcn/{next,nuxt}` sources into Sandpack.
+ * Only the components the block needs (Docker www ships `packages/`, not
+ * `examples/`). Relative `@/` rewrites happen per virtual file path.
  *
  * Server-only (node:fs) — call from build-project, never from client components.
  */
@@ -113,17 +75,17 @@ export function sandpackUiKitFiles(
   if (kit !== "shadcn") return {};
 
   const files: Record<string, string> = {};
+  const wanted = expandShadcnComponents(components);
 
   if (framework === "nuxt") {
     const utils = path.join(kitDir(kit, framework), "utils.ts");
-    if (fs.existsSync(utils)) {
+    if (fs.existsSync(utils) && wanted.length) {
       const dest = "/src/lib/utils.ts";
       files[dest] = rewriteAtImports(fs.readFileSync(utils, "utf8"), dest);
     }
     const root = kitDir(kit, framework);
-    const wanted = new Set(expandShadcnComponents(components));
-    const dirs = wanted.size
-      ? NUXT_UI_DIRS.filter((d) => wanted.has(d))
+    const dirs = wanted.length
+      ? NUXT_UI_DIRS.filter((d) => wanted.includes(d))
       : [];
     for (const dir of dirs) {
       for (const { rel, abs } of walkFiles(path.join(root, dir), dir)) {
@@ -134,19 +96,20 @@ export function sandpackUiKitFiles(
     return files;
   }
 
-  const wanted = expandShadcnComponents(components);
   if (!wanted.length) return files;
 
-  const utils = exampleNextUtils();
-  if (utils) files["/lib/utils.ts"] = utils;
+  const root = kitDir(kit, framework);
+  const utilsAbs = path.join(root, "utils.ts");
+  if (fs.existsSync(utilsAbs)) {
+    files["/lib/utils.ts"] = stripUseClient(fs.readFileSync(utilsAbs, "utf8"));
+  }
 
-  const uiDir = exampleNextUiDir();
   for (const id of wanted) {
     const name = `${id}.tsx`;
-    const abs = path.join(uiDir, name);
+    const abs = path.join(root, name);
     if (!fs.existsSync(abs)) continue;
     const dest = `/components/ui/${name}`;
-    files[dest] = prepareNextUiSource(fs.readFileSync(abs, "utf8"), dest);
+    files[dest] = rewriteAtImports(stripUseClient(fs.readFileSync(abs, "utf8")), dest);
   }
   return files;
 }

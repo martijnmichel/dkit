@@ -81,11 +81,14 @@ export function trackCliEvent(
 
   const send = (async () => {
     try {
+      // Umami (and/or the edge in front of analytics.kurbo.dev) ignores
+      // non-browser User-Agents with a fake 200 {"beep":"boop"}. Keep a
+      // Mozilla UA and identify the CLI in the product token.
       await fetch(`${hostUrl()}/api/send`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "User-Agent": `dkit-cli/${version}`,
+          "User-Agent": `Mozilla/5.0 (compatible; dkit-cli/${version})`,
         },
         body: JSON.stringify(payload),
         signal: AbortSignal.timeout(1500),

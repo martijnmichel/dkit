@@ -34,18 +34,19 @@ export async function run(argv: string[]): Promise<void> {
   program.addCommand(listCommand());
   program.addCommand(doctorCommand());
 
-  program.hook("preAction", (thisCommand) => {
+  // Commander: thisCommand = hook owner (root `dkit`); actionCommand = subcommand.
+  program.hook("preAction", (_thisCommand, actionCommand) => {
     const rootOpts = program.opts<{ telemetry?: boolean }>();
     if (rootOpts.telemetry === false) {
       setTelemetryDisabled(true);
       return;
     }
 
-    const name = thisCommand.name();
-    if (name === "dkit") return;
+    const name = actionCommand.name();
+    if (!name || name === "dkit") return;
 
-    const opts = thisCommand.opts() as Record<string, unknown>;
-    const args = thisCommand.args as string[];
+    const opts = actionCommand.opts() as Record<string, unknown>;
+    const args = actionCommand.args as string[];
 
     trackCliEvent("cli-command", {
       command: name,
