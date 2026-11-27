@@ -20,18 +20,37 @@ export function blockIdsWithRoutes(
   });
 }
 
-/** Map route kinds → barrel export name from installed blocks. */
+/**
+ * Map route kinds → barrel export name from installed blocks.
+ * When `slotPrimaries` is set, only the primary block for each slot contributes
+ * (so two list variants don’t both claim the index page).
+ */
 export function routeExportsFromBlocks(
   blocks: Array<{
-    manifest: { route?: { kind: BlockRouteKind }; slot?: string };
+    manifest: {
+      id?: string;
+      route?: { kind: BlockRouteKind };
+      slot?: string;
+    };
   }>,
+  slotPrimaries?: Record<string, string>,
 ): Partial<Record<BlockRouteKind, string>> {
   const out: Partial<Record<BlockRouteKind, string>> = {};
   for (const b of blocks) {
     const kind = b.manifest.route?.kind;
     if (!kind) continue;
-    out[kind] = b.manifest.slot
-      ? slotExportAlias(b.manifest.slot)
+    const slot = b.manifest.slot;
+    const id = b.manifest.id;
+    if (
+      slot &&
+      slotPrimaries?.[slot] &&
+      id &&
+      slotPrimaries[slot] !== id
+    ) {
+      continue;
+    }
+    out[kind] = slot
+      ? slotExportAlias(slot)
       : kind === "index"
         ? "List"
         : kind === "static"

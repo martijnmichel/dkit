@@ -27,9 +27,11 @@ import {
   type LoadedBlock,
 } from "../lib/registry.js";
 import {
+  groupBlockIdsBySlot,
   listModuleUiOptions,
   mergeBlockIds,
   parseTemplateFlag,
+  pickDefaultSlotPrimary,
 } from "../lib/templates.js";
 import {
   normalizeBasePath,
@@ -600,16 +602,28 @@ export function addCommand(): Command {
               const be = index.items.find((i) => i.id === b);
               return (be?.registryDependencies ?? []).includes(moduleId);
             });
+            const mergedBlocks = mergeBlockIds(
+              config.modules?.[moduleId]?.blocks,
+              forModule,
+            );
+            const slots = await resolveSlotPrimaries({
+              moduleId,
+              mergedBlocks,
+              planBlocks: plan.blocks,
+              index,
+              registryRoot: root,
+              existingSlots: config.modules?.[moduleId]?.slots,
+              templateOverrides,
+              yes: Boolean(opts.yes),
+            });
             config = {
               ...config,
               modules: {
                 ...config.modules,
                 [moduleId]: {
                   ...config.modules?.[moduleId],
-                  blocks: mergeBlockIds(
-                    config.modules?.[moduleId]?.blocks,
-                    forModule,
-                  ),
+                  blocks: mergedBlocks,
+                  slots,
                 },
               },
             };
@@ -655,18 +669,23 @@ export function addCommand(): Command {
               }
             }
             if (!barrelBlocks.length) continue;
+            const slotPrimaries = config.modules?.[moduleId]?.slots;
             const entry = writeModuleUiEntry(
               projectRoot,
               config,
               moduleId,
               barrelBlocks,
+              slotPrimaries,
             );
             p.log.step(`wrote ${entry}`);
 
             const basePath =
               moduleBasePaths[moduleId] ??
               config.modules?.[moduleId]?.basePath;
-            const routeExports = routeExportsFromBlocks(barrelBlocks);
+            const routeExports = routeExportsFromBlocks(
+              barrelBlocks,
+              slotPrimaries,
+            );
             if (!basePath || !Object.keys(routeExports).length) continue;
 
             const logRoute = (route: {
@@ -755,7 +774,10 @@ export function addCommand(): Command {
                 const mods = installedBlocks.filter((b) =>
                   (b.manifest.registryDependencies ?? []).includes(k),
                 );
-                const kinds = routeExportsFromBlocks(mods);
+                const kinds = routeExportsFromBlocks(
+                  mods,
+                  config.modules?.[k]?.slots,
+                );
                 const urls: string[] = [];
                 if (kinds.index || kinds.static) {
                   urls.push(v === "/" ? "/" : v);
@@ -794,4 +816,84 @@ async function modulesNeedingPathFromBlocks(
     }
   }
   return [...mods];
+}
+
+/**
+ * When several installed blocks share a slot (e.g. two list variants), pick
+ * which one owns the page alias (List / Detail / Form) and store it in dkit.json.
+ */
+async function resolveSlotPrimaries(opts: {
+  moduleId: string;
+  mergedBlocks: string[];
+  planBlocks: string[];
+  index: Parameters<typeof groupBlockIdsBySlot>[1];
+  registryRoot: string;
+  existingSlots?: Record<string, string>;
+  templateOverrides: ReturnType<typeof parseTemplateFlag>;
+  yes: boolean;
+}): Promise<Record<string, string>> {
+  const bySlot = groupBlockIdsBySlot(opts.mergedBlocks, opts.index);
+  const next: Record<string, string> = { ...(opts.existingSlots ?? {}) };
+
+  for (const [slot, candidates] of Object.entries(bySlot)) {
+    if (candidates.length === 0) continue;
+
+    if (candidates.length === 1) {
+      next[slot] = candidates[0]!;
+      continue;
+    }
+
+    const existing = next[slot];
+    const addingCompetitor = opts.planBlocks.some(
+      (b) => candidates.includes(b) && b !== existing,
+    );
+    const needsChoice =
+      !existing ||
+      !candidates.includes(existing) ||
+      addingCompetitor;
+
+    if (!needsChoice && existing) {
+      next[slot] = existing;
+      continue;
+    }
+
+    const fallback = pickDefaultSlotPrimary(slot, candidates, {
+      existing,
+      templateOverrides: opts.templateOverrides,
+      moduleId: opts.moduleId,
+      index: opts.index,
+      registryRoot: opts.registryRoot,
+    });
+
+    if (opts.yes) {
+      next[slot] = fallback;
+      p.log.step(
+        `${opts.moduleId} ${slot} page → ${fallback} (--yes)`,
+      );
+      continue;
+    }
+
+    const options = candidates.map((id) => {
+      const entry = opts.index.items.find((i) => i.id === id);
+      return {
+        value: id,
+        label: entry?.title ? `${entry.title} (${id})` : id,
+        hint: entry?.description,
+      };
+    });
+    const picked = await p.select({
+      message: `Which component drives the ${slot} page for "${opts.moduleId}"?`,
+      options,
+      initialValue: fallback,
+    });
+    cancelIf(picked);
+    next[slot] = picked as string;
+  }
+
+  // Drop primaries for slots that no longer have installed blocks
+  for (const slot of Object.keys(next)) {
+    if (!bySlot[slot]?.length) delete next[slot];
+  }
+
+  return next;
 }

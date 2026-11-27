@@ -5,6 +5,11 @@ export const ModuleInstallConfigSchema = z.object({
   basePath: z.string().optional(),
   /** Blocks installed for this module */
   blocks: z.array(z.string()).optional(),
+  /**
+   * Which installed block drives each slot’s page alias (List / Detail / Form).
+   * e.g. `{ "list": "blog-list-cards", "detail": "blog-detail" }`
+   */
+  slots: z.record(z.string()).optional(),
 });
 
 /**

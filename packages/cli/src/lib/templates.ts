@@ -119,6 +119,55 @@ export function mergeBlockIds(
   return [...new Set([...(previous ?? []), ...next])];
 }
 
+/** Group block ids by their registry `slot` (blocks without a slot are omitted). */
+export function groupBlockIdsBySlot(
+  blockIds: string[],
+  index: RegistryIndex,
+): Record<string, string[]> {
+  const out: Record<string, string[]> = {};
+  for (const id of blockIds) {
+    const entry = index.items.find((i) => i.id === id);
+    const slot = entry?.slot;
+    if (!slot) continue;
+    if (!out[slot]) out[slot] = [];
+    if (!out[slot].includes(id)) out[slot].push(id);
+  }
+  return out;
+}
+
+/**
+ * Pick a primary block for a slot when not prompting.
+ * Prefer: existing primary (if still installed) → template override →
+ * template default → first option in the group.
+ */
+export function pickDefaultSlotPrimary(
+  slot: string,
+  candidates: string[],
+  opts: {
+    existing?: string;
+    templateOverrides?: TemplateOverrides;
+    moduleId: string;
+    index: RegistryIndex;
+    registryRoot: string;
+  },
+): string {
+  if (opts.existing && candidates.includes(opts.existing)) {
+    return opts.existing;
+  }
+  const override = opts.templateOverrides?.[slot];
+  if (override && candidates.includes(override)) return override;
+
+  const meta = readModuleTemplateManifest(
+    opts.moduleId,
+    opts.index,
+    opts.registryRoot,
+  );
+  const def = meta?.templates?.[slot]?.default;
+  if (def && candidates.includes(def)) return def;
+
+  return candidates[0]!;
+}
+
 /**
  * Resolve component ids for a module from templates / defaults.
  * UI kit (shadcn | minimal) is chosen later when loading `ui/{kit}/{framework}/` —

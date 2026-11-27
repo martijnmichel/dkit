@@ -18,7 +18,8 @@ export function writeDkitRuntimeConfig(
       const blocks = mod.blocks
         ? JSON.stringify(mod.blocks)
         : "undefined";
-      return `  ${JSON.stringify(id)}: { basePath: ${base}, blocks: ${blocks} },`;
+      const slots = mod.slots ? JSON.stringify(mod.slots) : "undefined";
+      return `  ${JSON.stringify(id)}: { basePath: ${base}, blocks: ${blocks}, slots: ${slots} },`;
     })
     .join("\n");
 
