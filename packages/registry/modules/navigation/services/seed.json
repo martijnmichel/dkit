@@ -21,8 +21,8 @@
         "id": "cccccccc-cccc-4ccc-8ccc-cccccccc0001",
         "status": "published",
         "menu": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
-        "label": "Home",
-        "href": "/",
+        "label": "Blog",
+        "href": "/blog",
         "open_in_new_tab": false,
         "sort": 1
       },
@@ -30,8 +30,8 @@
         "id": "cccccccc-cccc-4ccc-8ccc-cccccccc0002",
         "status": "published",
         "menu": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
-        "label": "Blog",
-        "href": "/blog",
+        "label": "Contact",
+        "href": "/contact",
         "open_in_new_tab": false,
         "sort": 2
       },
@@ -39,57 +39,64 @@
         "id": "cccccccc-cccc-4ccc-8ccc-cccccccc0003",
         "status": "published",
         "menu": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
-        "label": "Contact",
-        "href": "/contact",
+        "label": "More",
+        "href": "#",
         "open_in_new_tab": false,
         "sort": 3
       },
       {
         "id": "cccccccc-cccc-4ccc-8ccc-cccccccc0004",
         "status": "published",
-        "menu": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
-        "label": "More",
-        "href": "#",
-        "open_in_new_tab": false,
-        "sort": 4
-      },
-      {
-        "id": "cccccccc-cccc-4ccc-8ccc-cccccccc0005",
-        "status": "published",
-        "menu": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
-        "parent": "cccccccc-cccc-4ccc-8ccc-cccccccc0004",
+        "parent": "cccccccc-cccc-4ccc-8ccc-cccccccc0003",
         "label": "About",
         "href": "/about",
         "open_in_new_tab": false,
         "sort": 1
       },
       {
+        "id": "cccccccc-cccc-4ccc-8ccc-cccccccc0005",
+        "status": "published",
+        "parent": "cccccccc-cccc-4ccc-8ccc-cccccccc0003",
+        "label": "Hello",
+        "href": "/hello",
+        "open_in_new_tab": false,
+        "sort": 2
+      },
+      {
         "id": "cccccccc-cccc-4ccc-8ccc-cccccccc0006",
         "status": "published",
-        "menu": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
-        "parent": "cccccccc-cccc-4ccc-8ccc-cccccccc0004",
-        "label": "GitHub",
-        "href": "https://github.com",
-        "open_in_new_tab": true,
-        "sort": 2
+        "menu": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0002",
+        "label": "Blog",
+        "href": "/blog",
+        "open_in_new_tab": false,
+        "sort": 1
       },
       {
         "id": "cccccccc-cccc-4ccc-8ccc-cccccccc0007",
         "status": "published",
         "menu": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0002",
-        "label": "Privacy",
-        "href": "/privacy",
+        "label": "Contact",
+        "href": "/contact",
         "open_in_new_tab": false,
-        "sort": 1
+        "sort": 2
       },
       {
         "id": "cccccccc-cccc-4ccc-8ccc-cccccccc0008",
         "status": "published",
         "menu": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0002",
-        "label": "GitHub",
-        "href": "https://github.com",
-        "open_in_new_tab": true,
-        "sort": 2
+        "label": "About",
+        "href": "/about",
+        "open_in_new_tab": false,
+        "sort": 3
+      },
+      {
+        "id": "cccccccc-cccc-4ccc-8ccc-cccccccc0009",
+        "status": "published",
+        "menu": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0002",
+        "label": "Hello",
+        "href": "/hello",
+        "open_in_new_tab": false,
+        "sort": 4
       }
     ]
   }

@@ -11,7 +11,6 @@ const NEXT_UI_FILES = [
   "badge.tsx",
   "card.tsx",
   "navigation-menu.tsx",
-  "sheet.tsx",
 ] as const;
 
 /** shadcn-vue folders under ui-kits/shadcn/nuxt (from shadcn-vue registry). */

@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useId, useRef, useState } from "react";
+import { MenuIcon, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
@@ -9,25 +11,26 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import { navLinkProps, type NavItem } from "@/lib/dkit/navigation";
 
 function NavAnchor({
   item,
   className,
+  onNavigate,
 }: {
   item: NavItem;
   className?: string;
+  onNavigate?: () => void;
 }) {
   const props = navLinkProps(item);
   return (
-    <a {...props} className={className}>
+    <a
+      {...props}
+      className={className}
+      onClick={() => {
+        onNavigate?.();
+      }}
+    >
       {item.label}
     </a>
   );
@@ -76,24 +79,32 @@ function DesktopItem({ item }: { item: NavItem }) {
   );
 }
 
-function MobileTree({ items }: { items: NavItem[] }) {
+function MobileTree({
+  items,
+  onNavigate,
+}: {
+  items: NavItem[];
+  onNavigate: () => void;
+}) {
   return (
-    <ul className="flex flex-col gap-1">
+    <ul className="flex flex-col gap-0.5">
       {items.map((item) => {
         const children = item.children?.filter(Boolean) ?? [];
         return (
           <li key={item.id}>
             <NavAnchor
               item={item}
-              className="block rounded-md px-3 py-2 text-base font-medium hover:bg-accent"
+              onNavigate={onNavigate}
+              className="block rounded-md px-2.5 py-2 text-sm font-medium hover:bg-accent"
             />
             {children.length > 0 ? (
-              <ul className="ml-3 border-l border-border pl-3">
+              <ul className="ml-2 border-l border-border pl-2">
                 {children.map((child) => (
                   <li key={child.id}>
                     <NavAnchor
                       item={child}
-                      className="block rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
+                      onNavigate={onNavigate}
+                      className="block rounded-md px-2.5 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
                     />
                   </li>
                 ))}
@@ -108,8 +119,32 @@ function MobileTree({ items }: { items: NavItem[] }) {
 
 /** Menu controls only — wrap with your own header chrome + SiteBrand. */
 export function NavHeaderClient({ items }: { items: NavItem[] }) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLElement>(null);
+  const panelId = useId();
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointer = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointer);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointer);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
   return (
-    <nav aria-label="Primary" className="flex items-center justify-end gap-4">
+    <nav
+      ref={rootRef}
+      aria-label="Primary"
+      className="flex w-full items-center justify-end gap-4"
+    >
       <NavigationMenu className="hidden md:flex">
         <NavigationMenuList>
           {items.map((item) => (
@@ -118,23 +153,33 @@ export function NavHeaderClient({ items }: { items: NavItem[] }) {
         </NavigationMenuList>
       </NavigationMenu>
 
-      <div className="md:hidden">
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="outline" size="sm" aria-label="Open menu">
-              Menu
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="right" className="w-72 sm:max-w-sm">
-            <SheetHeader>
-              <SheetTitle>Menu</SheetTitle>
-            </SheetHeader>
-            <div className="mt-6">
-              <MobileTree items={items} />
-            </div>
-          </SheetContent>
-        </Sheet>
-      </div>
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        className="md:hidden"
+        aria-label={open ? "Close menu" : "Open menu"}
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => setOpen((value) => !value)}
+      >
+        {open ? (
+          <XIcon className="size-4" />
+        ) : (
+          <MenuIcon className="size-4" />
+        )}
+      </Button>
+
+      {open ? (
+        <div
+          id={panelId}
+          className="absolute inset-x-0 top-full z-50 border-b bg-popover text-popover-foreground shadow-md md:hidden"
+        >
+          <div className="px-4 py-3 sm:px-6">
+            <MobileTree items={items} onNavigate={() => setOpen(false)} />
+          </div>
+        </div>
+      ) : null}
     </nav>
   );
 }

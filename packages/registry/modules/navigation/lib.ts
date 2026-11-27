@@ -62,7 +62,40 @@ function sortItems(a: NavItem, b: NavItem): number {
   return (a.sort ?? 0) - (b.sort ?? 0);
 }
 
-/** Build a 2-level (practical) tree from a flat item list. */
+/** Walk parent → children until the branch is exhausted. */
+async function fetchNavDescendants(
+  roots: NavItem[],
+  status: Record<string, unknown> | undefined,
+): Promise<NavItem[]> {
+  const client = getDirectus();
+  if (!client || !collections.nav_items || roots.length === 0) return roots;
+
+  const all = [...roots];
+  let frontier = roots.map((item) => item.id);
+
+  while (frontier.length > 0) {
+    const childAnd: Record<string, unknown>[] = [
+      { parent: { _in: frontier } },
+    ];
+    if (status) childAnd.unshift(status);
+
+    const kids = await client.request(
+      readItems(collections.nav_items, {
+        filter: { _and: childAnd },
+        fields: [...ITEM_FIELDS],
+        sort: ["sort"],
+        limit: -1,
+      }),
+    );
+    if (!kids.length) break;
+    all.push(...kids);
+    frontier = kids.map((item) => item.id);
+  }
+
+  return all;
+}
+
+/** Build a tree from a flat item list (roots + nested Sub-items). */
 export function buildNavTree(items: NavItem[]): NavItem[] {
   const byId = new Map<string, NavItem>();
   for (const item of items) {
@@ -174,19 +207,23 @@ export async function getNavMenuByKey(
     const menu = menus[0];
     if (!menu) return null;
 
-    const itemAnd: Record<string, unknown>[] = [
+    // Top-level rows own the menu FK; nested Sub-items only set `parent`.
+    const rootAnd: Record<string, unknown>[] = [
       { menu: { _eq: menu.id } },
+      { parent: { _null: true } },
     ];
-    if (status) itemAnd.unshift(status);
+    if (status) rootAnd.unshift(status);
 
-    const items = await client.request(
+    const roots = await client.request(
       readItems(collections.nav_items, {
-        filter: { _and: itemAnd },
+        filter: { _and: rootAnd },
         fields: [...ITEM_FIELDS],
         sort: ["sort"],
         limit: -1,
       }),
     );
+
+    const items = await fetchNavDescendants(roots, status);
 
     return {
       id: menu.id,

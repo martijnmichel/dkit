@@ -19,7 +19,7 @@ export async function SiteShell({ children }: { children: ReactNode }) {
   const chrome = (
     <>
       <header className="sticky top-0 z-10 border-b border-[color:var(--color-line)] bg-[color:var(--color-paper)]/80 backdrop-blur-md">
-        <div className="container flex flex-wrap items-center justify-between gap-4 py-3">
+        <div className="container flex items-center justify-between gap-4 py-3">
           <div className="min-w-0 shrink">
             {settingsInstalled ? (
               <SiteBrand showTagline={false} homeHref="/" />

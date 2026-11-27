@@ -383,8 +383,18 @@ export function getNavMenuByKey(key: string, options: { status?: string | null }
   if (status !== null) menus = menus.filter((m: any) => m.status === status);
   const menu = menus[0];
   if (!menu) return null;
-  let items = [...(SEED.items?.nav_items ?? [])].filter((i: any) => i.menu === menu.id);
-  if (status !== null) items = items.filter((i: any) => i.status === status);
+  const all = [...(SEED.items?.nav_items ?? [])];
+  let roots = all.filter((i: any) => i.menu === menu.id && !i.parent);
+  if (status !== null) roots = roots.filter((i: any) => i.status === status);
+  const items = [...roots];
+  let frontier = roots.map((i: any) => i.id);
+  while (frontier.length) {
+    let kids = all.filter((i: any) => frontier.includes(parentId(i)));
+    if (status !== null) kids = kids.filter((i: any) => i.status === status);
+    if (!kids.length) break;
+    items.push(...kids);
+    frontier = kids.map((i: any) => i.id);
+  }
   return { id: menu.id, key: menu.key, name: menu.name, items: buildNavTree(items) };
 }
 

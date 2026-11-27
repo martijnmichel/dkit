@@ -4,6 +4,7 @@ import type { DkitProjectConfig, Framework } from "@dkit/shared";
 import {
   blockExportName,
   blockModuleId,
+  blockPrimaryUiRel,
   blockUiDestRel,
   shortBlockFileBase,
   slotExportAlias,
@@ -79,7 +80,7 @@ export function writeModuleUiEntry(
 
   for (const block of blocks) {
     const exportName = blockExportName(block.manifest.id);
-    const uiFile = block.uiFiles[0]?.rel ?? `${block.manifest.id}.tsx`;
+    const uiFile = blockPrimaryUiRel(block.manifest.id, block.uiFiles);
     const owner = blockModuleId(block.manifest) ?? moduleId;
     const importPath = blockImportPath(
       config,

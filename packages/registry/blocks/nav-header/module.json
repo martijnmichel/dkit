@@ -6,9 +6,9 @@
   "version": "0.1.0",
   "frameworks": ["next"],
   "uiKits": ["shadcn", "minimal"],
-  "shadcnComponents": ["button", "navigation-menu", "sheet"],
+  "shadcnComponents": ["button", "navigation-menu"],
   "slot": "header",
   "registryDependencies": ["navigation"],
-  "dependencies": ["@directus/sdk"],
+  "dependencies": ["@directus/sdk", "lucide-react"],
   "layers": ["ui"]
 }

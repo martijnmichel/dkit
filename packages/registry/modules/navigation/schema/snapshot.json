@@ -180,13 +180,10 @@
             "options": {
               "template": "{{label}}",
               "enableCreate": true,
-              "enableSelect": true,
-              "filter": {
-                "parent": { "_null": true }
-              }
+              "enableSelect": false
             },
             "translations": [{ "language": "en-US", "translation": "Items" }],
-            "note": "Top-level links only. Open an item to add nested Sub-items (dropdown)."
+            "note": "Top-level links. Open an item to add Sub-items (dropdown). Nested links are not listed here."
           }
         }
       ]
@@ -195,6 +192,7 @@
       "collection": "nav_items",
       "schema": {},
       "meta": {
+        "hidden": true,
         "icon": "link",
         "color": "#0F766E",
         "group": "site",
@@ -213,7 +211,7 @@
             "plural": "Items"
           }
         ],
-        "note": "Individual navigation links (optional parent for nesting)"
+        "note": "Managed only from Menus → Items / Sub-items (hidden from the sidebar)"
       },
       "fields": [
         {
@@ -292,16 +290,32 @@
           "meta": {
             "interface": "select-dropdown-m2o",
             "special": ["m2o"],
-            "required": true,
+            "required": false,
             "width": "half",
             "sort": 3,
             "options": {
               "template": "{{name}} ({{key}})"
             },
             "translations": [{ "language": "en-US", "translation": "Menu" }],
-            "note": "Same menu for nested Sub-items as their parent"
+            "note": "Set on top-level items only. Leave empty for Sub-items (they nest under Parent).",
+            "conditions": [
+              {
+                "name": "Required for top-level items",
+                "rule": {
+                  "_and": [{ "parent": { "_null": true } }]
+                },
+                "required": true
+              },
+              {
+                "name": "Hide on nested Sub-items",
+                "rule": {
+                  "_and": [{ "parent": { "_nnull": true } }]
+                },
+                "hidden": true
+              }
+            ]
           },
-          "schema": { "is_nullable": false }
+          "schema": { "is_nullable": true }
         },
         {
           "field": "parent",
@@ -393,12 +407,12 @@
             "options": {
               "template": "{{label}}",
               "enableCreate": true,
-              "enableSelect": true
+              "enableSelect": false
             },
             "translations": [
               { "language": "en-US", "translation": "Sub-items" }
             ],
-            "note": "Nested links under this item (header dropdown). Pick the same Menu as this item when creating."
+            "note": "Nested links under this item (header dropdown). Create here — Menu is left empty; Parent is set automatically."
           }
         }
       ]
@@ -414,7 +428,7 @@
         "many_field": "menu",
         "one_collection": "nav_menus",
         "one_field": "items",
-        "one_deselect_action": "nullify"
+        "one_deselect_action": "delete"
       },
       "schema": {
         "on_delete": "CASCADE"
@@ -429,10 +443,10 @@
         "many_field": "parent",
         "one_collection": "nav_items",
         "one_field": "children",
-        "one_deselect_action": "nullify"
+        "one_deselect_action": "delete"
       },
       "schema": {
-        "on_delete": "SET NULL"
+        "on_delete": "CASCADE"
       }
     }
   ]
