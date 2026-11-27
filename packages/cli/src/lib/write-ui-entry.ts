@@ -53,6 +53,14 @@ export function writeModuleUiEntry(
     "",
   ];
 
+  // One slot alias (List / Detail / Form) per slot — last block wins when
+  // multiple variants share a slot (e.g. blog-list + blog-list-cards).
+  const slotOwner = new Map<string, string>();
+  for (const block of blocks) {
+    const slot = block.manifest.slot;
+    if (slot) slotOwner.set(slot, block.manifest.id);
+  }
+
   for (const block of blocks) {
     const exportName = blockExportName(block.manifest.id);
     const uiFile = block.uiFiles[0]?.rel ?? `${block.manifest.id}.tsx`;
@@ -65,12 +73,15 @@ export function writeModuleUiEntry(
       uiFile,
     );
     const slot = block.manifest.slot;
+    const isSlotAlias =
+      Boolean(slot) && slotOwner.get(slot!) === block.manifest.id;
+
     if (framework === "nuxt") {
       // Vue SFCs are default-exported
       lines.push(
         `export { default as ${exportName} } from ${JSON.stringify(`${importPath}.vue`)};`,
       );
-      if (slot) {
+      if (isSlotAlias && slot) {
         lines.push(
           `export { default as ${slotExportAlias(slot)} } from ${JSON.stringify(`${importPath}.vue`)};`,
         );
@@ -79,7 +90,7 @@ export function writeModuleUiEntry(
       lines.push(
         `export { ${exportName} } from ${JSON.stringify(importPath)};`,
       );
-      if (slot) {
+      if (isSlotAlias && slot) {
         lines.push(
           `export { ${exportName} as ${slotExportAlias(slot)} } from ${JSON.stringify(importPath)};`,
         );

@@ -10,6 +10,10 @@ export function getDirectus(): DirectusClient | null {
   return null;
 }
 
+export function dkitQueryFailed(_context: string, _err?: unknown): void {
+  // no-op in registry authoring shim
+}
+
 export function directusFileId(
   value: string | DirectusFileRef | null | undefined,
 ): string | null {

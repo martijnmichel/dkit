@@ -1,4 +1,9 @@
-import { getDirectus, readItem, readItems } from "@/lib/dkit/client";
+import {
+  dkitQueryFailed,
+  getDirectus,
+  readItem,
+  readItems,
+} from "@/lib/dkit/client";
 import { collections } from "@/lib/dkit/config";
 import type {
   BuilderPage,
@@ -35,22 +40,38 @@ function statusFilter(status: string | null | undefined) {
   return { status: { _eq: status ?? "published" } };
 }
 
-/** Builder pages for the page-builder module. */
+/** Directus rejects `limit=undefined` — only send a finite number. */
+function queryLimit(limit: number | undefined): number | undefined {
+  return typeof limit === "number" && Number.isFinite(limit) ? limit : undefined;
+}
+
+/** Builder pages for the page-builder module. Defaults to status=published. */
 export async function getPageBuilderPages(
   options: GetPageBuilderPagesOptions = {},
 ): Promise<BuilderPage[]> {
   const client = getDirectus();
   if (!client) return [];
+  if (!collections.builder_pages) {
+    dkitQueryFailed(
+      "collections.builder_pages missing from lib/dkit/config — re-run `dkit add page-builder`",
+    );
+    return [];
+  }
+  const limit = queryLimit(options.limit);
   try {
     return await client.request(
       readItems(collections.builder_pages, {
         filter: statusFilter(options.status),
         fields: [...BUILDER_LIST_FIELDS],
         sort: options.sort ?? ["title"],
-        limit: options.limit,
+        ...(limit !== undefined ? { limit } : {}),
       }),
     );
-  } catch {
+  } catch (err) {
+    dkitQueryFailed(
+      `getPageBuilderPages failed (collection=${collections.builder_pages})`,
+      err,
+    );
     return [];
   }
 }
@@ -61,6 +82,10 @@ export async function getPageBuilderPageBySlug(
 ): Promise<BuilderPage | null> {
   const client = getDirectus();
   if (!client) return null;
+  if (!collections.builder_pages) {
+    dkitQueryFailed("collections.builder_pages missing from lib/dkit/config");
+    return null;
+  }
   const status = statusFilter(options.status);
   const and: Record<string, unknown>[] = [{ slug: { _eq: slug } }];
   if (status) and.unshift(status);
@@ -73,7 +98,11 @@ export async function getPageBuilderPageBySlug(
       }),
     );
     return rows[0] ?? null;
-  } catch {
+  } catch (err) {
+    dkitQueryFailed(
+      `getPageBuilderPageBySlug(${slug}) failed (collection=${collections.builder_pages})`,
+      err,
+    );
     return null;
   }
 }
@@ -83,13 +112,15 @@ export async function getPageBuilderPageById(
 ): Promise<BuilderPage | null> {
   const client = getDirectus();
   if (!client) return null;
+  if (!collections.builder_pages) return null;
   try {
     return await client.request(
       readItem(collections.builder_pages, id, {
         fields: [...BUILDER_DETAIL_FIELDS],
       }),
     );
-  } catch {
+  } catch (err) {
+    dkitQueryFailed(`getPageBuilderPageById(${id}) failed`, err);
     return null;
   }
 }

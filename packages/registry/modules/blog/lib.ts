@@ -1,6 +1,7 @@
 import {
   directusAssetUrl,
   directusFileId,
+  dkitQueryFailed,
   getDirectus,
   readItem,
   readItems,
@@ -101,12 +102,23 @@ function statusFilter(status: string | null | undefined) {
   return { status: { _eq: status ?? "published" } };
 }
 
-/** Posts, newest first. */
+/** Directus rejects `limit=undefined` — only send a finite number. */
+function queryLimit(limit: number | undefined): number | undefined {
+  return typeof limit === "number" && Number.isFinite(limit) ? limit : undefined;
+}
+
+/** Posts, newest first. Defaults to status=published (pass status: null to skip). */
 export async function getBlogPosts(
   options: GetBlogPostsOptions = {},
 ): Promise<BlogPost[]> {
   const client = getDirectus();
   if (!client) return [];
+  if (!collections.posts) {
+    dkitQueryFailed(
+      'collections.posts missing from lib/dkit/config — re-run `dkit add blog` (check collection prefix matches Directus, e.g. "dkit_posts")',
+    );
+    return [];
+  }
   const status = statusFilter(options.status);
   const and: Record<string, unknown>[] = [];
   if (status) and.push(status);
@@ -117,16 +129,21 @@ export async function getBlogPosts(
       },
     });
   }
+  const limit = queryLimit(options.limit);
   try {
     return await client.request(
       readItems(collections.posts, {
         filter: and.length ? { _and: and } : undefined,
         fields: [...POST_LIST_FIELDS],
         sort: options.sort ?? ["-published_at"],
-        limit: options.limit,
+        ...(limit !== undefined ? { limit } : {}),
       }),
     );
-  } catch {
+  } catch (err) {
+    dkitQueryFailed(
+      `getBlogPosts failed (collection=${collections.posts})`,
+      err,
+    );
     return [];
   }
 }
@@ -137,6 +154,10 @@ export async function getBlogPostBySlug(
 ): Promise<BlogPost | null> {
   const client = getDirectus();
   if (!client) return null;
+  if (!collections.posts) {
+    dkitQueryFailed("collections.posts missing from lib/dkit/config");
+    return null;
+  }
   const status = statusFilter(options.status);
   const and: Record<string, unknown>[] = [{ slug: { _eq: slug } }];
   if (status) and.unshift(status);
@@ -149,7 +170,11 @@ export async function getBlogPostBySlug(
       }),
     );
     return rows[0] ?? null;
-  } catch {
+  } catch (err) {
+    dkitQueryFailed(
+      `getBlogPostBySlug(${slug}) failed (collection=${collections.posts})`,
+      err,
+    );
     return null;
   }
 }
@@ -157,13 +182,15 @@ export async function getBlogPostBySlug(
 export async function getBlogPostById(id: string): Promise<BlogPost | null> {
   const client = getDirectus();
   if (!client) return null;
+  if (!collections.posts) return null;
   try {
     return await client.request(
       readItem(collections.posts, id, {
         fields: [...POST_DETAIL_FIELDS],
       }),
     );
-  } catch {
+  } catch (err) {
+    dkitQueryFailed(`getBlogPostById(${id}) failed`, err);
     return null;
   }
 }
@@ -174,17 +201,23 @@ export async function getBlogAuthors(
 ): Promise<BlogAuthor[]> {
   const client = getDirectus();
   if (!client) return [];
+  if (!collections.authors) return [];
   const status = statusFilter(options.status);
+  const limit = queryLimit(options.limit);
   try {
     return await client.request(
       readItems(collections.authors, {
         filter: status,
         fields: [...AUTHOR_FIELDS],
         sort: options.sort ?? ["name"],
-        limit: options.limit,
+        ...(limit !== undefined ? { limit } : {}),
       }),
     );
-  } catch {
+  } catch (err) {
+    dkitQueryFailed(
+      `getBlogAuthors failed (collection=${collections.authors})`,
+      err,
+    );
     return [];
   }
 }
@@ -195,6 +228,7 @@ export async function getBlogAuthorBySlug(
 ): Promise<BlogAuthor | null> {
   const client = getDirectus();
   if (!client) return null;
+  if (!collections.authors) return null;
   const status = statusFilter(options.status);
   const and: Record<string, unknown>[] = [{ slug: { _eq: slug } }];
   if (status) and.unshift(status);
@@ -207,7 +241,8 @@ export async function getBlogAuthorBySlug(
       }),
     );
     return rows[0] ?? null;
-  } catch {
+  } catch (err) {
+    dkitQueryFailed(`getBlogAuthorBySlug(${slug}) failed`, err);
     return null;
   }
 }
@@ -215,13 +250,15 @@ export async function getBlogAuthorBySlug(
 export async function getBlogAuthorById(id: string): Promise<BlogAuthor | null> {
   const client = getDirectus();
   if (!client) return null;
+  if (!collections.authors) return null;
   try {
     return await client.request(
       readItem(collections.authors, id, {
         fields: [...AUTHOR_FIELDS],
       }),
     );
-  } catch {
+  } catch (err) {
+    dkitQueryFailed(`getBlogAuthorById(${id}) failed`, err);
     return null;
   }
 }
@@ -232,15 +269,21 @@ export async function getBlogCategories(
 ): Promise<BlogCategory[]> {
   const client = getDirectus();
   if (!client) return [];
+  if (!collections.categories) return [];
+  const limit = queryLimit(options.limit);
   try {
     return await client.request(
       readItems(collections.categories, {
         fields: [...CATEGORY_FIELDS],
         sort: options.sort ?? ["title"],
-        limit: options.limit,
+        ...(limit !== undefined ? { limit } : {}),
       }),
     );
-  } catch {
+  } catch (err) {
+    dkitQueryFailed(
+      `getBlogCategories failed (collection=${collections.categories})`,
+      err,
+    );
     return [];
   }
 }
@@ -250,6 +293,7 @@ export async function getBlogCategoryBySlug(
 ): Promise<BlogCategory | null> {
   const client = getDirectus();
   if (!client) return null;
+  if (!collections.categories) return null;
   try {
     const rows = await client.request(
       readItems(collections.categories, {
@@ -259,7 +303,8 @@ export async function getBlogCategoryBySlug(
       }),
     );
     return rows[0] ?? null;
-  } catch {
+  } catch (err) {
+    dkitQueryFailed(`getBlogCategoryBySlug(${slug}) failed`, err);
     return null;
   }
 }
@@ -269,13 +314,15 @@ export async function getBlogCategoryById(
 ): Promise<BlogCategory | null> {
   const client = getDirectus();
   if (!client) return null;
+  if (!collections.categories) return null;
   try {
     return await client.request(
       readItem(collections.categories, id, {
         fields: [...CATEGORY_FIELDS],
       }),
     );
-  } catch {
+  } catch (err) {
+    dkitQueryFailed(`getBlogCategoryById(${id}) failed`, err);
     return null;
   }
 }

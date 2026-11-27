@@ -1,7 +1,8 @@
-import { SetupHint } from "../_components/setup-hint";
 import { List, installed } from "@/components/dkit/blog";
 
-export default function BlogPage() {
-  if (!installed) return <SetupHint />;
+export default function DkitBlogPage() {
+  if (!installed) {
+    return <p>List is not installed yet.</p>;
+  }
   return <List />;
 }

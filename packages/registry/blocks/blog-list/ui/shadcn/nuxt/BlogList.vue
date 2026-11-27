@@ -37,7 +37,7 @@ const { data: posts } = await useAsyncData('dkit-blog-list', () => getBlogPosts(
       v-if="!(posts && posts.length)"
       class="rounded-xl border border-dashed border-border bg-muted/40 px-6 py-10 text-center text-muted-foreground"
     >
-      No posts yet.
+      No published posts yet.
     </p>
 
     <ul v-else class="space-y-1">

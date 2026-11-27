@@ -36,7 +36,7 @@ export async function BlogListCards({
 
       {posts.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border px-6 py-12 text-center text-muted-foreground">
-          No posts yet.
+          No published posts yet.
         </p>
       ) : (
         <div className="grid gap-5 sm:grid-cols-2">

@@ -43,7 +43,7 @@ const { data: posts } = await useAsyncData('dkit-blog-list-cards', () => getBlog
       v-if="!(posts && posts.length)"
       class="rounded-xl border border-dashed border-border px-6 py-12 text-center text-muted-foreground"
     >
-      No posts yet.
+      No published posts yet.
     </p>
 
     <div

@@ -92,13 +92,40 @@ export type { DkitSchema } from "./schema";
 
 export type DirectusFileRef = { id: string };
 
+function directusBaseUrl(): string | undefined {
+  return (
+    process.env.DIRECTUS_URL ||
+    process.env.NEXT_PUBLIC_DIRECTUS_URL ||
+    process.env.NUXT_PUBLIC_DIRECTUS_URL ||
+    undefined
+  );
+}
+
+/**
+ * Log soft-fail query problems in development.
+ * Production stays quiet so empty lists don’t spam logs.
+ */
+export function dkitQueryFailed(context: string, err?: unknown): void {
+  if (process.env.NODE_ENV === "production") return;
+  if (err !== undefined) {
+    console.error(\`[dkit] \${context}\`, err);
+  } else {
+    console.warn(\`[dkit] \${context}\`);
+  }
+}
+
 /**
  * Server-side Directus client (public role / no admin token).
  * Returns null when DIRECTUS_URL is unset so pages can fail soft.
  */
 export function getDirectus() {
-  const url = process.env.DIRECTUS_URL;
-  if (!url) return null;
+  const url = directusBaseUrl();
+  if (!url) {
+    dkitQueryFailed(
+      "DIRECTUS_URL is unset — helpers return empty. Set DIRECTUS_URL in .env.local (Next) or NUXT_PUBLIC_DIRECTUS_URL / runtimeConfig (Nuxt).",
+    );
+    return null;
+  }
   return createDirectus<DkitSchema>(url).with(rest());
 }
 
@@ -114,7 +141,7 @@ export function directusFileId(
 /** Public asset URL for a Directus file id. */
 export function directusAssetUrl(
   fileId: string,
-  baseUrl = process.env.DIRECTUS_URL,
+  baseUrl = directusBaseUrl(),
 ): string | null {
   const base = baseUrl?.replace(/\\/$/, "");
   if (!base || !fileId) return null;
