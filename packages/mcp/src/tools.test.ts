@@ -41,7 +41,7 @@ describe("dkit mcp tools", () => {
     );
     assert.equal(
       data.command,
-      "npx dkit add blog --dry-run --template list=blog-list-cards",
+      "npx @kurbo/dkit add blog --dry-run --template list=blog-list-cards",
     );
   });
 

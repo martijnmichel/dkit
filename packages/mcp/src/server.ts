@@ -56,7 +56,7 @@ export function createDkitMcpServer(): McpServer {
     {
       title: "Suggest dkit add",
       description:
-        "Build a safe `npx dkit add …` command (supports --dry-run, --seed, templates). Does not run the CLI or apply schema.",
+        "Build a safe `npx @kurbo/dkit add …` command (supports --dry-run, --seed, templates). Does not run the CLI or apply schema.",
       inputSchema: {
         id: z
           .string()

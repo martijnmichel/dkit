@@ -12,7 +12,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const bin = path.join(root, "packages/cli/dist/bin.js");
 
 if (!fs.existsSync(bin)) {
-  console.error("dkit is not built yet. Run: pnpm --filter dkit build");
+  console.error("dkit is not built yet. Run: pnpm --filter @kurbo/dkit build");
   process.exit(1);
 }
 

@@ -92,8 +92,8 @@ export default function HomePage() {
             <a href="https://github.com/martijnmichel/dkit">GitHub</a>
           </Button>
         </div>
-        <pre className="code mt-10">{`npx dkit init
-npx dkit add blog --seed`}</pre>
+        <pre className="code mt-10">{`npx @kurbo/dkit init
+npx @kurbo/dkit add blog --seed`}</pre>
         <section className="mt-16 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {FEATURES.map(({ title, body, href, icon: Icon }) => (
             <a

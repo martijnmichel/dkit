@@ -19,8 +19,8 @@ export default function DocsIndexPage() {
           <a href="/docs/modules/">modules</a> and install one with{" "}
           <code className="font-mono">dkit add</code>.
         </p>
-        <pre className="code">{`npx dkit init
-npx dkit add blog --seed`}</pre>
+        <pre className="code">{`npx @kurbo/dkit init
+npx @kurbo/dkit add blog --seed`}</pre>
         <div className="flex flex-wrap gap-3 pt-2">
           <Button asChild>
             <a href="/docs/getting-started/">Getting started</a>

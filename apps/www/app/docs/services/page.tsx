@@ -41,7 +41,7 @@ export default async function ServicesPage() {
       </DocsSection>
 
       <DocsSection id="install" title="Install">
-        <pre className="code">{`npx dkit add blog
+        <pre className="code">{`npx @kurbo/dkit add blog
 # → lib/dkit/blog.ts
 # → lib/dkit/blog.types.ts
 

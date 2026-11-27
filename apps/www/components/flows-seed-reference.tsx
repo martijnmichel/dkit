@@ -93,7 +93,7 @@ export function FlowsSeedReference({
             <CardTitle className="text-base">Seed</CardTitle>
             <CardDescription>
               <code>services/seed.json</code> — import with{" "}
-              <code>npx dkit add {moduleId} --seed</code>
+              <code>npx @kurbo/dkit add {moduleId} --seed</code>
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">

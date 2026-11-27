@@ -2,11 +2,11 @@
 
 **Install Directus modules you own** — schema, permissions, flows, and frontend UI blocks (Next.js + Nuxt) in one command.
 
-**[dkit.run](https://dkit.run)** · npm `dkit` · MCP `@dkit/mcp`
+**[dkit.run](https://dkit.run)** · npm `@kurbo/dkit` · MCP `@dkit/mcp`
 
 ```bash
-npx dkit init
-npx dkit add blog --seed
+npx @kurbo/dkit init
+npx @kurbo/dkit add blog --seed
 ```
 
 Requires **Directus 11+** (best on **12.2+** for additive schema merge). Always back up or use a staging instance before applying modules.
@@ -50,7 +50,7 @@ Monorepo for the CLI, registry, MCP server, and [dkit.run](https://dkit.run) doc
 
 | Path | Purpose |
 |------|---------|
-| `packages/cli` | Published npm package `dkit` |
+| `packages/cli` | Published npm package `@kurbo/dkit` |
 | `packages/mcp` | MCP server `@dkit/mcp` (registry discover + `dkit add` drafts) |
 | `packages/schema` | Schema / policies / flows / seed apply |
 | `packages/shared` | Manifest + `dkit.json` Zod schemas |
@@ -80,7 +80,7 @@ Stack: **Commander** (commands/flags) + **@clack/prompts** (interactive question
 pnpm install
 pnpm --filter @dkit/shared build
 pnpm --filter @dkit/schema build
-pnpm --filter dkit build
+pnpm --filter @kurbo/dkit build
 pnpm --filter @dkit/www dev
 ```
 
@@ -89,10 +89,11 @@ pnpm --filter @dkit/www dev
 Static Next export served by nginx — same image used for [dkit.run](https://dkit.run).
 
 ```bash
-# build + run locally → http://localhost:3080
+# build + run locally → http://localhost:3082
 pnpm www:up
 # or:
 docker compose -f docker/www/compose.yaml up --build
+# different host port: DKIT_WWW_PORT=3090 pnpm www:up
 
 pnpm www:down
 ```
@@ -116,8 +117,8 @@ pnpm directus:reset   # wipe volumes + restart
 Create a **static admin token** in Directus (User → Token), then in a Next.js app:
 
 ```bash
-npx dkit init --url http://localhost:8010 --token <token>
-npx dkit add blog --seed
+npx @kurbo/dkit init --url http://localhost:8010 --token <token>
+npx @kurbo/dkit add blog --seed
 ```
 
 ### Example apps (re-testable)

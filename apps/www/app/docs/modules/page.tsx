@@ -19,7 +19,7 @@ export default function ModulesPage() {
       <p className="mt-2 max-w-2xl text-muted-foreground">
         Each module applies schema and access to your Directus instance, then
         drops matching UI into your app. Install with{" "}
-        <code className="font-mono text-sm">npx dkit add &lt;id&gt;</code>.
+        <code className="font-mono text-sm">npx @kurbo/dkit add &lt;id&gt;</code>.
       </p>
 
       <div className="mt-8 space-y-2 md:hidden">

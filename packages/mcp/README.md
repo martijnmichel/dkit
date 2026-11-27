@@ -11,7 +11,7 @@ Docs: [dkit.run](https://dkit.run)
 | `list_modules` | Registry modules + descriptions |
 | `get_module` | Schema summary, slots, default blocks, install examples |
 | `list_blocks` | Blocks, `uiKits`, frameworks (optional `moduleId` filter) |
-| `suggest_add` | Build a safe `npx dkit add …` string (`--dry-run` friendly) |
+| `suggest_add` | Build a safe `npx @kurbo/dkit add …` string (`--dry-run` friendly) |
 
 ## Cursor
 

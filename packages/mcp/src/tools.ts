@@ -70,10 +70,10 @@ export function getModule(id: string) {
     registryDependencies: manifest.registryDependencies,
     schema,
     install: {
-      command: `npx dkit add ${manifest.id}`,
-      withSeed: `npx dkit add ${manifest.id} --seed`,
-      schemaOnly: `npx dkit add ${manifest.id} --schema-only`,
-      dryRun: `npx dkit add ${manifest.id} --dry-run`,
+      command: `npx @kurbo/dkit add ${manifest.id}`,
+      withSeed: `npx @kurbo/dkit add ${manifest.id} --seed`,
+      schemaOnly: `npx @kurbo/dkit add ${manifest.id} --schema-only`,
+      dryRun: `npx @kurbo/dkit add ${manifest.id} --dry-run`,
     },
   });
 }

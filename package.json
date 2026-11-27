@@ -27,11 +27,11 @@
     "www:up": "docker compose -f docker/www/compose.yaml up -d --build",
     "www:down": "docker compose -f docker/www/compose.yaml down",
     "www:logs": "docker compose -f docker/www/compose.yaml logs -f",
-    "example:next:setup": "pnpm --filter dkit build && pnpm --filter @dkit/example-next exec node ../../packages/cli/dist/bin.js init --yes --url ${DIRECTUS_URL:-http://localhost:8010} --token ${DIRECTUS_TOKEN:?set DIRECTUS_TOKEN} && pnpm --filter @dkit/example-next dkit:add-blog",
+    "example:next:setup": "pnpm --filter @kurbo/dkit build && pnpm --filter @dkit/example-next exec node ../../packages/cli/dist/bin.js init --yes --url ${DIRECTUS_URL:-http://localhost:8010} --token ${DIRECTUS_TOKEN:?set DIRECTUS_TOKEN} && pnpm --filter @dkit/example-next dkit:add-blog",
     "example:next:dev": "pnpm --filter @dkit/example-next dev",
     "example:next:clear": "pnpm --filter @dkit/example-next dkit:clear",
     "example:next:reset": "pnpm example:next:clear && pnpm --filter @dkit/example-next dkit:add-blog",
-    "example:nuxt:setup": "pnpm --filter dkit build && pnpm --filter @dkit/example-nuxt dkit:init && pnpm --filter @dkit/example-nuxt dkit:add-blog",
+    "example:nuxt:setup": "pnpm --filter @kurbo/dkit build && pnpm --filter @dkit/example-nuxt dkit:init && pnpm --filter @dkit/example-nuxt dkit:add-blog",
     "example:nuxt:dev": "pnpm --filter @dkit/example-nuxt dev",
     "example:nuxt:clear": "pnpm --filter @dkit/example-nuxt dkit:clear",
     "example:nuxt:reset": "pnpm example:nuxt:clear && pnpm --filter @dkit/example-nuxt dkit:add-blog"

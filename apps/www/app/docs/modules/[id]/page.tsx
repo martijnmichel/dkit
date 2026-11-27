@@ -73,13 +73,13 @@ export default async function ModulePage({
           <p className="lede mt-3 max-w-2xl">{meta.item.description}</p>
 
           <section id="install" className="scroll-mt-24">
-            <pre className="code mt-8">{`npx dkit add ${id}`}</pre>
+            <pre className="code mt-8">{`npx @kurbo/dkit add ${id}`}</pre>
             <p className="mt-3 text-[0.9375rem] text-muted-foreground">
               Schema only:{" "}
-              <code>npx dkit add {id} --schema-only</code>
+              <code>npx @kurbo/dkit add {id} --schema-only</code>
               {" · "}
               With sample data:{" "}
-              <code>npx dkit add {id} --seed</code>
+              <code>npx @kurbo/dkit add {id} --seed</code>
             </p>
           </section>
 

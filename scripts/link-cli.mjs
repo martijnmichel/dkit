@@ -22,7 +22,7 @@ function run(cmd, args, cwd = root, opts = {}) {
 console.log("→ Building dkit…");
 if (run("pnpm", ["--filter", "@dkit/shared", "build"]) !== 0) process.exit(1);
 if (run("pnpm", ["--filter", "@dkit/schema", "build"]) !== 0) process.exit(1);
-if (run("pnpm", ["--filter", "dkit", "build"]) !== 0) process.exit(1);
+if (run("pnpm", ["--filter", "@kurbo/dkit", "build"]) !== 0) process.exit(1);
 fs.chmodSync(bin, 0o755);
 
 // Prefer a user-local symlink that doesn't need pnpm global setup

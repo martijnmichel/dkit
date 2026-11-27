@@ -1,5 +1,5 @@
 {
-  "name": "dkit",
+  "name": "@kurbo/dkit",
   "version": "0.1.0",
   "description": "Install Directus modules — schema, permissions, flows, and frontend code you own",
   "license": "MIT",
@@ -15,7 +15,8 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/martijnmichel/dkit.git"
+    "url": "git+https://github.com/martijnmichel/dkit.git",
+    "directory": "packages/cli"
   },
   "keywords": [
     "directus",

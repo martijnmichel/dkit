@@ -17,5 +17,5 @@ jobs:
       - run: pnpm install
       - run: pnpm --filter @dkit/shared build
       - run: pnpm --filter @dkit/schema build
-      - run: pnpm --filter dkit build
+      - run: pnpm --filter @kurbo/dkit build
       - run: pnpm --filter @dkit/www build

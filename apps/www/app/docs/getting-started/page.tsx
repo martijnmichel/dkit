@@ -33,7 +33,7 @@ export default function GettingStartedPage() {
           <code className="font-mono">dkit.json</code> with your Directus URL,
           framework, and preferred UI kit.
         </p>
-        <pre className="code">{`npx dkit init --url http://localhost:8010 --token <token>`}</pre>
+        <pre className="code">{`npx @kurbo/dkit init --url http://localhost:8010 --token <token>`}</pre>
       </DocsSection>
 
       <DocsSection id="add" title="Add a module">
@@ -42,7 +42,7 @@ export default function GettingStartedPage() {
           <a href="/docs/modules/">module directory</a>, then install schema,
           access, and UI in one command:
         </p>
-        <pre className="code">{`npx dkit add blog --seed`}</pre>
+        <pre className="code">{`npx @kurbo/dkit add blog --seed`}</pre>
         <p>
           Interactive mode asks for a collection prefix and route base path.
           Use <code className="font-mono">--yes</code> for CI.

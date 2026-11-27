@@ -1,10 +1,10 @@
-# dkit
+# @kurbo/dkit
 
 CLI to install Directus modules (schema, permissions, flows) and Next.js UI blocks into your project.
 
 ```bash
-npx dkit init
-npx dkit add blog --seed
+npx @kurbo/dkit init
+npx @kurbo/dkit add blog --seed
 ```
 
 Docs: [dkit.run](https://dkit.run)
