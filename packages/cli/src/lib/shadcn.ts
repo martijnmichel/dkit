@@ -1,7 +1,11 @@
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import zlib from "node:zlib";
 import type { Framework } from "@dkit/shared";
+
+/** shadcn-vue ≥2.8 pulls undici@8, which needs Node zlib zstd (Node ≥22.15; engines 22.19+). */
+const SHADCN_VUE_MIN_NODE = "22.19.0";
 
 export type ShadcnPrimitiveBase = "radix" | "base";
 
@@ -194,8 +198,30 @@ export function listInstalledShadcnComponents(projectRoot: string): Set<string> 
   return found;
 }
 
+function shadcnBinName(framework: Framework): string {
+  return framework === "nuxt" ? "shadcn-vue" : "shadcn";
+}
+
 function shadcnPackage(framework: Framework): string {
   return framework === "nuxt" ? "shadcn-vue@latest" : "shadcn@latest";
+}
+
+/** Current Node can run shadcn-vue@latest (undici@8 / zstd). */
+export function nodeSupportsShadcnVueLatest(): boolean {
+  return typeof zlib.createZstdDecompress === "function";
+}
+
+function resolveLocalShadcnBin(
+  projectRoot: string,
+  framework: Framework,
+): string | null {
+  const bin = path.join(
+    projectRoot,
+    "node_modules",
+    ".bin",
+    shadcnBinName(framework),
+  );
+  return fs.existsSync(bin) ? bin : null;
 }
 
 function runShadcn(
@@ -203,8 +229,20 @@ function runShadcn(
   framework: Framework,
   args: string[],
 ): { ok: boolean; command: string; status: number | null } {
+  const local = resolveLocalShadcnBin(projectRoot, framework);
+  if (local) {
+    const command = `${shadcnBinName(framework)} ${args.join(" ")}`;
+    const res = spawnSync(local, args, {
+      cwd: projectRoot,
+      stdio: "inherit",
+      shell: false,
+      env: process.env,
+    });
+    return { ok: res.status === 0, command, status: res.status };
+  }
+
   const pkg = shadcnPackage(framework);
-  const fullArgs = [pkg, ...args];
+  const fullArgs = ["--yes", pkg, ...args];
   const command = `npx ${fullArgs.join(" ")}`;
   const res = spawnSync("npx", fullArgs, {
     cwd: projectRoot,
@@ -213,6 +251,22 @@ function runShadcn(
     env: process.env,
   });
   return { ok: res.status === 0, command, status: res.status };
+}
+
+function shadcnFailureHint(
+  framework: Framework,
+  command: string,
+  status: number | null,
+): string {
+  const base = `${command} failed (exit ${status}).`;
+  if (framework === "nuxt" && !nodeSupportsShadcnVueLatest()) {
+    return (
+      `${base}\n` +
+      `shadcn-vue requires Node.js >= ${SHADCN_VUE_MIN_NODE} (current ${process.version}). ` +
+      `Upgrade Node, then re-run — or init shadcn-vue manually and re-run dkit add.`
+    );
+  }
+  return `${base} Install shadcn manually, then re-run.`;
 }
 
 /**
@@ -236,6 +290,20 @@ export function ensureShadcnComponents(
     };
   }
 
+  // Fail fast with a clear engine message instead of undici's cryptic zstd crash.
+  if (
+    framework === "nuxt" &&
+    !resolveLocalShadcnBin(projectRoot, framework) &&
+    !nodeSupportsShadcnVueLatest()
+  ) {
+    return {
+      ok: false,
+      error:
+        `shadcn-vue requires Node.js >= ${SHADCN_VUE_MIN_NODE} (current ${process.version}). ` +
+        `Upgrade Node, then re-run dkit add.`,
+    };
+  }
+
   if (!hasShadcnConfig(projectRoot)) {
     log(
       framework === "nuxt"
@@ -250,7 +318,7 @@ export function ensureShadcnComponents(
     if (!init.ok) {
       return {
         ok: false,
-        error: `${init.command} failed (exit ${init.status}). Install shadcn manually, then re-run.`,
+        error: shadcnFailureHint(framework, init.command, init.status),
       };
     }
   }
@@ -274,7 +342,7 @@ export function ensureShadcnComponents(
   if (!add.ok) {
     return {
       ok: false,
-      error: `${add.command} failed (exit ${add.status}). Add components manually, then re-run.`,
+      error: shadcnFailureHint(framework, add.command, add.status),
     };
   }
 
