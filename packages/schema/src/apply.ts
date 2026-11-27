@@ -103,12 +103,31 @@ export async function applyModule(
     ((payload.seed.files?.length ?? 0) > 0 ||
       Object.keys(payload.seed.items ?? {}).length > 0)
   ) {
-    const plan = await applySeed(client, url, payload.seed, options, log);
+    const plan = await applySeed(
+      client,
+      url,
+      payload.seed,
+      options,
+      log,
+      singletonCollectionsFromSnapshot(payload.snapshot),
+    );
     dryRunPlan.push(...plan.lines);
     result.seedApplied = plan.applied;
   }
 
   return result;
+}
+
+/** Physical collection names marked `meta.singleton` in a REST snapshot. */
+function singletonCollectionsFromSnapshot(
+  snapshot: SchemaSnapshot | RestSchema | undefined,
+): Set<string> {
+  if (!snapshot || !isRestSchema(snapshot)) return new Set();
+  const out = new Set<string>();
+  for (const col of snapshot.collections) {
+    if (col.meta?.singleton === true) out.add(col.collection);
+  }
+  return out;
 }
 
 async function planAndApplySchema(
@@ -340,6 +359,7 @@ async function applySeed(
   seed: SeedBundle,
   options: ApplyOptions,
   log: (m: string) => void,
+  singletons: Set<string> = new Set(),
 ): Promise<{ applied: boolean; lines: string[] }> {
   const lines: string[] = [];
   if (seed.files?.length) {
@@ -378,7 +398,9 @@ async function applySeed(
           ? `${collection}/${remapped.id}`
           : collection;
       try {
-        const outcome = await upsertSeedItem(client, collection, remapped);
+        const outcome = singletons.has(collection)
+          ? await upsertSeedSingleton(client, collection, remapped)
+          : await upsertSeedItem(client, collection, remapped);
         if (outcome === "created") log(`→ Seed created ${label}`);
         else if (outcome === "updated") log(`→ Seed updated ${label}`);
         else log(`→ Seed skipped ${label} (already exists)`);
@@ -510,6 +532,50 @@ async function findSeedFileByFilename(
   } catch {
     return null;
   }
+}
+
+/**
+ * Singletons reject POST and `/items/:id` — upsert via PATCH `/items/:collection`
+ * (Directus `upsertSingleton`).
+ */
+async function upsertSeedSingleton(
+  client: DkitDirectusClient,
+  collection: string,
+  item: Record<string, unknown>,
+): Promise<"created" | "updated"> {
+  let existed = false;
+  try {
+    const res = await http<
+      | { id?: string | number }
+      | { data?: { id?: string | number } | null }
+    >(client, {
+      path: `/items/${collection}`,
+      method: "GET",
+      params: { fields: "id" },
+    });
+    const row: { id?: string | number } | null =
+      res && typeof res === "object" && "data" in res
+        ? (res.data ?? null)
+        : (res as { id?: string | number });
+    existed = Boolean(row && row.id != null);
+  } catch {
+    existed = false;
+  }
+
+  // On create, keep seed id so FK/file refs stay stable; on update, don't rewrite pk
+  const body = existed
+    ? (() => {
+        const { id: _id, ...rest } = item;
+        return rest;
+      })()
+    : item;
+
+  await http(client, {
+    path: `/items/${collection}`,
+    method: "PATCH",
+    body,
+  });
+  return existed ? "updated" : "created";
 }
 
 /** Create-or-update seed rows so `dkit add --seed` is safe to re-run. */

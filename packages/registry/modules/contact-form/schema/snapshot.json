@@ -2,21 +2,21 @@
   "format": "dkit.rest",
   "collections": [
     {
-      "collection": "contact",
+      "collection": "site",
       "schema": null,
       "meta": {
-        "icon": "mail",
+        "icon": "web",
         "color": "#0F766E",
         "collapse": "open",
         "translations": [
           {
             "language": "en-US",
-            "translation": "Contact",
-            "singular": "Contact",
-            "plural": "Contact"
+            "translation": "Site",
+            "singular": "Site",
+            "plural": "Site"
           }
         ],
-        "note": "Inbox for public form submissions. Email notify is optional via the inactive flow."
+        "note": "Site content and chrome — pages, settings, navigation, contact, page builder"
       }
     },
     {
@@ -25,13 +25,13 @@
       "meta": {
         "icon": "inbox",
         "color": "#0F766E",
-        "group": "contact",
+        "group": "site",
         "display_template": "{{name}} — {{email}}",
         "archive_field": "status",
         "archive_value": "archived",
         "unarchive_value": "new",
         "archive_app_filter": true,
-        "sort": 1,
+        "sort": 10,
         "translations": [
           {
             "language": "en-US",

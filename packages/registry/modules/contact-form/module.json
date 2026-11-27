@@ -8,6 +8,6 @@
   "dependencies": ["@directus/sdk", "zod"],
   "layers": ["schema", "access", "services", "types"],
   "defaultBlocks": ["contact-form-ui"],
-  "collections": ["contact", "form_submissions"],
+  "collections": ["site", "form_submissions"],
   "defaultBasePath": "/contact"
 }

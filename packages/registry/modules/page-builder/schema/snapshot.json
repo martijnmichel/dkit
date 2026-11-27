@@ -2,35 +2,36 @@
   "format": "dkit.rest",
   "collections": [
     {
-      "collection": "page_builder",
+      "collection": "site",
       "schema": null,
       "meta": {
-        "icon": "dashboard_customize",
+        "icon": "web",
         "color": "#0F766E",
         "collapse": "open",
         "translations": [
           {
             "language": "en-US",
-            "translation": "Page builder",
-            "singular": "Page builder",
-            "plural": "Page builder"
+            "translation": "Site",
+            "singular": "Site",
+            "plural": "Site"
           }
-        ]
+        ],
+        "note": "Site content and chrome — pages, settings, navigation, contact, page builder"
       }
     },
     {
       "collection": "builder_pages",
       "schema": {},
       "meta": {
-        "icon": "web",
+        "icon": "dashboard_customize",
         "color": "#0F766E",
-        "group": "page_builder",
+        "group": "site",
         "display_template": "{{title}}",
         "archive_field": "status",
         "archive_value": "draft",
         "unarchive_value": "published",
         "archive_app_filter": true,
-        "sort": 1,
+        "sort": 5,
         "translations": [
           {
             "language": "en-US",
@@ -167,7 +168,7 @@
       "meta": {
         "icon": "view_agenda",
         "color": "#0F766E",
-        "group": "page_builder",
+        "group": "site",
         "display_template": "{{heading}}",
         "sort": 2,
         "translations": [
@@ -250,7 +251,7 @@
       "meta": {
         "icon": "notes",
         "color": "#0F766E",
-        "group": "page_builder",
+        "group": "site",
         "display_template": "{{title}}",
         "sort": 3,
         "translations": [
@@ -330,7 +331,7 @@
       "meta": {
         "icon": "smart_button",
         "color": "#0F766E",
-        "group": "page_builder",
+        "group": "site",
         "display_template": "{{label}}",
         "sort": 4,
         "translations": [
@@ -419,7 +420,7 @@
       "meta": {
         "hidden": true,
         "icon": "import_export",
-        "group": "page_builder",
+        "group": "site",
         "translations": [
           {
             "language": "en-US",
