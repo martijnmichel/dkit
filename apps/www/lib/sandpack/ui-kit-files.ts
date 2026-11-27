@@ -28,8 +28,11 @@ function rewriteCnImport(source: string): string {
   return source.replace(/from\s+["']cn["']/g, 'from "@/lib/utils"');
 }
 
-function prepareNextUiSource(source: string): string {
-  return rewriteAtImports(rewriteCnImport(stripUseClient(source)), "/");
+function prepareNextUiSource(source: string, sandpackPath: string): string {
+  return rewriteAtImports(
+    rewriteCnImport(stripUseClient(source)),
+    sandpackPath,
+  );
 }
 
 function monorepoRoot(): string {
@@ -114,7 +117,8 @@ export function sandpackUiKitFiles(
   if (framework === "nuxt") {
     const utils = path.join(kitDir(kit, framework), "utils.ts");
     if (fs.existsSync(utils)) {
-      files["/src/lib/utils.ts"] = fs.readFileSync(utils, "utf8");
+      const dest = "/src/lib/utils.ts";
+      files[dest] = rewriteAtImports(fs.readFileSync(utils, "utf8"), dest);
     }
     const root = kitDir(kit, framework);
     const wanted = new Set(expandShadcnComponents(components));
@@ -123,10 +127,8 @@ export function sandpackUiKitFiles(
       : [];
     for (const dir of dirs) {
       for (const { rel, abs } of walkFiles(path.join(root, dir), dir)) {
-        files[`/src/components/ui/${rel}`] = rewriteAtImports(
-          fs.readFileSync(abs, "utf8"),
-          "/src/",
-        );
+        const dest = `/src/components/ui/${rel}`;
+        files[dest] = rewriteAtImports(fs.readFileSync(abs, "utf8"), dest);
       }
     }
     return files;
@@ -143,9 +145,8 @@ export function sandpackUiKitFiles(
     const name = `${id}.tsx`;
     const abs = path.join(uiDir, name);
     if (!fs.existsSync(abs)) continue;
-    files[`/components/ui/${name}`] = prepareNextUiSource(
-      fs.readFileSync(abs, "utf8"),
-    );
+    const dest = `/components/ui/${name}`;
+    files[dest] = prepareNextUiSource(fs.readFileSync(abs, "utf8"), dest);
   }
   return files;
 }

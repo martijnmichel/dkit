@@ -1,14 +1,25 @@
+import path from "node:path";
+
 /**
- * Sandpack/Nodebox often mishandles Vite `@/` aliases under load — imports
- * like `@/components/ui/card` then resolve as bare `card` and the bundler
- * returns HTML (MIME error). Rewrite to absolute sandpack paths instead.
+ * Rewrite `@/…` to relative imports for the Sandpack file that contains them.
+ * Absolute `/components/…` fails Vite import-analysis in Nodebox; bare `@/`
+ * aliases also flake under concurrent boots.
  */
 export function rewriteAtImports(
   source: string,
-  root: "/" | "/src/" = "/",
+  filePath: string,
 ): string {
-  const prefix = root.endsWith("/") ? root : `${root}/`;
-  return source
-    .replace(/(from\s+["'])@\//g, `$1${prefix}`)
-    .replace(/(import\s+["'])@\//g, `$1${prefix}`);
+  const fromDir = path.posix.dirname(
+    filePath.startsWith("/") ? filePath : `/${filePath}`,
+  );
+
+  return source.replace(
+    /(from\s+["'])@\/([^"']+)(["'])/g,
+    (_full, lead: string, importPath: string, quote: string) => {
+      const target = `/${importPath.replace(/\\/g, "/")}`;
+      let rel = path.posix.relative(fromDir, target);
+      if (!rel.startsWith(".")) rel = `./${rel}`;
+      return `${lead}${rel}${quote}`;
+    },
+  );
 }
