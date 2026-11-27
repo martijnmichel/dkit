@@ -1,7 +1,63 @@
+import fs from "node:fs";
+import path from "node:path";
 import { loadModuleSeed } from "@/lib/preview/seeds";
+import { registryRoot } from "@/lib/registry";
+import { SITE } from "@/lib/seo";
 
-export function buildClientMockSource(): string {
+const MIME: Record<string, string> = {
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".webp": "image/webp",
+  ".gif": "image/gif",
+};
+
+/**
+ * Map seed file ids → URLs for Sandpack. Prefer inlined data URLs so the
+ * Nodebox iframe does not depend on dkit.run; fall back to absolute /preview.
+ */
+export function buildSeedAssetMap(moduleId: string): Record<string, string> {
+  const seed = loadModuleSeed(moduleId);
+  const map: Record<string, string> = {};
+  if (!seed?.files?.length) return map;
+
+  const servicesDir = path.join(
+    registryRoot(),
+    "modules",
+    moduleId,
+    "services",
+  );
+  const site = SITE.url.replace(/\/$/, "");
+
+  for (const file of seed.files) {
+    if (!file.id || !file.filename_download) continue;
+    const abs = file.path
+      ? path.resolve(servicesDir, file.path)
+      : path.join(servicesDir, "assets", file.filename_download);
+    if (
+      abs.startsWith(path.resolve(servicesDir)) &&
+      fs.existsSync(abs) &&
+      fs.statSync(abs).size < 200_000
+    ) {
+      const ext = path.extname(abs).toLowerCase();
+      const mime = MIME[ext] ?? "application/octet-stream";
+      const b64 = fs.readFileSync(abs).toString("base64");
+      map[file.id] = `data:${mime};base64,${b64}`;
+      continue;
+    }
+    map[file.id] = `${site}/preview/${moduleId}/${file.filename_download}`;
+  }
+  return map;
+}
+
+export function buildClientMockSource(
+  assetMap: Record<string, string> = {},
+): string {
+  const assetsJson = JSON.stringify(assetMap);
   return `export type DirectusFileRef = { id: string };
+
+const SEED_ASSETS: Record<string, string> = ${assetsJson};
 
 export function getDirectus() {
   return null;
@@ -17,6 +73,7 @@ export function directusFileId(
 
 export function directusAssetUrl(fileId: string): string | null {
   if (!fileId) return null;
+  if (SEED_ASSETS[fileId]) return SEED_ASSETS[fileId];
   return \`https://picsum.photos/seed/\${encodeURIComponent(fileId)}/640/360\`;
 }
 

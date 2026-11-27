@@ -84,16 +84,31 @@ export function getModuleMeta(id: string) {
   return { item, manifest, schema, access, flows, seed };
 }
 
-/** Material Symbol for a module — prefers the root folder / first collection icon from the snapshot. */
+/**
+ * Material Symbol for a module from its schema snapshot.
+ * Skip the shared `site` folder (`web`) so Site-grouped modules don’t all
+ * look identical in the docs nav — prefer the module folder or first collection.
+ */
 export function getModuleIcon(moduleId: string): string {
   const meta = getModuleMeta(moduleId);
-  const collections = (meta?.schema as RestSchemaDoc | undefined)?.collections ?? [];
-  const folder = collections.find(
+  const collections =
+    (meta?.schema as RestSchemaDoc | undefined)?.collections ?? [];
+
+  const ownFolder = collections.find(
+    (c) => c.schema === null && c.collection !== "site" && c.meta?.icon,
+  );
+  if (ownFolder?.meta?.icon) return ownFolder.meta.icon;
+
+  const dataCollection = collections.find(
+    (c) => c.schema != null && c.meta?.icon,
+  );
+  if (dataCollection?.meta?.icon) return dataCollection.meta.icon;
+
+  const anyFolder = collections.find(
     (c) => c.schema === null && c.meta?.icon,
   );
-  if (folder?.meta?.icon) return folder.meta.icon;
-  const withIcon = collections.find((c) => c.meta?.icon);
-  if (withIcon?.meta?.icon) return withIcon.meta.icon;
+  if (anyFolder?.meta?.icon) return anyFolder.meta.icon;
+
   if (collections.some((c) => c.schema === null)) return DIRECTUS_FOLDER_ICON;
   return DIRECTUS_COLLECTION_FALLBACK_ICON;
 }

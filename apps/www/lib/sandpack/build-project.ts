@@ -17,6 +17,7 @@ import {
   buildPageBuilderMockSource,
   buildNavigationMockSource,
   buildPagesMockSource,
+  buildSeedAssetMap,
   buildSettingsMockSource,
 } from "@/lib/sandpack/mocks";
 import { rewriteAtImports } from "@/lib/sandpack/rewrite-at-imports";
@@ -201,7 +202,9 @@ function sharedLibFiles(
   prefix: "/lib" | "/src/lib",
 ): SandpackFiles {
   const files: SandpackFiles = {
-    [`${prefix}/dkit/client.ts`]: buildClientMockSource(),
+    [`${prefix}/dkit/client.ts`]: buildClientMockSource(
+      buildSeedAssetMap(moduleId),
+    ),
     [`${prefix}/dkit/config.ts`]: buildConfigMockSource(),
   };
   if (moduleId === "blog") {
