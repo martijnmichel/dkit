@@ -200,28 +200,6 @@ function tokensToCss(tokens: ThemeTokens): string {
     .join("\n");
 }
 
-const MINIMAL_TOKENS: ThemeTokens = {
-  "--radius": "0.5rem",
-  "--background": "#ffffff",
-  "--foreground": "#18181b",
-  "--card": "#ffffff",
-  "--card-foreground": "#18181b",
-  "--popover": "#ffffff",
-  "--popover-foreground": "#18181b",
-  "--primary": "#18181b",
-  "--primary-foreground": "#fafafa",
-  "--secondary": "#f4f4f5",
-  "--secondary-foreground": "#18181b",
-  "--muted": "#f4f4f5",
-  "--muted-foreground": "#71717a",
-  "--accent": "#f4f4f5",
-  "--accent-foreground": "#18181b",
-  "--destructive": "#dc2626",
-  "--border": "#e4e4e7",
-  "--input": "#e4e4e7",
-  "--ring": "#a1a1aa",
-};
-
 function rootBlock(tokens: ThemeTokens): string {
   return `:root {\n${tokensToCss(tokens)}\n}`;
 }
@@ -232,8 +210,55 @@ export function buildSandpackThemeCss(theme: PreviewTheme): string {
   return [rootBlock(preset.tokens), CHROME_CSS].join("\n");
 }
 
+/**
+ * Minimal preview CSS — no Preflight / no form resets.
+ * Keep prose helpers + light page chrome; leave inputs/buttons as UA styles.
+ */
 export function buildSandpackMinimalCss(): string {
-  return [rootBlock(MINIMAL_TOKENS), CHROME_CSS].join("\n");
+  return `
+html, body, #root, #app {
+  margin: 0;
+  min-height: 100%;
+  background: #fff;
+  color: #000;
+}
+.dkit-preview-pad {
+  padding: 1.5rem 1.25rem;
+}
+.dkit-prose {
+  color: inherit;
+  font-size: 1.05rem;
+  line-height: 1.75;
+}
+.dkit-prose--compact { font-size: 1rem; line-height: 1.7; }
+.dkit-prose :where(p) { margin-bottom: 1rem; }
+.dkit-prose :where(a) { color: #0000ee; }
+.dkit-prose :where(h2) { margin-top: 2.5rem; font-size: 1.5rem; font-weight: 600; }
+.dkit-prose :where(h3) { margin-top: 2rem; font-size: 1.25rem; font-weight: 600; }
+.dkit-prose :where(blockquote) {
+  border-left: 2px solid #ccc;
+  padding-left: 1rem;
+  color: #555;
+}
+.dkit-prose :where(ul) { margin-bottom: 1rem; padding-left: 1.25rem; list-style: disc; }
+.dkit-prose :where(ol) { margin-bottom: 1rem; padding-left: 1.25rem; list-style: decimal; }
+.dkit-prose :where(img) { max-width: 100%; height: auto; }
+.dkit-prose :where(pre) {
+  overflow-x: auto;
+  background: #f4f4f5;
+  padding: 1rem;
+  font-size: 0.875rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  line-height: 1.55;
+}
+.dkit-prose :where(:not(pre) > code) {
+  background: #f4f4f5;
+  padding: 0.15em 0.4em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8125em;
+}
+.dkit-prose :where(pre code) { background: transparent; padding: 0; font-size: inherit; }
+`.trim();
 }
 
 /**
@@ -262,16 +287,36 @@ ${THEME_STYLE_END}`;
   return `${block}\n${html}`;
 }
 
+/** Remove Tailwind Play CDN + @theme bridge (used for minimal / browser-default kits). */
+export function stripSandpackTailwind(html: string): string {
+  return html
+    .replace(
+      /<script[^>]*@tailwindcss\/browser[^>]*><\/script>\s*/gi,
+      "",
+    )
+    .replace(
+      new RegExp(
+        `${THEME_STYLE_START}[\\s\\S]*?${THEME_STYLE_END}\\s*`,
+        "g",
+      ),
+      "",
+    );
+}
+
 /** Swap styles.css (+ ensure index.html has the Tailwind @theme bridge). */
 export function withSandpackThemeCss(
   files: Record<string, string>,
   css: string,
+  opts: { tailwind?: boolean } = {},
 ): Record<string, string> {
+  const useTailwind = opts.tailwind !== false;
   const next = { ...files };
   if ("/styles.css" in next) next["/styles.css"] = css;
   if ("/src/styles.css" in next) next["/src/styles.css"] = css;
   if ("/index.html" in next) {
-    next["/index.html"] = withSandpackIndexTheme(next["/index.html"]!);
+    next["/index.html"] = useTailwind
+      ? withSandpackIndexTheme(next["/index.html"]!)
+      : stripSandpackTailwind(next["/index.html"]!);
   }
   return next;
 }

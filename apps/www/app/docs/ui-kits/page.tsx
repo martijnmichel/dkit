@@ -81,7 +81,8 @@ export default function UiKitsPage() {
       <DocsSection id="minimal" title="minimal" icon={Code2}>
         <p>
           Semantic HTML + <code>.dkit-prose</code> for rich text. No shadcn
-          dependency. Every current registry block ships minimal.
+          dependency and no Tailwind Preflight — forms and buttons keep
+          browser-default styling. Every current registry block ships minimal.
         </p>
       </DocsSection>
 

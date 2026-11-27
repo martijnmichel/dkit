@@ -56,11 +56,13 @@ function useResolvedVariant(
           ? "next"
           : "nuxt";
 
-    const css =
-      actualKit === "minimal"
-        ? buildSandpackMinimalCss()
-        : buildSandpackThemeCss(theme);
-    const files = baseFiles ? withSandpackThemeCss(baseFiles, css) : null;
+    const isMinimal = actualKit === "minimal";
+    const css = isMinimal
+      ? buildSandpackMinimalCss()
+      : buildSandpackThemeCss(theme);
+    const files = baseFiles
+      ? withSandpackThemeCss(baseFiles, css, { tailwind: !isMinimal })
+      : null;
 
     return {
       files,
@@ -103,9 +105,11 @@ function SandpackStage({
         recompileMode: "delayed",
         recompileDelay: 400,
         bundlerTimeOut: 120_000,
-        externalResources: [
-          "https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4",
-        ],
+        // Minimal kit = browser-default form chrome — no Tailwind Preflight.
+        externalResources:
+          resolved.actualKit === "shadcn"
+            ? ["https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"]
+            : [],
       }}
       customSetup={{
         dependencies: {

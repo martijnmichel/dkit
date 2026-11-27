@@ -173,6 +173,9 @@ function buildNextProject(
   const propsObj = propEntries.map(([k, v]) => `${k}: ${v}`).join(", ");
   const isClientOnly = blockId === "contact-form-ui";
 
+  const isMinimal = kit === "minimal";
+  const padClass = isMinimal ? "dkit-preview-pad" : "px-6 py-12";
+
   const appAsync = `import { useEffect, useState, type ReactNode } from "react";
 import { ${meta.exportName} } from "./components/Block";
 import "./styles.css";
@@ -182,7 +185,7 @@ export default function App() {
   useEffect(() => {
     void Promise.resolve(${meta.exportName}({ ${propsObj} } as any)).then(setUi);
   }, []);
-  return <div>{ui}</div>;
+  return <div className="${padClass}">{ui}</div>;
 }
 `;
 
@@ -191,20 +194,28 @@ import "./styles.css";
 
 export default function App() {
   return (
-    <div className="px-6 py-12">
+    <div className="${padClass}">
       <${meta.exportName} ${propsJsx} />
     </div>
   );
 }
 `;
 
-  return {
-    ...sharedLibFiles(meta.module, "/lib"),
-    ...sandpackUiKitFiles(kit, "next"),
-    "/components/Block.tsx": component,
-    "/App.tsx": isClientOnly ? appClient : appAsync,
-    "/styles.css": SANDPACK_THEME_CSS,
-    "/index.html": withSandpackIndexTheme(`<!doctype html>
+  const indexHtml = isMinimal
+    ? `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>${blockId}</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
+`
+    : withSandpackIndexTheme(`<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -217,7 +228,17 @@ export default function App() {
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>
-`),
+`);
+
+  return {
+    ...sharedLibFiles(meta.module, "/lib"),
+    ...sandpackUiKitFiles(kit, "next"),
+    "/components/Block.tsx": component,
+    "/App.tsx": isClientOnly ? appClient : appAsync,
+    "/styles.css": isMinimal
+      ? `/* swapped at preview time for browser-default chrome */`
+      : SANDPACK_THEME_CSS,
+    "/index.html": indexHtml,
     "/vite.config.ts": `import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
@@ -247,6 +268,37 @@ function buildNuxtProject(
         .map(([k, v]) => `${k}=${v}`)
         .join(" ")
     : "";
+
+  const isMinimal = kit === "minimal";
+
+  const indexHtml = isMinimal
+    ? `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>${blockId}</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
+`
+    : withSandpackIndexTheme(`<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>${blockId}</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
+`);
 
   return {
     ...sharedLibFiles(meta.module, "/src/lib"),
@@ -280,10 +332,14 @@ defineProps<{ to: string }>();
 import Block from "./components/Block.vue";
 </script>
 <template>
-  <Block ${propsLine} />
+  <div class="${isMinimal ? "dkit-preview-pad" : "px-6 py-12"}">
+    <Block ${propsLine} />
+  </div>
 </template>
 `,
-    "/src/styles.css": SANDPACK_THEME_CSS,
+    "/src/styles.css": isMinimal
+      ? `/* swapped at preview time for browser-default chrome */`
+      : SANDPACK_THEME_CSS,
     "/src/main.ts": `import { createApp } from "vue";
 import App from "./App.vue";
 import NuxtLink from "./components/NuxtLink.vue";
@@ -293,20 +349,7 @@ const app = createApp(App);
 app.component("NuxtLink", NuxtLink);
 app.mount("#app");
 `,
-    "/index.html": withSandpackIndexTheme(`<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <title>${blockId}</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
-</html>
-`),
+    "/index.html": indexHtml,
     "/vite.config.ts": `import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import path from "path";

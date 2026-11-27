@@ -1,5 +1,15 @@
 # AGENTS
 
+## Frameworks (current release)
+
+**Next.js + `shadcn` | `minimal` only.** Do not author, update, or document Nuxt/Vue UI while this stands.
+
+- Blocks: `packages/registry/blocks/<id>/ui/{kit}/next/` only
+- Leave existing `ui/**/nuxt/**` and `examples/nuxt` alone unless explicitly asked
+- CLI/www stay Next-only (Nuxt is gated)
+
+Also see `.cursor/rules/frameworks.mdc`.
+
 ## Audience
 
 `apps/www` and published docs/copy are for **developers installing dkit into their own Next.js + Directus project**.
