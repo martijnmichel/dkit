@@ -5,7 +5,10 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const targets = [
   path.join(root, "components/dkit"),
+  path.join(root, "components/ui"),
   path.join(root, "lib/dkit"),
+  path.join(root, "lib/utils.ts"),
+  path.join(root, "components.json"),
   path.join(root, "dkit.json"),
   // Generated slug routes (not the hand-written pages/blog/**)
   path.join(root, "pages/[slug].vue"),

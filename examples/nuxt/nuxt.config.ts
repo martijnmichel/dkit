@@ -12,9 +12,9 @@ export default defineNuxtConfig({
       directusUrl: process.env.DIRECTUS_URL || "http://localhost:8010",
     },
   },
-  alias: {
-    "@": ".",
-  },
+  // Do not override `@` — Nuxt’s defaults map `@`/`~` to the project root.
+  // `alias: { "@": "." }` breaks that (tsconfig resolves `@` into `.nuxt/`),
+  // so shadcn-vue writes UI into the build dir instead of `components/ui`.
   components: [
     { path: "~/components/dkit", pathPrefix: false, extensions: ["vue"] },
   ],

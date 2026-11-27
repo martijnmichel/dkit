@@ -1,38 +1,12 @@
 <script setup lang="ts">
-import { existsSync } from 'node:fs'
-import { join } from 'node:path'
-
-const listPath = join(process.cwd(), 'components/dkit/blog/BlogList.vue')
-const cardsPath = join(process.cwd(), 'components/dkit/blog/BlogListCards.vue')
-
-const hasList = import.meta.server ? existsSync(listPath) : false
-const hasCards = import.meta.server ? existsSync(cardsPath) : false
+import { List, installed } from "@/components/dkit/blog";
 </script>
 
 <template>
-  <BlogList v-if="hasList" />
-  <BlogListCards v-else-if="hasCards" />
-  <main v-else class="hint">
-    <h1>Blog UI not installed yet</h1>
-    <p>
-      From the monorepo root:
-      <code>pnpm example:nuxt:setup</code>
+  <main class="container py-16">
+    <p v-if="!installed">
+      Run <code>pnpm example:nuxt:setup</code> from the monorepo root.
     </p>
+    <List v-else />
   </main>
 </template>
-
-<style scoped>
-.hint {
-  max-width: 640px;
-  margin: 48px auto;
-  padding: 24px;
-  font-family: ui-sans-serif, system-ui, sans-serif;
-}
-.hint p {
-  color: #666;
-}
-code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.9em;
-}
-</style>

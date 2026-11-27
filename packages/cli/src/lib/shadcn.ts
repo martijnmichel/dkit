@@ -349,9 +349,20 @@ export function ensureShadcnComponents(
   const after = listInstalledShadcnComponents(projectRoot);
   const stillMissing = missing.filter((c) => !after.has(c));
   if (stillMissing.length) {
+    const nuxtBuildUi = path.join(projectRoot, ".nuxt", "components", "ui");
+    const landedInBuildDir =
+      framework === "nuxt" &&
+      stillMissing.some((c) =>
+        fs.existsSync(path.join(nuxtBuildUi, c)),
+      );
     return {
       ok: false,
-      error: `shadcn add finished but still missing: ${stillMissing.join(", ")}`,
+      error: landedInBuildDir
+        ? `shadcn-vue wrote UI into .nuxt/ instead of components/ui. ` +
+          `Your Nuxt \`@\` alias is resolving to the build dir — remove a custom ` +
+          `alias like \`{ "@": "." }\` from nuxt.config (use Nuxt defaults), ` +
+          `run \`nuxi prepare\`, then re-run dkit add. Missing: ${stillMissing.join(", ")}`
+        : `shadcn add finished but still missing: ${stillMissing.join(", ")}`,
     };
   }
 

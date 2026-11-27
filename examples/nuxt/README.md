@@ -28,12 +28,13 @@ pnpm directus:reset && pnpm example:nuxt:setup
 | Path | Source |
 |------|--------|
 | `components/dkit/<module>/*.vue` | UI blocks (e.g. `blog/BlogList.vue`) |
+| `components/ui/*` | shadcn-vue primitives (via `dkit add`) |
 | `lib/dkit/<module>.ts` | Queries/actions |
 | `styles/dkit/prose.css` | Shared `.dkit-prose` rich-text styles |
-| `dkit.json` | Project config (`framework: "nuxt"`) |
+| `components.json` / `dkit.json` | shadcn + dkit project config |
 | `.env.local` / `.env` | `DIRECTUS_URL` + token |
 
-Those paths are gitignored — re-run setup after clone.
+Those generated paths are gitignored — re-run setup after clone.
 
 ## Pages
 
