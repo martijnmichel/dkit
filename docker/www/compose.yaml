@@ -1,7 +1,8 @@
 # Docs site (static export + nginx) — https://dkit.run
 # From repo root:
 #   docker compose -f docker/www/compose.yaml up --build
-#   open http://localhost:3080
+#   open http://localhost:3082
+# Override host port: DKIT_WWW_PORT=3090 docker compose -f docker/www/compose.yaml up
 services:
   www:
     build:
@@ -9,5 +10,5 @@ services:
       dockerfile: apps/www/Dockerfile
     image: dkit-www:local
     ports:
-      - "${DKIT_WWW_PORT:-3080}:80"
+      - "${DKIT_WWW_PORT:-3082}:80"
     restart: unless-stopped
