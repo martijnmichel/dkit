@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { registryRoot } from "@/lib/registry";
 import type { PreviewFramework, PreviewUiKit } from "@/lib/preview-prefs";
+import { rewriteAtImports } from "@/lib/sandpack/rewrite-at-imports";
 
 /** Transitive `@/components/ui/*` needs for example-next base-nova sources. */
 const UI_TRANSITIVE: Record<string, string[]> = {
@@ -28,7 +29,7 @@ function rewriteCnImport(source: string): string {
 }
 
 function prepareNextUiSource(source: string): string {
-  return rewriteCnImport(stripUseClient(source));
+  return rewriteAtImports(rewriteCnImport(stripUseClient(source)), "/");
 }
 
 function monorepoRoot(): string {
@@ -122,7 +123,10 @@ export function sandpackUiKitFiles(
       : [];
     for (const dir of dirs) {
       for (const { rel, abs } of walkFiles(path.join(root, dir), dir)) {
-        files[`/src/components/ui/${rel}`] = fs.readFileSync(abs, "utf8");
+        files[`/src/components/ui/${rel}`] = rewriteAtImports(
+          fs.readFileSync(abs, "utf8"),
+          "/src/",
+        );
       }
     }
     return files;

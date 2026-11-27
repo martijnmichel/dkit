@@ -19,6 +19,7 @@ import {
   buildPagesMockSource,
   buildSettingsMockSource,
 } from "@/lib/sandpack/mocks";
+import { rewriteAtImports } from "@/lib/sandpack/rewrite-at-imports";
 import { sandpackUiKitFiles } from "@/lib/sandpack/ui-kit-files";
 
 /** shadcnComponents from block module.json + any `@/components/ui/*` imports in sources. */
@@ -180,8 +181,22 @@ function readUiFile(
   return fs.readFileSync(abs, "utf8");
 }
 
-function rewriteImports(source: string): string {
-  return source.replace(/^["']use client["'];?\s*/m, "");
+function rewriteImports(source: string, atRoot: "/" | "/src/" = "/"): string {
+  return rewriteAtImports(
+    source.replace(/^["']use client["'];?\s*/m, ""),
+    atRoot,
+  );
+}
+
+function mapLibFiles(
+  files: SandpackFiles,
+  atRoot: "/" | "/src/",
+): SandpackFiles {
+  const out: SandpackFiles = {};
+  for (const [key, source] of Object.entries(files)) {
+    out[key] = rewriteAtImports(source, atRoot);
+  }
+  return out;
 }
 
 function sharedLibFiles(
@@ -250,7 +265,7 @@ function buildNextProject(
   const raw = readUiFile(blockId, kit, "next", meta.nextFile);
   if (!raw) return null;
 
-  const component = rewriteImports(raw);
+  const component = rewriteImports(raw, "/");
   const propEntries = meta.props ? Object.entries(meta.props) : [];
   const propsJsx = propEntries.map(([k, v]) => `${k}={${v}}`).join(" ");
   const propsObj = propEntries.map(([k, v]) => `${k}: ${v}`).join(", ");
@@ -365,7 +380,7 @@ export default function App() {
       if (!fs.statSync(abs).isFile()) continue;
       const source = fs.readFileSync(abs, "utf8");
       siblingSources.push(source);
-      siblingFiles[`/components/${name}`] = rewriteImports(source);
+      siblingFiles[`/components/${name}`] = rewriteImports(source, "/");
     }
   }
 
@@ -373,7 +388,7 @@ export default function App() {
     kit === "shadcn" ? resolveBlockShadcnComponents(blockId, siblingSources) : [];
 
   return {
-    ...sharedLibFiles(meta.module, "/lib"),
+    ...mapLibFiles(sharedLibFiles(meta.module, "/lib"), "/"),
     ...sandpackUiKitFiles(kit, "next", shadcnComponents),
     ...siblingFiles,
     "/components/Block.tsx": component,
@@ -405,7 +420,7 @@ function buildNuxtProject(
   const raw = readUiFile(blockId, kit, "nuxt", meta.nuxtFile);
   if (!raw) return null;
 
-  const component = prepareVueBlockForSandpack(rewriteImports(raw));
+  const component = prepareVueBlockForSandpack(rewriteImports(raw, "/src/"));
   const propsLine = meta.props
     ? Object.entries(meta.props)
         .map(([k, v]) => `${k}=${v}`)
@@ -447,7 +462,7 @@ function buildNuxtProject(
     kit === "shadcn" ? resolveBlockShadcnComponents(blockId, [raw]) : [];
 
   return {
-    ...sharedLibFiles(meta.module, "/src/lib"),
+    ...mapLibFiles(sharedLibFiles(meta.module, "/src/lib"), "/src/"),
     ...sandpackUiKitFiles(kit, "nuxt", shadcnComponents),
     "/src/components/Block.vue": component,
     "/src/nuxt-shims.ts": `import { ref, type Ref } from "vue";

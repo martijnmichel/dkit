@@ -12,6 +12,7 @@ import {
   THEME_PRESETS,
   withSandpackThemeCss,
 } from "@/lib/sandpack/themes";
+import { enqueueSandpackStart } from "@/lib/sandpack/start-queue";
 import { sandpackDepsForFiles } from "@/lib/sandpack/ui-kit-deps";
 import type { BlockSandpackProject } from "@/lib/sandpack/types";
 import { resolveProjectUiKit } from "@/lib/sandpack/types";
@@ -88,21 +89,28 @@ function SandpackStage({
 }) {
   const resolved = useResolvedVariant(project, framework, uiKit, theme);
   const hostRef = useRef<HTMLDivElement>(null);
-  /** Only boot the bundler when the preview is near the viewport. */
-  const [active, setActive] = useState(false);
+  /** Near viewport — may still wait on the global Nodebox start queue. */
+  const [visible, setVisible] = useState(false);
+  /** Allowed to mount after serialized start (avoids DNS failures on dkit.run). */
+  const [booted, setBooted] = useState(false);
 
   useEffect(() => {
     const el = hostRef.current;
     if (!el) return;
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (entry?.isIntersecting) setActive(true);
+        if (entry?.isIntersecting) setVisible(true);
       },
       { rootMargin: "240px 0px", threshold: 0.01 },
     );
     io.observe(el);
     return () => io.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (!visible || booted) return;
+    return enqueueSandpackStart(() => setBooted(true));
+  }, [visible, booted]);
 
   if (!resolved.files) return null;
 
@@ -115,7 +123,7 @@ function SandpackStage({
 
   return (
     <div ref={hostRef} style={{ minHeight: height }}>
-      {active ? (
+      {booted ? (
         <SandpackProvider
           key={`${project.blockId}-${resolved.actualFramework}-${resolved.actualKit}-${theme}-${height}`}
           template={template}
@@ -165,7 +173,7 @@ function SandpackStage({
           className="flex items-center justify-center bg-white text-sm text-neutral-400"
           style={{ height }}
         >
-          Loading preview…
+          {visible ? "Starting preview…" : "Loading preview…"}
         </div>
       )}
     </div>
