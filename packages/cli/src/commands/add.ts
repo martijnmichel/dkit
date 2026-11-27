@@ -47,8 +47,11 @@ import {
 } from "../lib/write-files.js";
 import { ensureShadcnComponents } from "../lib/shadcn.js";
 import {
+  blockIdsWithRoutes,
   joinModulePath,
+  routeExportsFromBlocks,
   writeModuleFormRoute,
+  writeModuleIndexRoute,
   writeModuleSlugRoute,
 } from "../lib/write-routes.js";
 import { writeModuleUiEntry } from "../lib/write-ui-entry.js";
@@ -223,7 +226,7 @@ export function addCommand(): Command {
             : "No collection prefix — using logical names as-is",
         );
 
-        // —— Route base path: ALWAYS ask when a module declares defaultBasePath and UI installs ——
+        // —— Route base path: only when selected components declare `route` ——
         const moduleBasePaths: Record<string, string> = {
           ...(config.modules
             ? Object.fromEntries(
@@ -234,6 +237,7 @@ export function addCommand(): Command {
               )
             : {}),
         };
+        const routeBlockIds = new Set(blockIdsWithRoutes(plan.blocks, index));
 
         if (!opts.schemaOnly) {
           for (const moduleId of plan.modules.length
@@ -241,6 +245,15 @@ export function addCommand(): Command {
             : await modulesNeedingPathFromBlocks(plan.blocks, index, root)) {
             const loaded = await loadItem(moduleId, config.registry, framework);
             if (loaded.kind !== "module") continue;
+
+            const moduleRouteBlocks = plan.blocks.filter((b) => {
+              if (!routeBlockIds.has(b)) return false;
+              const be = index.items.find((i) => i.id === b);
+              return (be?.registryDependencies ?? []).includes(moduleId);
+            });
+            // No route-owning components selected → skip path + page scaffold
+            if (!moduleRouteBlocks.length) continue;
+
             const defaultPath =
               loaded.item.manifest.defaultBasePath ??
               config.modules?.[moduleId]?.basePath;
@@ -650,34 +663,57 @@ export function addCommand(): Command {
             );
             p.log.step(`wrote ${entry}`);
 
-            const slots = new Set(
-              barrelBlocks.map((b) => b.manifest.slot).filter(Boolean),
-            );
             const basePath =
               moduleBasePaths[moduleId] ??
               config.modules?.[moduleId]?.basePath;
-            if (basePath && slots.has("detail")) {
-              const route = writeModuleSlugRoute(
-                projectRoot,
-                config,
-                moduleId,
-                basePath,
-                overwriteUi,
-              );
+            const routeExports = routeExportsFromBlocks(barrelBlocks);
+            if (!basePath || !Object.keys(routeExports).length) continue;
+
+            const logRoute = (route: {
+              written?: string;
+              skipped?: string;
+              note?: string;
+            }) => {
               if (route.written) p.log.step(`wrote ${route.written}`);
               if (route.skipped) p.log.info(`skipped ${route.skipped}`);
               if (route.note) p.log.info(route.note);
-            } else if (basePath && slots.has("form")) {
-              const route = writeModuleFormRoute(
-                projectRoot,
-                config,
-                moduleId,
-                basePath,
-                overwriteUi,
+            };
+
+            if (routeExports.index) {
+              logRoute(
+                writeModuleIndexRoute(
+                  projectRoot,
+                  config,
+                  moduleId,
+                  basePath,
+                  overwriteUi,
+                  routeExports.index,
+                ),
               );
-              if (route.written) p.log.step(`wrote ${route.written}`);
-              if (route.skipped) p.log.info(`skipped ${route.skipped}`);
-              if (route.note) p.log.info(route.note);
+            }
+            if (routeExports.slug) {
+              logRoute(
+                writeModuleSlugRoute(
+                  projectRoot,
+                  config,
+                  moduleId,
+                  basePath,
+                  overwriteUi,
+                  routeExports.slug,
+                ),
+              );
+            }
+            if (routeExports.static) {
+              logRoute(
+                writeModuleFormRoute(
+                  projectRoot,
+                  config,
+                  moduleId,
+                  basePath,
+                  overwriteUi,
+                  routeExports.static,
+                ),
+              );
             }
           }
         }
@@ -719,20 +755,22 @@ export function addCommand(): Command {
                 const mods = installedBlocks.filter((b) =>
                   (b.manifest.registryDependencies ?? []).includes(k),
                 );
-                const slots = new Set(
-                  mods.map((b) => b.manifest.slot).filter(Boolean),
-                );
-                const url = slots.has("form")
-                  ? v === "/"
-                    ? "/"
-                    : v
-                  : v === "/"
-                    ? "/{slug}"
-                    : `${joinModulePath(v, "{slug}")}`;
-                return `Path ${k}: ${v}  →  ${url}`;
+                const kinds = routeExportsFromBlocks(mods);
+                const urls: string[] = [];
+                if (kinds.index || kinds.static) {
+                  urls.push(v === "/" ? "/" : v);
+                }
+                if (kinds.slug) {
+                  urls.push(
+                    v === "/" ? "/{slug}" : joinModulePath(v, "{slug}"),
+                  );
+                }
+                return urls.length
+                  ? `Path ${k}: ${v}  →  ${urls.join(", ")}`
+                  : `Path ${k}: ${v}`;
               }),
             "",
-            "Routes are scaffolded when missing (re-run with --force to replace).",
+            "Pages are scaffolded only for components that declare route (re-run with --force to replace).",
           ].join("\n"),
           "Install summary",
         );

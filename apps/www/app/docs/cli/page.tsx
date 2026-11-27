@@ -49,9 +49,13 @@ dkit add blog --schema-only
 dkit add blog --dry-run`}</pre>
         <p>
           Interactive module installs ask which components to copy (defaults
-          checked), then collection prefix and base path when the module
-          declares one. <code className="font-mono">--yes</code> skips prompts
-          and installs the default components.
+          checked), then collection prefix. Base path and page scaffolding run
+          only for components that declare <code className="font-mono">route</code>{" "}
+          (<code className="font-mono">index</code> /{" "}
+          <code className="font-mono">slug</code> /{" "}
+          <code className="font-mono">static</code>).{" "}
+          <code className="font-mono">--yes</code> skips prompts and installs
+          the default components.
         </p>
       </DocsSection>
 

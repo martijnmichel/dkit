@@ -32,6 +32,18 @@ export const TemplateSlotSchema = z.object({
 
 export type TemplateSlot = z.infer<typeof TemplateSlotSchema>;
 
+/**
+ * App route owned by a UI component (under the module basePath).
+ * Omit on embed-only components — install UI without scaffolding a page.
+ */
+export const BlockRouteKindSchema = z.enum(["index", "slug", "static"]);
+export type BlockRouteKind = z.infer<typeof BlockRouteKindSchema>;
+
+export const BlockRouteSchema = z.object({
+  kind: BlockRouteKindSchema,
+});
+export type BlockRoute = z.infer<typeof BlockRouteSchema>;
+
 export const ModuleManifestSchema = z.object({
   $schema: z.string().optional(),
   type: z.literal("dkit:module"),
@@ -80,6 +92,14 @@ export const BlockManifestSchema = z.object({
   shadcnComponents: z.array(z.string()).default([]),
   /** Which module slot this template fills (list | detail | form | …) */
   slot: z.string().optional(),
+  /**
+   * App route this component owns under the module basePath.
+   * Omit for embed-only UI (install files, no page scaffold).
+   * - index: basePath itself (list)
+   * - slug: basePath/[slug] (detail)
+   * - static: basePath as a single page (form)
+   */
+  route: BlockRouteSchema.optional(),
   layers: z.array(LayerSchema).default(["ui"]),
 });
 
@@ -125,6 +145,7 @@ export const RegistryIndexSchema = z.object({
         .optional(),
       registryDependencies: z.array(z.string()).optional(),
       slot: z.string().optional(),
+      route: BlockRouteSchema.optional(),
       uiKits: z.array(UiKitSchema).optional(),
       frameworks: z.array(FrameworkSchema).optional(),
     }),

@@ -14,6 +14,7 @@
   ],
   "shadcnComponents": ["button", "input", "label", "textarea"],
   "slot": "form",
+  "route": { "kind": "static" },
   "registryDependencies": [
     "contact-form"
   ],

@@ -97,6 +97,7 @@ export function listBlocks(moduleId?: string) {
       description: manifest.description,
       version: manifest.version,
       slot: manifest.slot,
+      route: manifest.route,
       frameworks: manifest.frameworks,
       uiKits: manifest.uiKits,
       registryDependencies: manifest.registryDependencies,

@@ -14,6 +14,7 @@
   ],
   "shadcnComponents": ["badge", "button"],
   "slot": "detail",
+  "route": { "kind": "slug" },
   "registryDependencies": [
     "blog"
   ],

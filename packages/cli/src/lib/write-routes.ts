@@ -1,7 +1,45 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { DkitProjectConfig, Framework } from "@dkit/shared";
+import type {
+  BlockRouteKind,
+  DkitProjectConfig,
+  Framework,
+  RegistryIndex,
+} from "@dkit/shared";
+import { slotExportAlias } from "./block-paths.js";
 import { basePathToFsSegments } from "./routes.js";
+
+/** Selected block ids that declare a `route` (need a module basePath). */
+export function blockIdsWithRoutes(
+  blockIds: string[],
+  index: RegistryIndex,
+): string[] {
+  return blockIds.filter((id) => {
+    const item = index.items.find((i) => i.id === id);
+    return item?.type === "dkit:block" && Boolean(item.route?.kind);
+  });
+}
+
+/** Map route kinds → barrel export name from installed blocks. */
+export function routeExportsFromBlocks(
+  blocks: Array<{
+    manifest: { route?: { kind: BlockRouteKind }; slot?: string };
+  }>,
+): Partial<Record<BlockRouteKind, string>> {
+  const out: Partial<Record<BlockRouteKind, string>> = {};
+  for (const b of blocks) {
+    const kind = b.manifest.route?.kind;
+    if (!kind) continue;
+    out[kind] = b.manifest.slot
+      ? slotExportAlias(b.manifest.slot)
+      : kind === "index"
+        ? "List"
+        : kind === "static"
+          ? "Form"
+          : "Detail";
+  }
+  return out;
+}
 
 /** `/` + `about` → `/about`; `/pages` + `about` → `/pages/about` */
 export function joinModulePath(
@@ -39,29 +77,41 @@ function resolveAppRoot(
   return null;
 }
 
-/**
- * Scaffold a static page at the module basePath that renders the Form slot.
- * - base `/contact` → `app/contact/page.tsx` (or `pages/contact/index.vue`)
- */
-export function writeModuleFormRoute(
-  projectRoot: string,
-  config: DkitProjectConfig,
-  moduleId: string,
-  basePath: string,
-  overwrite: boolean,
-): { written?: string; skipped?: string; note?: string } {
+type RouteWriteResult = { written?: string; skipped?: string; note?: string };
+
+function writeStaticBasePathPage(opts: {
+  projectRoot: string;
+  config: DkitProjectConfig;
+  moduleId: string;
+  basePath: string;
+  overwrite: boolean;
+  /** Barrel export to render (List, Form, …) */
+  exportName: string;
+  /** Optional page heading for form-style pages */
+  heading?: string;
+  missingNote: string;
+}): RouteWriteResult {
+  const { config, moduleId, basePath, overwrite, exportName, heading } = opts;
   const framework = config.framework;
-  const app = resolveAppRoot(projectRoot, framework);
+  const app = resolveAppRoot(opts.projectRoot, framework);
   if (!app) {
     return {
-      note: `No app/ or pages/ router found — add a page at ${basePath} that imports Form from ${config.aliases.components}/${moduleId}`,
+      note: `No app/ or pages/ router found — add a page at ${basePath} that imports ${exportName} from ${config.aliases.components}/${moduleId}`,
     };
   }
 
   const segments = basePathToFsSegments(basePath);
   const componentsAlias = config.aliases.components.replace(/\/$/, "");
   const exportId = exportSafe(moduleId);
-  const heading = formPageHeading(moduleId);
+  const body =
+    heading != null
+      ? `  return (
+    <main className="container py-16">
+      <h1 className="mb-8 text-2xl font-semibold tracking-tight">${heading}</h1>
+      <${exportName} />
+    </main>
+  );`
+      : `  return <${exportName} />;`;
 
   if (framework === "next" && app.kind === "app") {
     const dir = path.join(app.root, ...segments);
@@ -70,18 +120,13 @@ export function writeModuleFormRoute(
       return { skipped: file };
     }
     fs.mkdirSync(dir, { recursive: true });
-    const contents = `import { Form, installed } from "${componentsAlias}/${moduleId}";
+    const contents = `import { ${exportName}, installed } from "${componentsAlias}/${moduleId}";
 
 export default function Dkit${exportId}Page() {
   if (!installed) {
-    return <p>Form is not installed yet.</p>;
+    return <p>${opts.missingNote}</p>;
   }
-  return (
-    <main className="container py-16">
-      <h1 className="mb-8 text-2xl font-semibold tracking-tight">${heading}</h1>
-      <Form />
-    </main>
-  );
+${body}
 }
 `;
     fs.writeFileSync(file, contents, "utf8");
@@ -97,17 +142,21 @@ export default function Dkit${exportId}Page() {
       return { skipped: file };
     }
     fs.mkdirSync(path.dirname(file), { recursive: true });
+    const templateBody =
+      heading != null
+        ? `    <template v-else>
+      <h1 class="mb-8 text-2xl font-semibold tracking-tight">${heading}</h1>
+      <${exportName} />
+    </template>`
+        : `    <${exportName} v-else />`;
     const contents = `<script setup lang="ts">
-import { Form, installed } from "${componentsAlias}/${moduleId}"
+import { ${exportName}, installed } from "${componentsAlias}/${moduleId}"
 </script>
 
 <template>
   <main class="container py-16">
-    <p v-if="!installed">Form is not installed yet.</p>
-    <template v-else>
-      <h1 class="mb-8 text-2xl font-semibold tracking-tight">${heading}</h1>
-      <Form />
-    </template>
+    <p v-if="!installed">${opts.missingNote}</p>
+${templateBody}
   </main>
 </template>
 `;
@@ -121,22 +170,64 @@ import { Form, installed } from "${componentsAlias}/${moduleId}"
     return { skipped: file };
   }
   fs.mkdirSync(path.dirname(file), { recursive: true });
-  const contents = `import { Form, installed } from "${componentsAlias}/${moduleId}";
+  const contents = `import { ${exportName}, installed } from "${componentsAlias}/${moduleId}";
 
 export default function Dkit${exportId}Page() {
   if (!installed) {
-    return <p>Form is not installed yet.</p>;
+    return <p>${opts.missingNote}</p>;
   }
-  return (
-    <main className="container py-16">
-      <h1 className="mb-8 text-2xl font-semibold tracking-tight">${heading}</h1>
-      <Form />
-    </main>
-  );
+${body}
 }
 `;
   fs.writeFileSync(file, contents, "utf8");
   return { written: file, note: `URL: ${normalizeUrl(basePath)}` };
+}
+
+/**
+ * Scaffold the module basePath index page (list slot).
+ * - base `/blog` → `app/blog/page.tsx`
+ */
+export function writeModuleIndexRoute(
+  projectRoot: string,
+  config: DkitProjectConfig,
+  moduleId: string,
+  basePath: string,
+  overwrite: boolean,
+  exportName = "List",
+): RouteWriteResult {
+  return writeStaticBasePathPage({
+    projectRoot,
+    config,
+    moduleId,
+    basePath,
+    overwrite,
+    exportName,
+    missingNote: `${exportName} is not installed yet.`,
+  });
+}
+
+/**
+ * Scaffold a static page at the module basePath that renders the Form slot.
+ * - base `/contact` → `app/contact/page.tsx` (or `pages/contact/index.vue`)
+ */
+export function writeModuleFormRoute(
+  projectRoot: string,
+  config: DkitProjectConfig,
+  moduleId: string,
+  basePath: string,
+  overwrite: boolean,
+  exportName = "Form",
+): RouteWriteResult {
+  return writeStaticBasePathPage({
+    projectRoot,
+    config,
+    moduleId,
+    basePath,
+    overwrite,
+    exportName,
+    heading: formPageHeading(moduleId),
+    missingNote: `${exportName} is not installed yet.`,
+  });
 }
 
 function normalizeUrl(basePath: string): string {
@@ -155,7 +246,8 @@ export function writeModuleSlugRoute(
   moduleId: string,
   basePath: string,
   overwrite: boolean,
-): { written?: string; skipped?: string; note?: string } {
+  exportName = "Detail",
+): RouteWriteResult {
   const framework = config.framework;
   const app = resolveAppRoot(projectRoot, framework);
   if (!app) {
@@ -174,7 +266,7 @@ export function writeModuleSlugRoute(
     }
     fs.mkdirSync(dir, { recursive: true });
     const componentsAlias = config.aliases.components.replace(/\/$/, "");
-    const contents = `import { Detail, installed } from "${componentsAlias}/${moduleId}";
+    const contents = `import { ${exportName}, installed } from "${componentsAlias}/${moduleId}";
 
 export default async function Dkit${exportSafe(moduleId)}Page({
   params,
@@ -185,7 +277,7 @@ export default async function Dkit${exportSafe(moduleId)}Page({
   if (!installed) {
     return <p>Run <code>dkit add ${moduleId}</code> to install UI.</p>;
   }
-  return <Detail slug={slug} />;
+  return <${exportName} slug={slug} />;
 }
 `;
     fs.writeFileSync(file, contents, "utf8");
@@ -210,21 +302,22 @@ export default async function Dkit${exportSafe(moduleId)}Page({
   fs.mkdirSync(path.dirname(file), { recursive: true });
 
   if (framework === "nuxt") {
+    const componentsAlias = config.aliases.components.replace(/\/$/, "");
     const contents = `<script setup lang="ts">
+import { ${exportName}, installed } from "${componentsAlias}/${moduleId}"
 const route = useRoute()
 const slug = computed(() => String(route.params.slug ?? ''))
 </script>
 
 <template>
-  <!-- Wire your installed page-detail component here, e.g.: -->
-  <!-- <PageDetail :slug="slug" /> -->
-  <p>Page: {{ slug }}</p>
+  <p v-if="!installed">Run <code>dkit add ${moduleId}</code> to install UI.</p>
+  <${exportName} v-else :slug="slug" />
 </template>
 `;
     fs.writeFileSync(file, contents, "utf8");
   } else {
     const componentsAlias = config.aliases.components.replace(/\/$/, "");
-    const contents = `import { Detail, installed } from "${componentsAlias}/${moduleId}";
+    const contents = `import { ${exportName}, installed } from "${componentsAlias}/${moduleId}";
 
 export default function Dkit${exportSafe(moduleId)}Page() {
   // pages router — prefer app/ router for async Server Components

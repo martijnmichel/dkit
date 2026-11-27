@@ -99,6 +99,11 @@ export default async function ModulePage({
                           [{b.slot}]
                         </span>
                       ) : null}
+                      {b.route?.kind ? (
+                        <span className="ml-2 text-muted-foreground">
+                          → {b.route.kind}
+                        </span>
+                      ) : null}
                     </li>
                   ))}
                 </ul>

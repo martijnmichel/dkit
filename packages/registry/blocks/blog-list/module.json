@@ -13,6 +13,7 @@
     "minimal"
   ],
   "slot": "list",
+  "route": { "kind": "index" },
   "registryDependencies": [
     "blog"
   ],

@@ -11,6 +11,7 @@ export type RegistryItem = {
   defaultBlocks?: string[];
   registryDependencies?: string[];
   slot?: string;
+  route?: { kind: "index" | "slug" | "static" };
 };
 
 export type RegistryIndex = {
