@@ -21,6 +21,37 @@ import {
 } from "@/lib/sandpack/mocks";
 import { sandpackUiKitFiles } from "@/lib/sandpack/ui-kit-files";
 
+/** shadcnComponents from block module.json + any `@/components/ui/*` imports in sources. */
+function resolveBlockShadcnComponents(
+  blockId: string,
+  sources: string[],
+): string[] {
+  const ids = new Set<string>();
+  const manifestPath = path.join(
+    registryRoot(),
+    "blocks",
+    blockId,
+    "module.json",
+  );
+  if (fs.existsSync(manifestPath)) {
+    try {
+      const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8")) as {
+        shadcnComponents?: string[];
+      };
+      for (const id of manifest.shadcnComponents ?? []) ids.add(id);
+    } catch {
+      /* ignore bad manifest */
+    }
+  }
+  const importRe = /@\/components\/ui\/([a-z0-9-]+)/g;
+  for (const source of sources) {
+    for (const match of source.matchAll(importRe)) {
+      if (match[1]) ids.add(match[1]);
+    }
+  }
+  return [...ids];
+}
+
 export type {
   BlockSandpackProject,
   KitVariantFiles,
@@ -317,6 +348,7 @@ export default function App() {
 
   /** Sibling files in the same ui dir (e.g. nav-header-client.tsx). */
   const siblingFiles: SandpackFiles = {};
+  const siblingSources: string[] = [raw];
   const uiDir = path.join(
     registryRoot(),
     "blocks",
@@ -331,15 +363,18 @@ export default function App() {
       if (!/\.(tsx?|jsx?)$/.test(name)) continue;
       const abs = path.join(uiDir, name);
       if (!fs.statSync(abs).isFile()) continue;
-      siblingFiles[`/components/${name}`] = rewriteImports(
-        fs.readFileSync(abs, "utf8"),
-      );
+      const source = fs.readFileSync(abs, "utf8");
+      siblingSources.push(source);
+      siblingFiles[`/components/${name}`] = rewriteImports(source);
     }
   }
 
+  const shadcnComponents =
+    kit === "shadcn" ? resolveBlockShadcnComponents(blockId, siblingSources) : [];
+
   return {
     ...sharedLibFiles(meta.module, "/lib"),
-    ...sandpackUiKitFiles(kit, "next"),
+    ...sandpackUiKitFiles(kit, "next", shadcnComponents),
     ...siblingFiles,
     "/components/Block.tsx": component,
     "/App.tsx": isClientOnly ? appClient : appAsync,
@@ -408,9 +443,12 @@ function buildNuxtProject(
 </html>
 `);
 
+  const shadcnComponents =
+    kit === "shadcn" ? resolveBlockShadcnComponents(blockId, [raw]) : [];
+
   return {
     ...sharedLibFiles(meta.module, "/src/lib"),
-    ...sandpackUiKitFiles(kit, "nuxt"),
+    ...sandpackUiKitFiles(kit, "nuxt", shadcnComponents),
     "/src/components/Block.vue": component,
     "/src/nuxt-shims.ts": `import { ref, type Ref } from "vue";
 

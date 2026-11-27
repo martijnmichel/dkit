@@ -3,18 +3,10 @@ import path from "node:path";
 import { registryRoot } from "@/lib/registry";
 import type { PreviewFramework, PreviewUiKit } from "@/lib/preview-prefs";
 
-/** Real installed shadcn (base-nova) from the Next example app. */
-const NEXT_UI_FILES = [
-  "button.tsx",
-  "input.tsx",
-  "label.tsx",
-  "textarea.tsx",
-  "badge.tsx",
-  "card.tsx",
-  "navigation-menu.tsx",
-  "popover.tsx",
-  "sheet.tsx",
-] as const;
+/** Transitive `@/components/ui/*` needs for example-next base-nova sources. */
+const UI_TRANSITIVE: Record<string, string[]> = {
+  sheet: ["button"],
+};
 
 /** shadcn-vue folders under ui-kits/shadcn/nuxt (from shadcn-vue registry). */
 const NUXT_UI_DIRS = [
@@ -32,10 +24,7 @@ function stripUseClient(source: string): string {
 
 /** example-next uses `import { cn } from "cn"` — Sandpack resolves via `@/lib/utils`. */
 function rewriteCnImport(source: string): string {
-  return source.replace(
-    /from\s+["']cn["']/g,
-    'from "@/lib/utils"',
-  );
+  return source.replace(/from\s+["']cn["']/g, 'from "@/lib/utils"');
 }
 
 function prepareNextUiSource(source: string): string {
@@ -43,7 +32,6 @@ function prepareNextUiSource(source: string): string {
 }
 
 function monorepoRoot(): string {
-  // apps/www → repo root (cwd when Next runs is apps/www)
   return path.resolve(process.cwd(), "../..");
 }
 
@@ -55,7 +43,6 @@ function exampleNextUtils(): string | null {
   const abs = path.join(monorepoRoot(), "examples/next/lib/utils.ts");
   if (fs.existsSync(abs)) {
     const raw = fs.readFileSync(abs, "utf8");
-    // example re-exports from "cn" — Sandpack needs the real helper
     if (/from\s+["']cn["']/.test(raw)) {
       return `import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -94,16 +81,30 @@ function walkFiles(dir: string, base = ""): Array<{ rel: string; abs: string }> 
   return out;
 }
 
+/** Expand `button` → button.tsx names, including transitive kit deps. */
+export function expandShadcnComponents(components: string[]): string[] {
+  const out = new Set<string>();
+  const queue = [...components];
+  while (queue.length) {
+    const id = queue.pop()!;
+    if (out.has(id)) continue;
+    out.add(id);
+    for (const dep of UI_TRANSITIVE[id] ?? []) queue.push(dep);
+  }
+  return [...out];
+}
+
 /**
  * Inject real shadcn sources into Sandpack so `@/components/ui/*` resolves.
- * Next: `examples/next/components/ui` (installed base-nova).
- * Nuxt: registry ui-kits stubs until a Nuxt example ships real components.
+ * Next: only the components this block needs from `examples/next/components/ui`.
+ * Nuxt: registry ui-kits until a Nuxt example ships real components.
  *
  * Server-only (node:fs) — call from build-project, never from client components.
  */
 export function sandpackUiKitFiles(
   kit: PreviewUiKit,
   framework: PreviewFramework = "next",
+  components: string[] = [],
 ): Record<string, string> {
   if (kit !== "shadcn") return {};
 
@@ -115,7 +116,11 @@ export function sandpackUiKitFiles(
       files["/src/lib/utils.ts"] = fs.readFileSync(utils, "utf8");
     }
     const root = kitDir(kit, framework);
-    for (const dir of NUXT_UI_DIRS) {
+    const wanted = new Set(expandShadcnComponents(components));
+    const dirs = wanted.size
+      ? NUXT_UI_DIRS.filter((d) => wanted.has(d))
+      : [];
+    for (const dir of dirs) {
       for (const { rel, abs } of walkFiles(path.join(root, dir), dir)) {
         files[`/src/components/ui/${rel}`] = fs.readFileSync(abs, "utf8");
       }
@@ -123,11 +128,15 @@ export function sandpackUiKitFiles(
     return files;
   }
 
+  const wanted = expandShadcnComponents(components);
+  if (!wanted.length) return files;
+
   const utils = exampleNextUtils();
   if (utils) files["/lib/utils.ts"] = utils;
 
   const uiDir = exampleNextUiDir();
-  for (const name of NEXT_UI_FILES) {
+  for (const id of wanted) {
+    const name = `${id}.tsx`;
     const abs = path.join(uiDir, name);
     if (!fs.existsSync(abs)) continue;
     files[`/components/ui/${name}`] = prepareNextUiSource(

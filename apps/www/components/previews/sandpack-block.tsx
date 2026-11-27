@@ -12,10 +12,7 @@ import {
   THEME_PRESETS,
   withSandpackThemeCss,
 } from "@/lib/sandpack/themes";
-import {
-  SANDPACK_SHADCN_DEPENDENCIES,
-  SANDPACK_SHADCN_VUE_DEPENDENCIES,
-} from "@/lib/sandpack/ui-kit-deps";
+import { sandpackDepsForFiles } from "@/lib/sandpack/ui-kit-deps";
 import type { BlockSandpackProject } from "@/lib/sandpack/types";
 import { resolveProjectUiKit } from "@/lib/sandpack/types";
 import {
@@ -24,7 +21,7 @@ import {
   SandpackPreview,
   SandpackProvider,
 } from "@codesandbox/sandpack-react";
-import { useEffect, useId, useMemo, useRef } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 
 function frameworkLabel(fw: PreviewFramework): string {
   return fw === "nuxt" ? "Nuxt" : "Next";
@@ -90,60 +87,88 @@ function SandpackStage({
   showCode: boolean;
 }) {
   const resolved = useResolvedVariant(project, framework, uiKit, theme);
+  const hostRef = useRef<HTMLDivElement>(null);
+  /** Only boot the bundler when the preview is near the viewport. */
+  const [active, setActive] = useState(false);
+
+  useEffect(() => {
+    const el = hostRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) setActive(true);
+      },
+      { rootMargin: "240px 0px", threshold: 0.01 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
   if (!resolved.files) return null;
 
   const template =
     resolved.actualFramework === "nuxt" ? "vite-vue-ts" : "vite-react-ts";
+  const kitDeps = sandpackDepsForFiles(resolved.files, {
+    framework: resolved.actualFramework,
+    kit: resolved.actualKit,
+  });
 
   return (
-    <SandpackProvider
-      key={`${project.blockId}-${resolved.actualFramework}-${resolved.actualKit}-${theme}-${height}`}
-      template={template}
-      theme="light"
-      files={resolved.files}
-      options={{
-        recompileMode: "delayed",
-        recompileDelay: 400,
-        bundlerTimeOut: 120_000,
-        // Minimal kit = browser-default form chrome — no Tailwind Preflight.
-        externalResources:
-          resolved.actualKit === "shadcn"
-            ? ["https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"]
-            : [],
-      }}
-      customSetup={{
-        dependencies: {
-          ...(resolved.actualFramework === "nuxt"
-            ? {}
-            : { react: "^19.0.0", "react-dom": "^19.0.0" }),
-          ...(resolved.actualKit === "shadcn"
-            ? resolved.actualFramework === "nuxt"
-              ? SANDPACK_SHADCN_VUE_DEPENDENCIES
-              : SANDPACK_SHADCN_DEPENDENCIES
-            : {}),
-        },
-      }}
-    >
-      <SandpackLayout
-        style={{
-          border: "none",
-          borderRadius: 0,
-          overflow: "hidden",
-          background: "#fff",
-        }}
-      >
-        {showCode ? (
-          <SandpackCodeEditor showTabs showLineNumbers style={{ height }} />
-        ) : null}
-        <SandpackPreview
-          showNavigator={false}
-          showOpenInCodeSandbox={false}
-          showRefreshButton={false}
-          showRestartButton={false}
-          style={{ height, background: "#fff" }}
-        />
-      </SandpackLayout>
-    </SandpackProvider>
+    <div ref={hostRef} style={{ minHeight: height }}>
+      {active ? (
+        <SandpackProvider
+          key={`${project.blockId}-${resolved.actualFramework}-${resolved.actualKit}-${theme}-${height}`}
+          template={template}
+          theme="light"
+          files={resolved.files}
+          options={{
+            recompileMode: "delayed",
+            recompileDelay: 400,
+            bundlerTimeOut: 120_000,
+            // Minimal kit = browser-default form chrome — no Tailwind Preflight.
+            externalResources:
+              resolved.actualKit === "shadcn"
+                ? ["https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"]
+                : [],
+          }}
+          customSetup={{
+            dependencies: {
+              ...(resolved.actualFramework === "nuxt"
+                ? {}
+                : { react: "^19.0.0", "react-dom": "^19.0.0" }),
+              ...kitDeps,
+            },
+          }}
+        >
+          <SandpackLayout
+            style={{
+              border: "none",
+              borderRadius: 0,
+              overflow: "hidden",
+              background: "#fff",
+            }}
+          >
+            {showCode ? (
+              <SandpackCodeEditor showTabs showLineNumbers style={{ height }} />
+            ) : null}
+            <SandpackPreview
+              showNavigator={false}
+              showOpenInCodeSandbox={false}
+              showRefreshButton
+              showRestartButton
+              style={{ height, background: "#fff" }}
+            />
+          </SandpackLayout>
+        </SandpackProvider>
+      ) : (
+        <div
+          className="flex items-center justify-center bg-white text-sm text-neutral-400"
+          style={{ height }}
+        >
+          Loading preview…
+        </div>
+      )}
+    </div>
   );
 }
 
