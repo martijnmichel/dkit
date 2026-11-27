@@ -7,6 +7,6 @@
   "directus": { "min": "11.0.0" },
   "dependencies": ["@directus/sdk"],
   "layers": ["schema", "access", "services", "types"],
-  "defaultBlocks": ["social-links", "maintenance-gate"],
+  "defaultBlocks": ["site-logo", "site-brand", "social-links", "maintenance-gate"],
   "collections": ["site", "site_settings"]
 }

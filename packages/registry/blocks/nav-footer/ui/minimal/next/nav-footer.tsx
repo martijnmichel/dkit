@@ -3,7 +3,6 @@ import {
   navLinkProps,
   type NavItem,
 } from "@/lib/dkit/navigation";
-import { loadSoftBrand, softSocialLabel, type SoftSocialLink } from "./soft-brand";
 
 function FooterLinks({ items }: { items: NavItem[] }) {
   return (
@@ -20,37 +19,17 @@ function FooterLinks({ items }: { items: NavItem[] }) {
   );
 }
 
-/** Minimal kit — semantic footer with optional settings soft-brand. */
+/** Footer menu links only — compose with SiteBrand / SocialLinks yourself. */
 export async function NavFooter({
   menuKey = "footer",
-  brandName,
-  contactEmail,
 }: {
   menuKey?: string;
-  brandName?: string;
-  contactEmail?: string | null;
 }) {
   const menu = await getNavMenuByKey(menuKey);
-  const items = menu?.items ?? [];
-
-  let name = brandName;
-  let email = contactEmail;
-  let socials: SoftSocialLink[] = [];
-
-  if (brandName === undefined || contactEmail === undefined) {
-    const soft = await loadSoftBrand();
-    if (brandName === undefined) name = soft?.name;
-    if (contactEmail === undefined) email = soft?.contactEmail ?? null;
-    socials = (soft?.socialLinks ?? []).filter(
-      (s) => typeof s.href === "string" && s.href.trim(),
-    );
-  }
-
-  const title = name?.trim();
-  const year = new Date().getFullYear();
+  const items: NavItem[] = menu?.items ?? [];
 
   return (
-    <footer className="dkit-nav-footer">
+    <nav className="dkit-nav-footer" aria-label="Footer">
       <style>{`
         .dkit-nav-footer {
           border-top: 1px solid #ddd;
@@ -59,25 +38,7 @@ export async function NavFooter({
         .dkit-nav-footer__inner {
           max-width: 64rem;
           margin: 0 auto;
-          padding: 2rem 1rem;
-          display: flex;
-          flex-direction: column;
-          gap: 1.5rem;
-        }
-        .dkit-nav-footer__row {
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: space-between;
-          gap: 1.5rem;
-        }
-        .dkit-nav-footer__brand {
-          font-weight: 600;
-          margin: 0 0 0.35rem;
-        }
-        .dkit-nav-footer__email {
-          color: #555;
-          text-decoration: none;
-          font-size: 0.875rem;
+          padding: 1.5rem 1rem;
         }
         .dkit-nav-footer__links {
           display: flex;
@@ -87,71 +48,19 @@ export async function NavFooter({
           margin: 0;
           padding: 0;
         }
-        .dkit-nav-footer__links a,
-        .dkit-nav-footer__social a {
+        .dkit-nav-footer__links a {
           color: #555;
           text-decoration: none;
           font-size: 0.875rem;
         }
-        .dkit-nav-footer__links a:hover,
-        .dkit-nav-footer__social a:hover,
-        .dkit-nav-footer__email:hover {
+        .dkit-nav-footer__links a:hover {
           text-decoration: underline;
           color: inherit;
         }
-        .dkit-nav-footer__social {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 1rem;
-          list-style: none;
-          margin: 0;
-          padding: 0;
-        }
-        .dkit-nav-footer__copy {
-          margin: 0;
-          font-size: 0.75rem;
-          color: #777;
-        }
       `}</style>
       <div className="dkit-nav-footer__inner">
-        <div className="dkit-nav-footer__row">
-          <div>
-            {title ? <p className="dkit-nav-footer__brand">{title}</p> : null}
-            {email ? (
-              <a className="dkit-nav-footer__email" href={`mailto:${email}`}>
-                {email}
-              </a>
-            ) : null}
-          </div>
-          <nav aria-label="Footer">
-            <FooterLinks items={items} />
-          </nav>
-        </div>
-        {socials.length > 0 ? (
-          <ul className="dkit-nav-footer__social">
-            {socials.map((s) => (
-              <li key={`${s.platform ?? "link"}-${s.href}`}>
-                <a
-                  href={s.href}
-                  target={s.href.startsWith("mailto:") ? undefined : "_blank"}
-                  rel={
-                    s.href.startsWith("mailto:")
-                      ? undefined
-                      : "noopener noreferrer"
-                  }
-                  data-platform={s.platform}
-                >
-                  {softSocialLabel(s)}
-                </a>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-        <p className="dkit-nav-footer__copy">
-          © {year}
-          {title ? ` ${title}` : ""}
-        </p>
+        <FooterLinks items={items} />
       </div>
-    </footer>
+    </nav>
   );
 }

@@ -3,7 +3,6 @@ import {
   navLinkProps,
   type NavItem,
 } from "@/lib/dkit/navigation";
-import { loadSoftBrand } from "./soft-brand";
 
 function NavAnchor({ item }: { item: NavItem }) {
   const props = navLinkProps(item);
@@ -34,32 +33,17 @@ function ItemList({ items }: { items: NavItem[] }) {
   );
 }
 
-/** Minimal kit — semantic header + nested lists; mobile via details. */
+/** Primary nav only — compose with SiteBrand / SocialLinks yourself. */
 export async function NavHeader({
   menuKey = "primary",
-  brandName,
-  logoUrl,
-  homeHref = "/",
 }: {
   menuKey?: string;
-  brandName?: string;
-  logoUrl?: string | null;
-  homeHref?: string;
 }) {
   const menu = await getNavMenuByKey(menuKey);
   const items = menu?.items ?? [];
 
-  let name = brandName;
-  let logo = logoUrl;
-  if (brandName === undefined || logoUrl === undefined) {
-    const soft = await loadSoftBrand();
-    if (brandName === undefined) name = soft?.name;
-    if (logoUrl === undefined) logo = soft?.logoUrl ?? null;
-  }
-  const title = name?.trim() || "Home";
-
   return (
-    <header className="dkit-nav-header">
+    <nav className="dkit-nav-header" aria-label="Primary">
       <style>{`
         .dkit-nav-header {
           border-bottom: 1px solid #ddd;
@@ -67,23 +51,11 @@ export async function NavHeader({
         .dkit-nav-header__inner {
           display: flex;
           align-items: center;
-          justify-content: space-between;
+          justify-content: flex-end;
           gap: 1rem;
           max-width: 64rem;
           margin: 0 auto;
           padding: 0.75rem 1rem;
-        }
-        .dkit-nav-header__brand {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.5rem;
-          font-weight: 600;
-          text-decoration: none;
-          color: inherit;
-        }
-        .dkit-nav-header__brand img {
-          height: 1.75rem;
-          width: auto;
         }
         .dkit-nav-header__list {
           display: flex;
@@ -117,12 +89,12 @@ export async function NavHeader({
         .dkit-nav-header__mobile summary::-webkit-details-marker {
           display: none;
         }
-        .dkit-nav-header__mobile[open] .dkit-nav-header__panel {
-          display: block;
-        }
         .dkit-nav-header__panel {
           display: none;
           padding: 0.75rem 0 0;
+        }
+        .dkit-nav-header__mobile[open] .dkit-nav-header__panel {
+          display: block;
         }
         @media (min-width: 768px) {
           .dkit-nav-header__desktop {
@@ -137,7 +109,6 @@ export async function NavHeader({
             margin: 0;
             padding: 0.5rem;
             border: 1px solid #ddd;
-            border-left: 1px solid #ddd;
             background: #fff;
             min-width: 10rem;
           }
@@ -151,22 +122,16 @@ export async function NavHeader({
         }
       `}</style>
       <div className="dkit-nav-header__inner">
-        <a href={homeHref} className="dkit-nav-header__brand">
-          {logo ? <img src={logo} alt="" /> : null}
-          <span>{title}</span>
-        </a>
-        <nav className="dkit-nav-header__desktop" aria-label="Primary">
+        <div className="dkit-nav-header__desktop">
           <ItemList items={items} />
-        </nav>
+        </div>
         <details className="dkit-nav-header__mobile">
           <summary>Menu</summary>
           <div className="dkit-nav-header__panel">
-            <nav aria-label="Primary">
-              <ItemList items={items} />
-            </nav>
+            <ItemList items={items} />
           </div>
         </details>
       </div>
-    </header>
+    </nav>
   );
 }

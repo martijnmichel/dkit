@@ -1,0 +1,13 @@
+{
+  "type": "dkit:block",
+  "id": "site-brand",
+  "title": "Site brand",
+  "description": "Logo, site name, and tagline from settings — compose into header/footer layouts",
+  "version": "0.1.0",
+  "frameworks": ["next"],
+  "uiKits": ["shadcn", "minimal"],
+  "slot": "brand",
+  "registryDependencies": ["settings"],
+  "dependencies": ["@directus/sdk"],
+  "layers": ["ui"]
+}

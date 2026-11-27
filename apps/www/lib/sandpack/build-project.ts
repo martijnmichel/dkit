@@ -15,6 +15,7 @@ import {
   buildConfigMockSource,
   buildContactMockSource,
   buildPageBuilderMockSource,
+  buildNavigationMockSource,
   buildPagesMockSource,
   buildSettingsMockSource,
 } from "@/lib/sandpack/mocks";
@@ -89,6 +90,19 @@ const BLOCK_META: Record<
     exportName: "PageRenderer",
     props: { slug: '"sample"' },
   },
+  "site-logo": {
+    module: "settings",
+    uiKits: ["shadcn", "minimal"],
+    nextFile: "site-logo.tsx",
+    exportName: "SiteLogo",
+    props: { homeHref: '"/"' },
+  },
+  "site-brand": {
+    module: "settings",
+    uiKits: ["shadcn", "minimal"],
+    nextFile: "site-brand.tsx",
+    exportName: "SiteBrand",
+  },
   "social-links": {
     module: "settings",
     uiKits: ["shadcn", "minimal"],
@@ -101,6 +115,18 @@ const BLOCK_META: Record<
     nextFile: "maintenance-gate.tsx",
     exportName: "MaintenanceGate",
     props: { active: "true" },
+  },
+  "nav-header": {
+    module: "navigation",
+    uiKits: ["shadcn", "minimal"],
+    nextFile: "nav-header.tsx",
+    exportName: "NavHeader",
+  },
+  "nav-footer": {
+    module: "navigation",
+    uiKits: ["shadcn", "minimal"],
+    nextFile: "nav-footer.tsx",
+    exportName: "NavFooter",
   },
 };
 
@@ -149,6 +175,9 @@ function sharedLibFiles(
   }
   if (moduleId === "settings") {
     files[`${prefix}/dkit/settings.ts`] = buildSettingsMockSource();
+  }
+  if (moduleId === "navigation") {
+    files[`${prefix}/dkit/navigation.ts`] = buildNavigationMockSource();
   }
   return files;
 }
@@ -258,9 +287,32 @@ export default function App() {
 </html>
 `);
 
+  /** Sibling files in the same ui dir (e.g. nav-header-client.tsx). */
+  const siblingFiles: SandpackFiles = {};
+  const uiDir = path.join(
+    registryRoot(),
+    "blocks",
+    blockId,
+    "ui",
+    kit,
+    "next",
+  );
+  if (fs.existsSync(uiDir)) {
+    for (const name of fs.readdirSync(uiDir)) {
+      if (name === meta.nextFile) continue;
+      if (!/\.(tsx?|jsx?)$/.test(name)) continue;
+      const abs = path.join(uiDir, name);
+      if (!fs.statSync(abs).isFile()) continue;
+      siblingFiles[`/components/${name}`] = rewriteImports(
+        fs.readFileSync(abs, "utf8"),
+      );
+    }
+  }
+
   return {
     ...sharedLibFiles(meta.module, "/lib"),
     ...sandpackUiKitFiles(kit, "next"),
+    ...siblingFiles,
     "/components/Block.tsx": component,
     "/App.tsx": isClientOnly ? appClient : appAsync,
     "/styles.css": isMinimal

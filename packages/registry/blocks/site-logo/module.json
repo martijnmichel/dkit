@@ -1,0 +1,13 @@
+{
+  "type": "dkit:block",
+  "id": "site-logo",
+  "title": "Site logo",
+  "description": "Renders the settings logo image only — optional link wrap",
+  "version": "0.1.0",
+  "frameworks": ["next"],
+  "uiKits": ["shadcn", "minimal"],
+  "slot": "logo",
+  "registryDependencies": ["settings"],
+  "dependencies": ["@directus/sdk"],
+  "layers": ["ui"]
+}

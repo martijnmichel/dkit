@@ -140,7 +140,31 @@
       "description": "Site brand and config singleton — name, logo, contact, socials, feature flags",
       "version": "0.1.0",
       "path": "modules/settings",
-      "defaultBlocks": ["social-links", "maintenance-gate"]
+      "defaultBlocks": ["site-logo", "site-brand", "social-links", "maintenance-gate"]
+    },
+    {
+      "id": "site-logo",
+      "type": "dkit:block",
+      "title": "Site logo",
+      "description": "Renders the settings logo image only — optional link wrap",
+      "version": "0.1.0",
+      "path": "blocks/site-logo",
+      "registryDependencies": ["settings"],
+      "slot": "logo",
+      "frameworks": ["next"],
+      "uiKits": ["shadcn", "minimal"]
+    },
+    {
+      "id": "site-brand",
+      "type": "dkit:block",
+      "title": "Site brand",
+      "description": "Logo, site name, and tagline from settings — compose into header/footer layouts",
+      "version": "0.1.0",
+      "path": "blocks/site-brand",
+      "registryDependencies": ["settings"],
+      "slot": "brand",
+      "frameworks": ["next"],
+      "uiKits": ["shadcn", "minimal"]
     },
     {
       "id": "social-links",
@@ -189,7 +213,7 @@
       "id": "nav-header",
       "type": "dkit:block",
       "title": "Nav header",
-      "description": "Site header with primary menu — logo soft-links settings when installed",
+      "description": "Primary menu nav (desktop + mobile) — no brand; compose with site-brand yourself",
       "version": "0.1.0",
       "path": "blocks/nav-header",
       "registryDependencies": ["navigation"],
@@ -201,7 +225,7 @@
       "id": "nav-footer",
       "type": "dkit:block",
       "title": "Nav footer",
-      "description": "Site footer with footer menu — brand/contact soft-links settings when installed",
+      "description": "Footer menu link row — no brand/socials; compose with site-brand / social-links yourself",
       "version": "0.1.0",
       "path": "blocks/nav-footer",
       "registryDependencies": ["navigation"],

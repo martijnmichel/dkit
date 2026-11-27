@@ -106,33 +106,13 @@ function MobileTree({ items }: { items: NavItem[] }) {
   );
 }
 
-export function NavHeaderClient({
-  items,
-  brandName,
-  logoUrl,
-  homeHref = "/",
-}: {
-  items: NavItem[];
-  brandName?: string;
-  logoUrl?: string | null;
-  homeHref?: string;
-}) {
-  const title = brandName?.trim() || "Home";
-
+export function NavHeaderClient({ items }: { items: NavItem[] }) {
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 px-4 sm:px-6">
-        <a
-          href={homeHref}
-          className="flex min-w-0 items-center gap-2 font-semibold tracking-tight text-foreground"
-        >
-          {logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={logoUrl} alt="" className="h-7 w-auto" />
-          ) : null}
-          <span className="truncate">{title}</span>
-        </a>
-
+    <nav
+      aria-label="Primary"
+      className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80"
+    >
+      <div className="mx-auto flex h-14 max-w-5xl items-center justify-end gap-4 px-4 sm:px-6">
         <NavigationMenu className="hidden md:flex">
           <NavigationMenuList>
             {items.map((item) => (
@@ -150,15 +130,15 @@ export function NavHeaderClient({
             </SheetTrigger>
             <SheetContent side="right" className="w-72 sm:max-w-sm">
               <SheetHeader>
-                <SheetTitle>{title}</SheetTitle>
+                <SheetTitle>Menu</SheetTitle>
               </SheetHeader>
-              <nav className="mt-6">
+              <div className="mt-6">
                 <MobileTree items={items} />
-              </nav>
+              </div>
             </SheetContent>
           </Sheet>
         </div>
       </div>
-    </header>
+    </nav>
   );
 }

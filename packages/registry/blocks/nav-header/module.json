@@ -2,7 +2,7 @@
   "type": "dkit:block",
   "id": "nav-header",
   "title": "Nav header",
-  "description": "Site header with primary menu — logo soft-links settings when installed",
+  "description": "Primary menu nav (desktop + mobile) — no brand; compose with site-brand yourself",
   "version": "0.1.0",
   "frameworks": ["next"],
   "uiKits": ["shadcn", "minimal"],

@@ -325,6 +325,88 @@ export function getPageBuilderPageById(id: string) {
 `;
 }
 
+export function buildNavigationMockSource(): string {
+  const seed = loadModuleSeed("navigation");
+  const json = JSON.stringify(seed ?? { items: {} });
+
+  return `const SEED = ${json} as const;
+
+function parentId(item: any): string | null {
+  if (!item.parent) return null;
+  if (typeof item.parent === "string") return item.parent;
+  return item.parent.id ?? null;
+}
+
+function sortItems(a: any, b: any) {
+  return (a.sort ?? 0) - (b.sort ?? 0);
+}
+
+export function buildNavTree(items: any[]) {
+  const byId = new Map<string, any>();
+  for (const item of items) byId.set(item.id, { ...item, children: [] });
+  const roots: any[] = [];
+  for (const item of byId.values()) {
+    const pid = parentId(item);
+    if (pid && byId.has(pid)) byId.get(pid).children.push(item);
+    else roots.push(item);
+  }
+  for (const node of byId.values()) node.children?.sort(sortItems);
+  return roots.sort(sortItems);
+}
+
+export function isExternalHref(href: string) {
+  return /^https?:\\/\\//i.test(href) || href.startsWith("//");
+}
+
+export function navLinkProps(item: { href: string; open_in_new_tab?: boolean | null }) {
+  const external = isExternalHref(item.href) || Boolean(item.open_in_new_tab);
+  return {
+    href: item.href,
+    ...(external ? { target: "_blank" as const, rel: "noopener noreferrer" } : {}),
+  };
+}
+
+export function getNavMenus(options: { status?: string | null } = {}) {
+  const status = options.status === null ? null : (options.status ?? "published");
+  let rows = [...(SEED.items?.nav_menus ?? [])];
+  if (status !== null) rows = rows.filter((r: any) => r.status === status);
+  return rows;
+}
+
+export function getNavMenuById(id: string) {
+  return (SEED.items?.nav_menus ?? []).find((m: any) => m.id === id) ?? null;
+}
+
+export function getNavMenuByKey(key: string, options: { status?: string | null } = {}) {
+  const status = options.status === null ? null : (options.status ?? "published");
+  let menus = [...(SEED.items?.nav_menus ?? [])].filter((m: any) => m.key === key);
+  if (status !== null) menus = menus.filter((m: any) => m.status === status);
+  const menu = menus[0];
+  if (!menu) return null;
+  let items = [...(SEED.items?.nav_items ?? [])].filter((i: any) => i.menu === menu.id);
+  if (status !== null) items = items.filter((i: any) => i.status === status);
+  return { id: menu.id, key: menu.key, name: menu.name, items: buildNavTree(items) };
+}
+
+export function getNavItems(key: string, options: { status?: string | null; tree?: boolean } = {}) {
+  const tree = getNavMenuByKey(key, { status: options.status });
+  if (!tree) return [];
+  if (options.tree === false) {
+    const flat: any[] = [];
+    const walk = (nodes: any[]) => {
+      for (const n of nodes) {
+        flat.push(n);
+        if (n.children?.length) walk(n.children);
+      }
+    };
+    walk(tree.items);
+    return flat;
+  }
+  return tree.items;
+}
+`;
+}
+
 export function buildConfigMockSource(): string {
   return `export const collections = {
   block_hero: "block_hero",
