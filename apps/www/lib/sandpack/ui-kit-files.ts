@@ -3,6 +3,7 @@ import path from "node:path";
 import { registryRoot } from "@/lib/registry";
 import type { PreviewFramework, PreviewUiKit } from "@/lib/preview-prefs";
 
+/** Real installed shadcn (base-nova) from the Next example app. */
 const NEXT_UI_FILES = [
   "button.tsx",
   "input.tsx",
@@ -11,6 +12,8 @@ const NEXT_UI_FILES = [
   "badge.tsx",
   "card.tsx",
   "navigation-menu.tsx",
+  "popover.tsx",
+  "sheet.tsx",
 ] as const;
 
 /** shadcn-vue folders under ui-kits/shadcn/nuxt (from shadcn-vue registry). */
@@ -27,6 +30,46 @@ function stripUseClient(source: string): string {
   return source.replace(/^["']use client["'];?\s*/m, "");
 }
 
+/** example-next uses `import { cn } from "cn"` — Sandpack resolves via `@/lib/utils`. */
+function rewriteCnImport(source: string): string {
+  return source.replace(
+    /from\s+["']cn["']/g,
+    'from "@/lib/utils"',
+  );
+}
+
+function prepareNextUiSource(source: string): string {
+  return rewriteCnImport(stripUseClient(source));
+}
+
+function monorepoRoot(): string {
+  // apps/www → repo root (cwd when Next runs is apps/www)
+  return path.resolve(process.cwd(), "../..");
+}
+
+function exampleNextUiDir(): string {
+  return path.join(monorepoRoot(), "examples/next/components/ui");
+}
+
+function exampleNextUtils(): string | null {
+  const abs = path.join(monorepoRoot(), "examples/next/lib/utils.ts");
+  if (fs.existsSync(abs)) {
+    const raw = fs.readFileSync(abs, "utf8");
+    // example re-exports from "cn" — Sandpack needs the real helper
+    if (/from\s+["']cn["']/.test(raw)) {
+      return `import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+`;
+    }
+    return stripUseClient(raw);
+  }
+  return null;
+}
+
 function kitDir(kit: PreviewUiKit, framework: PreviewFramework): string {
   return path.join(
     registryRoot(),
@@ -34,16 +77,6 @@ function kitDir(kit: PreviewUiKit, framework: PreviewFramework): string {
     kit,
     framework === "nuxt" ? "nuxt" : "next",
   );
-}
-
-function readKitFile(
-  kit: PreviewUiKit,
-  framework: PreviewFramework,
-  fileName: string,
-): string | null {
-  const abs = path.join(kitDir(kit, framework), fileName);
-  if (!fs.existsSync(abs)) return null;
-  return fs.readFileSync(abs, "utf8");
 }
 
 function walkFiles(dir: string, base = ""): Array<{ rel: string; abs: string }> {
@@ -62,11 +95,11 @@ function walkFiles(dir: string, base = ""): Array<{ rel: string; abs: string }> 
 }
 
 /**
- * Inject registry ui-kits/{kit}/{framework} sources into Sandpack so block
- * imports of `@/components/ui/*` resolve. Server-only (node:fs) — call from
- * build-project, never from client components.
+ * Inject real shadcn sources into Sandpack so `@/components/ui/*` resolves.
+ * Next: `examples/next/components/ui` (installed base-nova).
+ * Nuxt: registry ui-kits stubs until a Nuxt example ships real components.
  *
- * Preview-only: consumers still get real kit pieces via `shadcn` / `shadcn-vue`.
+ * Server-only (node:fs) — call from build-project, never from client components.
  */
 export function sandpackUiKitFiles(
   kit: PreviewUiKit,
@@ -75,10 +108,12 @@ export function sandpackUiKitFiles(
   if (kit !== "shadcn") return {};
 
   const files: Record<string, string> = {};
-  const utils = readKitFile(kit, framework, "utils.ts");
 
   if (framework === "nuxt") {
-    if (utils) files["/src/lib/utils.ts"] = utils;
+    const utils = path.join(kitDir(kit, framework), "utils.ts");
+    if (fs.existsSync(utils)) {
+      files["/src/lib/utils.ts"] = fs.readFileSync(utils, "utf8");
+    }
     const root = kitDir(kit, framework);
     for (const dir of NUXT_UI_DIRS) {
       for (const { rel, abs } of walkFiles(path.join(root, dir), dir)) {
@@ -88,11 +123,16 @@ export function sandpackUiKitFiles(
     return files;
   }
 
-  if (utils) files["/lib/utils.ts"] = stripUseClient(utils);
+  const utils = exampleNextUtils();
+  if (utils) files["/lib/utils.ts"] = utils;
+
+  const uiDir = exampleNextUiDir();
   for (const name of NEXT_UI_FILES) {
-    const source = readKitFile(kit, framework, name);
-    if (!source) continue;
-    files[`/components/ui/${name}`] = stripUseClient(source);
+    const abs = path.join(uiDir, name);
+    if (!fs.existsSync(abs)) continue;
+    files[`/components/ui/${name}`] = prepareNextUiSource(
+      fs.readFileSync(abs, "utf8"),
+    );
   }
   return files;
 }

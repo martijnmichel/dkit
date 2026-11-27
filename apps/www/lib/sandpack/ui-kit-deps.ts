@@ -1,10 +1,10 @@
-/** npm deps required by registry ui-kits/shadcn/next inside Sandpack. */
+/** npm deps for real example-next shadcn (base-nova / Base UI) inside Sandpack. */
 export const SANDPACK_SHADCN_DEPENDENCIES: Record<string, string> = {
+  "@base-ui/react": "^1.9.0",
   "class-variance-authority": "^0.7.1",
   clsx: "^2.1.1",
   "tailwind-merge": "^3.7.1",
   "lucide-react": "^0.511.0",
-  "radix-ui": "^1.8.1",
 };
 
 /**

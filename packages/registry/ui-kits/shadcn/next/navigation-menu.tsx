@@ -8,7 +8,10 @@ export function NavigationMenu({
   ...props
 }: React.ComponentProps<"nav">) {
   return (
-    <nav className={cn("relative flex max-w-max flex-1 items-center", className)} {...props}>
+    <nav
+      className={cn("relative flex max-w-max flex-1 items-center", className)}
+      {...props}
+    >
       {children}
     </nav>
   );
@@ -20,7 +23,10 @@ export function NavigationMenuList({
   ...props
 }: React.ComponentProps<"ul">) {
   return (
-    <ul className={cn("flex flex-1 list-none items-center gap-1", className)} {...props}>
+    <ul
+      className={cn("flex flex-1 list-none items-center gap-1", className)}
+      {...props}
+    >
       {children}
     </ul>
   );
@@ -32,7 +38,7 @@ export function NavigationMenuItem({
   ...props
 }: React.ComponentProps<"li">) {
   return (
-    <li className={cn("relative", className)} {...props}>
+    <li className={cn("group/nav-item relative", className)} {...props}>
       {children}
     </li>
   );
@@ -65,7 +71,7 @@ export function NavigationMenuContent({
   return (
     <div
       className={cn(
-        "absolute top-full left-0 z-50 mt-1 min-w-48 rounded-md border border-border bg-popover p-2 text-popover-foreground shadow-md",
+        "absolute top-full left-0 z-50 mt-1 hidden min-w-48 rounded-md border border-border bg-popover p-2 text-popover-foreground shadow-md group-hover/nav-item:block group-focus-within/nav-item:block",
         className,
       )}
       {...props}
@@ -97,5 +103,7 @@ export function NavigationMenuViewport({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  return <div className={cn("absolute left-0 top-full flex", className)} {...props} />;
+  return (
+    <div className={cn("absolute top-full left-0 flex", className)} {...props} />
+  );
 }

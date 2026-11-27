@@ -1,10 +1,20 @@
 {
+  "files": [
+    {
+      "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0010",
+      "filename_download": "dkit-logo.svg",
+      "title": "dkit logo",
+      "type": "image/svg+xml",
+      "path": "assets/dkit-logo.svg"
+    }
+  ],
   "items": {
     "site_settings": [
       {
         "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
         "site_name": "Example Site",
         "tagline": "Sample brand from the settings module — replace in Directus.",
+        "logo": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0010",
         "contact_email": "hello@example.com",
         "social_links": [
           { "platform": "github", "href": "https://github.com" },

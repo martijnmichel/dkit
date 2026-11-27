@@ -233,7 +233,35 @@ function buildNextProject(
       ? `{ ${propsObj ? `${propsObj}, ` : ""}children: <p style={{ opacity: 0.5 }}>App content stays hidden while maintenance is on.</p> }`
       : `{ ${propsObj} }`;
 
-  const appAsync = `import { useEffect, useState, type ReactNode } from "react";
+  /** Sticky topbar shell so absolute mobile panel anchors like a real layout. */
+  const navHeaderShell = blockId === "nav-header";
+
+  const appAsync = navHeaderShell
+    ? `import { useEffect, useState, type ReactNode } from "react";
+import { ${meta.exportName} } from "./components/Block";
+import "./styles.css";
+
+export default function App() {
+  const [ui, setUi] = useState<ReactNode>(null);
+  useEffect(() => {
+    void Promise.resolve(${meta.exportName}(${invokeProps} as any)).then(setUi);
+  }, []);
+  return (
+    <div className="min-h-[28rem]">
+      <header className="sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur-md">
+        <div className="flex items-center justify-between gap-4 px-4 py-3 sm:px-6">
+          <span className="shrink-0 text-sm font-semibold tracking-tight">Brand</span>
+          <div className="min-w-0 flex-1">{ui}</div>
+        </div>
+      </header>
+      <main className="px-4 py-8 text-sm text-muted-foreground sm:px-6">
+        Page content sits under the topbar. Resize the preview narrower to use the hamburger.
+      </main>
+    </div>
+  );
+}
+`
+    : `import { useEffect, useState, type ReactNode } from "react";
 import { ${meta.exportName} } from "./components/Block";
 import "./styles.css";
 
