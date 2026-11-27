@@ -26,7 +26,11 @@ import {
   resolveInstallPlan,
   type LoadedBlock,
 } from "../lib/registry.js";
-import { parseTemplateFlag } from "../lib/templates.js";
+import {
+  listModuleUiOptions,
+  mergeBlockIds,
+  parseTemplateFlag,
+} from "../lib/templates.js";
 import {
   normalizeBasePath,
   routeConflictPaths,
@@ -59,13 +63,18 @@ function cancelIf<T>(value: T | symbol): asserts value is T {
 
 export function addCommand(): Command {
   return new Command("add")
-    .description("Add a module and/or UI blocks from the registry")
-    .argument("<id>", "module or block id (e.g. blog, blog-list-cards)")
+    .description(
+      "Add a module and/or a single UI component from the registry",
+    )
+    .argument(
+      "<id>",
+      "module or component id (e.g. blog, blog-list-cards)",
+    )
     .option("--schema-only", "Apply Directus layers only (no UI)")
     .option("--ui-only", "Copy UI only (skip schema if possible)")
     .option(
       "--with <blocks>",
-      "Comma-separated block ids (overrides default templates)",
+      "Comma-separated component ids (skips interactive select)",
     )
     .option(
       "--template <slots>",
@@ -128,10 +137,53 @@ export function addCommand(): Command {
         });
 
         const { index, root } = await loadRegistryIndex(config.registry);
-        const withBlocks = opts.with
+        const registryEntry = index.items.find((i) => i.id === id);
+        if (!registryEntry) {
+          p.cancel(
+            `Unknown registry item "${id}". Run \`dkit list\` to see modules and components.`,
+          );
+          process.exit(1);
+        }
+        const primaryIsBlock = registryEntry.type === "dkit:block";
+
+        let withBlocks = opts.with
           ? opts.with.split(",").map((s) => s.trim()).filter(Boolean)
           : undefined;
         const templateOverrides = parseTemplateFlag(opts.template);
+        const hasTemplateOverrides = Object.keys(templateOverrides).length > 0;
+
+        // Interactive module install: pick components (defaults pre-selected)
+        if (
+          !primaryIsBlock &&
+          !opts.schemaOnly &&
+          !opts.yes &&
+          withBlocks === undefined &&
+          !hasTemplateOverrides
+        ) {
+          const uiOptions = listModuleUiOptions(id, index, root);
+          if (uiOptions.length) {
+            const selected = await p.multiselect({
+              message: `UI components for "${id}"`,
+              options: uiOptions.map((o) => ({
+                value: o.id,
+                label: o.slot ? `${o.id}  [${o.slot}]` : o.id,
+                hint: o.isDefault
+                  ? o.description
+                    ? `default · ${o.description}`
+                    : "default"
+                  : o.description || undefined,
+              })),
+              initialValues: uiOptions
+                .filter((o) => o.isDefault)
+                .map((o) => o.id),
+              required: false,
+            });
+            cancelIf(selected);
+            withBlocks = selected as string[];
+          } else {
+            withBlocks = [];
+          }
+        }
 
         const plan = resolveInstallPlan(id, index, root, {
           schemaOnly: opts.schemaOnly,
@@ -141,7 +193,7 @@ export function addCommand(): Command {
         });
 
         p.log.info(
-          `Plan: modules [${plan.modules.join(", ") || "—"}] · blocks [${plan.blocks.join(", ") || "—"}] · framework ${framework} · ui kit ${config.uiAdapter}`,
+          `Plan: modules [${plan.modules.join(", ") || "—"}] · components [${plan.blocks.join(", ") || "—"}] · framework ${framework} · ui kit ${config.uiAdapter}`,
         );
 
         // —— Collection prefix (always ask unless --yes) ——
@@ -193,6 +245,17 @@ export function addCommand(): Command {
               loaded.item.manifest.defaultBasePath ??
               config.modules?.[moduleId]?.basePath;
             if (!defaultPath) continue;
+
+            // Component-only add on an already-installed module: keep its path
+            const existingBase = config.modules?.[moduleId]?.basePath;
+            if (
+              primaryIsBlock &&
+              existingBase &&
+              !opts.path
+            ) {
+              moduleBasePaths[moduleId] = normalizeBasePath(existingBase);
+              continue;
+            }
 
             const preferred = normalizeBasePath(
               opts.path ??
@@ -263,7 +326,15 @@ export function addCommand(): Command {
                 [moduleId]: {
                   ...config.modules?.[moduleId],
                   basePath,
-                  blocks: plan.blocks,
+                  blocks: mergeBlockIds(
+                    config.modules?.[moduleId]?.blocks,
+                    plan.blocks.filter((b) => {
+                      const be = index.items.find((i) => i.id === b);
+                      return (be?.registryDependencies ?? []).includes(
+                        moduleId,
+                      );
+                    }),
+                  ),
                 },
               },
             };
@@ -341,7 +412,14 @@ export function addCommand(): Command {
         }
 
         const { url, token } = getDirectusCreds(projectRoot);
-        const needsDirectus = plan.modules.length > 0 && !opts.uiOnly;
+        const modulesNeedingSchema = plan.modules.filter((moduleId) => {
+          if (opts.uiOnly) return false;
+          if (primaryIsBlock && existingConfig?.modules?.[moduleId]) {
+            return false;
+          }
+          return true;
+        });
+        const needsDirectus = modulesNeedingSchema.length > 0;
 
         if (needsDirectus) {
           if (!url || !token) {
@@ -368,7 +446,21 @@ export function addCommand(): Command {
           const mod = loaded.item;
           for (const c of mod.manifest.collections) allLogicalCollections.add(c);
 
-          if (!opts.uiOnly && client && url) {
+          const alreadyInstalled = Boolean(
+            existingConfig?.modules?.[moduleId],
+          );
+          // One-off component add: install module schema only when missing
+          const skipSchema =
+            opts.uiOnly ||
+            (primaryIsBlock && alreadyInstalled);
+
+          if (skipSchema && primaryIsBlock && alreadyInstalled) {
+            p.log.step(
+              `Module "${moduleId}" already installed — skipping schema`,
+            );
+          }
+
+          if (!skipSchema && client && url) {
             let snapshot = mod.snapshot as ModulePayload["snapshot"];
             let access = mod.access as ModulePayload["access"];
             let flows = mod.flows as ModulePayload["flows"];
@@ -477,6 +569,40 @@ export function addCommand(): Command {
           }
         }
 
+        // Record / merge installed components on each affected module
+        if (!opts.schemaOnly && plan.blocks.length) {
+          const touchedModules = new Set<string>([
+            ...plan.modules,
+            ...(await modulesNeedingPathFromBlocks(plan.blocks, index, root)),
+          ]);
+          for (const blockId of plan.blocks) {
+            const be = index.items.find((i) => i.id === blockId);
+            for (const dep of be?.registryDependencies ?? []) {
+              const d = index.items.find((i) => i.id === dep);
+              if (d?.type === "dkit:module") touchedModules.add(dep);
+            }
+          }
+          for (const moduleId of touchedModules) {
+            const forModule = plan.blocks.filter((b) => {
+              const be = index.items.find((i) => i.id === b);
+              return (be?.registryDependencies ?? []).includes(moduleId);
+            });
+            config = {
+              ...config,
+              modules: {
+                ...config.modules,
+                [moduleId]: {
+                  ...config.modules?.[moduleId],
+                  blocks: mergeBlockIds(
+                    config.modules?.[moduleId]?.blocks,
+                    forModule,
+                  ),
+                },
+              },
+            };
+          }
+        }
+
         // Static entry re-exports so app routes don't dynamic-import optional templates
         if (!opts.dryRun && !opts.schemaOnly && installedBlocks.length) {
           const moduleIds = new Set<string>([
@@ -490,20 +616,42 @@ export function addCommand(): Command {
             }
           }
           for (const moduleId of moduleIds) {
-            const forModule = installedBlocks.filter((b) =>
-              (b.manifest.registryDependencies ?? []).includes(moduleId),
-            );
-            if (!forModule.length) continue;
+            const recorded = config.modules?.[moduleId]?.blocks ?? [];
+            const barrelBlocks: LoadedBlock[] = [];
+            const seen = new Set<string>();
+            for (const blockId of recorded) {
+              if (seen.has(blockId)) continue;
+              seen.add(blockId);
+              const fromPending = installedBlocks.find(
+                (b) => b.manifest.id === blockId,
+              );
+              if (fromPending) {
+                barrelBlocks.push(fromPending);
+                continue;
+              }
+              try {
+                const loaded = await loadItem(
+                  blockId,
+                  config.registry,
+                  framework,
+                  config.uiAdapter,
+                );
+                if (loaded.kind === "block") barrelBlocks.push(loaded.item);
+              } catch {
+                // Previously recorded id no longer in registry — skip
+              }
+            }
+            if (!barrelBlocks.length) continue;
             const entry = writeModuleUiEntry(
               projectRoot,
               config,
               moduleId,
-              forModule,
+              barrelBlocks,
             );
             p.log.step(`wrote ${entry}`);
 
             const slots = new Set(
-              forModule.map((b) => b.manifest.slot).filter(Boolean),
+              barrelBlocks.map((b) => b.manifest.slot).filter(Boolean),
             );
             const basePath =
               moduleBasePaths[moduleId] ??

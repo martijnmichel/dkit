@@ -75,12 +75,35 @@ export default async function ModulePage({
           <section id="install" className="scroll-mt-24">
             <pre className="code mt-8">{`npx @kurbo/dkit add ${id}`}</pre>
             <p className="mt-3 text-[0.9375rem] text-muted-foreground">
-              Schema only:{" "}
+              Interactive install multi-selects UI components (defaults
+              pre-selected). Schema only:{" "}
               <code>npx @kurbo/dkit add {id} --schema-only</code>
               {" · "}
               With sample data:{" "}
               <code>npx @kurbo/dkit add {id} --seed</code>
             </p>
+            {blocks.length > 0 ? (
+              <div className="mt-6 space-y-2">
+                <p className="text-[0.9375rem] text-muted-foreground">
+                  Or install one component (module schema only if not already
+                  installed):
+                </p>
+                <ul className="space-y-1.5 text-[0.9375rem]">
+                  {blocks.map((b) => (
+                    <li key={b.id}>
+                      <code className="font-mono text-sm">
+                        npx @kurbo/dkit add {b.id}
+                      </code>
+                      {b.slot ? (
+                        <span className="ml-2 text-muted-foreground">
+                          [{b.slot}]
+                        </span>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
           </section>
 
           <div className="mt-16">

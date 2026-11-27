@@ -74,6 +74,7 @@ export function getModule(id: string) {
       withSeed: `npx @kurbo/dkit add ${manifest.id} --seed`,
       schemaOnly: `npx @kurbo/dkit add ${manifest.id} --schema-only`,
       dryRun: `npx @kurbo/dkit add ${manifest.id} --dry-run`,
+      note: "Interactive add multi-selects UI components. Pass a block id (e.g. blog-list-cards) to install one component; module schema applies only if missing.",
     },
   });
 }

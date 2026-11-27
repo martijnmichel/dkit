@@ -1,5 +1,6 @@
 import { Analytics } from "@/components/analytics";
 import { SiteFooter, SiteHeader } from "@/components/site-header";
+import { CRYPTO_SUBTLE_BOOT_SCRIPT } from "@/lib/crypto-subtle-boot";
 import { THEME_BOOT_SCRIPT } from "@/lib/theme";
 import type { Metadata } from "next";
 import { JetBrains_Mono, Source_Sans_3 } from "next/font/google";
@@ -37,6 +38,9 @@ export default function RootLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
+        <script
+          dangerouslySetInnerHTML={{ __html: CRYPTO_SUBTLE_BOOT_SCRIPT }}
+        />
       </head>
       <body className="bg-background font-sans text-foreground antialiased">
         <SiteHeader />

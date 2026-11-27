@@ -26,27 +26,37 @@ dkit init --yes --url … --token … --ui shadcn`}</pre>
         <p>
           Applies schema and access, installs TypeScript services as{" "}
           <code className="font-mono">lib/dkit/&lt;module&gt;.ts</code>, and
-          copies UI blocks. Optional Directus flows apply automatically; sample
-          seed only with <code className="font-mono">--seed</code>. Template
-          slots pick <em>component variants</em> (e.g. list cards); UI kit comes
-          from <code className="font-mono">uiAdapter</code>.
+          copies selected UI components. Pass a <em>module</em> id or a single{" "}
+          <em>component</em> id. Optional Directus flows apply automatically;
+          sample seed only with <code className="font-mono">--seed</code>. UI
+          kit comes from <code className="font-mono">uiAdapter</code>.
         </p>
-        <pre className="code">{`dkit add blog
+        <pre className="code">{`# Module — interactive multi-select (defaults pre-selected)
+dkit add blog
 dkit add blog --seed
-dkit add blog --template list=blog-list-cards
+
+# One component — installs the module first if needed
+dkit add blog-list-cards
+dkit add blog-detail
+
+# Non-interactive picks
 dkit add blog --with blog-list-cards,blog-detail
+dkit add blog --template list=blog-list-cards
+dkit add blog --yes --path /blog --prefix dkit_
+
 dkit add blog --framework nuxt
 dkit add blog --schema-only
-dkit add blog --dry-run
-dkit add blog --yes --path /blog --prefix dkit_`}</pre>
+dkit add blog --dry-run`}</pre>
         <p>
-          Interactive mode always asks for collection prefix and module base
-          path when the module declares one.
+          Interactive module installs ask which components to copy (defaults
+          checked), then collection prefix and base path when the module
+          declares one. <code className="font-mono">--yes</code> skips prompts
+          and installs the default components.
         </p>
       </DocsSection>
 
       <DocsSection id="list" title="dkit list">
-        <p>Prints registry modules, slots, and blocks.</p>
+        <p>Prints registry modules, slots, and components.</p>
         <pre className="code">{`dkit list`}</pre>
       </DocsSection>
 

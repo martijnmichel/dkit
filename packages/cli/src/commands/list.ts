@@ -51,7 +51,7 @@ export function listCommand(): Command {
         }
       }
 
-      console.log(pc.cyan("\nBlocks / templates"));
+      console.log(pc.cyan("\nComponents / templates"));
       for (const b of blocks) {
         const slot = b.slot ? pc.dim(` [${b.slot}]`) : "";
         console.log(
@@ -60,12 +60,17 @@ export function listCommand(): Command {
       }
       console.log(
         pc.dim(
-          "\nOverride: dkit add blog --template list=blog-list-cards",
+          "\nModule:     dkit add blog          (interactive component select)",
         ),
       );
       console.log(
         pc.dim(
-          "UI kit from dkit.json uiAdapter (shadcn|minimal). Or: dkit add blog --with blog-list-cards,blog-detail\n",
+          "Component:  dkit add blog-list-cards  (installs module if needed)",
+        ),
+      );
+      console.log(
+        pc.dim(
+          "Flags:      --with a,b  ·  --template list=blog-list-cards  ·  --yes uses defaults\n",
         ),
       );
     });

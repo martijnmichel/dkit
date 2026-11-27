@@ -10,6 +10,7 @@ export type RegistryItem = {
   path: string;
   defaultBlocks?: string[];
   registryDependencies?: string[];
+  slot?: string;
 };
 
 export type RegistryIndex = {
