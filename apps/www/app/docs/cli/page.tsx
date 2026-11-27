@@ -1,10 +1,40 @@
 import { DocsPage, DocsSection } from "@/components/docs-page";
+import { JsonLd } from "@/components/json-ld";
+import {
+  breadcrumbJsonLd,
+  pageMetadata,
+  webPageJsonLd,
+} from "@/lib/seo";
+import { List, Plus, Stethoscope, Terminal } from "lucide-react";
+
+const TITLE = "CLI reference";
+const DESCRIPTION =
+  "Commander flags plus interactive prompts. Use --yes for non-interactive CI.";
+const PATH = "/docs/cli/";
+
+export const metadata = pageMetadata({
+  title: TITLE,
+  description: DESCRIPTION,
+  path: PATH,
+});
 
 export default function CliPage() {
   return (
-    <DocsPage
-      title="CLI reference"
-      description="Commander flags plus interactive prompts. Use --yes for non-interactive CI."
+    <>
+      <JsonLd
+        data={[
+          webPageJsonLd({ title: TITLE, description: DESCRIPTION, path: PATH }),
+          breadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "Docs", path: "/docs/" },
+            { name: TITLE, path: PATH },
+          ]),
+        ]}
+      />
+      <DocsPage
+        title="CLI reference"
+        description={DESCRIPTION}
+        icon={Terminal}
       toc={[
         { id: "init", label: "init" },
         { id: "add", label: "add" },
@@ -12,7 +42,7 @@ export default function CliPage() {
         { id: "doctor", label: "doctor" },
       ]}
     >
-      <DocsSection id="init" title="dkit init">
+      <DocsSection id="init" title="dkit init" icon={Terminal}>
         <p>
           Detects Next/Nuxt (or scaffolds), stores Directus connection and UI
           kit preference in <code className="font-mono">dkit.json</code>.
@@ -22,7 +52,7 @@ dkit init --url http://localhost:8010 --token <token>
 dkit init --yes --url … --token … --ui shadcn`}</pre>
       </DocsSection>
 
-      <DocsSection id="add" title="dkit add">
+      <DocsSection id="add" title="dkit add" icon={Plus}>
         <p>
           Applies schema and access, installs TypeScript services as{" "}
           <code className="font-mono">lib/dkit/&lt;module&gt;.ts</code>, and
@@ -59,12 +89,12 @@ dkit add blog --dry-run`}</pre>
         </p>
       </DocsSection>
 
-      <DocsSection id="list" title="dkit list">
+      <DocsSection id="list" title="dkit list" icon={List}>
         <p>Prints registry modules, slots, and components.</p>
         <pre className="code">{`dkit list`}</pre>
       </DocsSection>
 
-      <DocsSection id="doctor" title="dkit doctor">
+      <DocsSection id="doctor" title="dkit doctor" icon={Stethoscope}>
         <p>
           Checks project config and Directus connectivity before you apply
           modules.
@@ -72,5 +102,6 @@ dkit add blog --dry-run`}</pre>
         <pre className="code">{`dkit doctor`}</pre>
       </DocsSection>
     </DocsPage>
+    </>
   );
 }

@@ -24,34 +24,37 @@ function ModuleBlockCard({ project }: { project: BlockSandpackProject }) {
   }, []);
 
   return (
-    <BlockFrame
-      title={project.blockId}
-      description={project.description}
-      actions={
-        <BlockPreviewActions
+    <div className="flex flex-col gap-6">
+      <pre className="code m-0 text-[0.8125rem]">{`npx @kurbo/dkit add ${project.blockId}`}</pre>
+      <BlockFrame
+        title={project.blockId}
+        description={project.description}
+        actions={
+          <BlockPreviewActions
+            showCode={showCode}
+            onToggleCode={() => setShowCode((v) => !v)}
+            onExpand={() => setExpanded(true)}
+          />
+        }
+        toolbar={
+          <PreviewSelectBar
+            idPrefix={`block-${project.blockId}`}
+            availableFrameworks={project.frameworks}
+            availableUiKits={project.uiKits}
+          />
+        }
+      >
+        <SandpackBlockPreview
+          project={project}
+          framework={prefs.framework}
+          uiKit={prefs.ui}
+          theme={prefs.theme}
           showCode={showCode}
-          onToggleCode={() => setShowCode((v) => !v)}
-          onExpand={() => setExpanded(true)}
+          expanded={expanded}
+          onExpandedChange={onExpandedChange}
         />
-      }
-      toolbar={
-        <PreviewSelectBar
-          idPrefix={`block-${project.blockId}`}
-          availableFrameworks={project.frameworks}
-          availableUiKits={project.uiKits}
-        />
-      }
-    >
-      <SandpackBlockPreview
-        project={project}
-        framework={prefs.framework}
-        uiKit={prefs.ui}
-        theme={prefs.theme}
-        showCode={showCode}
-        expanded={expanded}
-        onExpandedChange={onExpandedChange}
-      />
-    </BlockFrame>
+      </BlockFrame>
+    </div>
   );
 }
 

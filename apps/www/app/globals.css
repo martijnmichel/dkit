@@ -128,6 +128,26 @@ a:hover {
   color: var(--muted-foreground);
 }
 
+/* Directus Data Studio icons (Material Symbols Outlined).
+   Glyph advance widths differ — always pair with a fixed size-* slot
+   (see DirectusIcon) so lists/cards stay aligned. */
+.material-symbols-outlined {
+  font-family: "Material Symbols Outlined", sans-serif;
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "liga";
+  user-select: none;
+  /* Optical centering inside the fixed square */
+  text-align: center;
+}
+
 .code {
   display: block;
   overflow-x: auto;

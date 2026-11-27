@@ -6,6 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import type { RestSchemaDoc } from "@/lib/schema-docs";
+import { Database, GitBranch, Shield } from "lucide-react";
 
 export function SchemaReference({
   schema,
@@ -29,7 +30,8 @@ export function SchemaReference({
   return (
     <div className="space-y-8">
       <section id="schema" className="scroll-mt-24">
-        <h2 className="text-xl font-semibold tracking-tight text-foreground">
+        <h2 className="flex items-center gap-2 text-xl font-semibold tracking-tight text-foreground">
+          <Database className="size-5 text-primary" aria-hidden />
           Schema
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -55,7 +57,10 @@ export function SchemaReference({
       {relations.length > 0 ? (
         <Card>
           <CardHeader className="pb-0">
-            <CardTitle className="text-base">All relations</CardTitle>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <GitBranch className="size-4 text-primary" aria-hidden />
+              All relations
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2 text-sm">
@@ -80,7 +85,10 @@ export function SchemaReference({
 
       <Card id="access" className="scroll-mt-24">
         <CardHeader className="pb-0">
-          <CardTitle className="text-base">Access</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Shield className="size-4 text-primary" aria-hidden />
+            Access
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <ul className="space-y-2 text-sm">
@@ -103,12 +111,6 @@ export function SchemaReference({
           </ul>
         </CardContent>
       </Card>
-
-      <p className="text-sm text-muted-foreground">
-        Requires Directus 11+ (12.2+ recommended). Prefer a staging project
-        before running <code className="font-mono">dkit add</code> against
-        production.
-      </p>
     </div>
   );
 }

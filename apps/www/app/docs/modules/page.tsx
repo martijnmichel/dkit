@@ -1,3 +1,5 @@
+import { DirectusIcon } from "@/components/directus-icon";
+import { JsonLd } from "@/components/json-ld";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -5,14 +7,42 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getRegistry } from "@/lib/registry";
+import { getModuleIcon, getRegistry } from "@/lib/registry";
+import {
+  breadcrumbJsonLd,
+  pageMetadata,
+  webPageJsonLd,
+} from "@/lib/seo";
+
+const TITLE = "Modules";
+const DESCRIPTION =
+  "Browse installable Directus modules — schema, access, services, and UI you own after dkit add.";
+const PATH = "/docs/modules/";
+
+export const metadata = pageMetadata({
+  title: TITLE,
+  description: DESCRIPTION,
+  path: PATH,
+});
 
 export default function ModulesPage() {
   const registry = getRegistry();
-  const modules = registry.items.filter((i) => i.type === "dkit:module");
+  const modules = registry.items
+    .filter((i) => i.type === "dkit:module")
+    .map((m) => ({ ...m, icon: getModuleIcon(m.id) }));
 
   return (
     <div className="px-6 py-10 lg:px-10">
+      <JsonLd
+        data={[
+          webPageJsonLd({ title: TITLE, description: DESCRIPTION, path: PATH }),
+          breadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "Docs", path: "/docs/" },
+            { name: TITLE, path: PATH },
+          ]),
+        ]}
+      />
       <h1 className="text-3xl font-semibold tracking-tight text-foreground">
         Modules
       </h1>
@@ -30,8 +60,11 @@ export default function ModulesPage() {
             className="block no-underline hover:no-underline"
           >
             <Card className="transition-colors hover:border-primary/40">
-              <CardHeader className="gap-1">
-                <CardTitle className="text-base">{m.title}</CardTitle>
+              <CardHeader className="gap-2">
+                <div className="flex items-center gap-2.5">
+                  <DirectusIcon name={m.icon} size="md" className="text-primary" />
+                  <CardTitle className="text-base">{m.title}</CardTitle>
+                </div>
                 <CardDescription>{m.description}</CardDescription>
                 <p className="pt-1 font-mono text-xs text-muted-foreground">
                   {m.id}
@@ -52,7 +85,14 @@ export default function ModulesPage() {
             <Card className="h-full transition-colors hover:border-primary/40">
               <CardHeader>
                 <div className="flex items-center justify-between gap-2">
-                  <CardTitle className="text-base">{m.title}</CardTitle>
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <DirectusIcon
+                      name={m.icon}
+                      size="md"
+                      className="text-primary"
+                    />
+                    <CardTitle className="text-base">{m.title}</CardTitle>
+                  </div>
                   <Badge variant="outline">v{m.version}</Badge>
                 </div>
                 <CardDescription>{m.description}</CardDescription>

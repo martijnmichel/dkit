@@ -1,10 +1,40 @@
 import { DocsPage, DocsSection } from "@/components/docs-page";
+import { JsonLd } from "@/components/json-ld";
+import {
+  breadcrumbJsonLd,
+  pageMetadata,
+  webPageJsonLd,
+} from "@/lib/seo";
+import { Code2, Eye, Layers, Palette, Sparkles } from "lucide-react";
+
+const TITLE = "UI kits";
+const DESCRIPTION =
+  "Components ship under ui/{kit}/{framework}/. Use shadcn for real @/components/ui pieces, or minimal for plain HTML.";
+const PATH = "/docs/ui-kits/";
+
+export const metadata = pageMetadata({
+  title: TITLE,
+  description: DESCRIPTION,
+  path: PATH,
+});
 
 export default function UiKitsPage() {
   return (
-    <DocsPage
-      title="UI kits"
-      description="Components ship under ui/{kit}/{framework}/. Use shadcn for real @/components/ui pieces, or minimal for plain HTML."
+    <>
+      <JsonLd
+        data={[
+          webPageJsonLd({ title: TITLE, description: DESCRIPTION, path: PATH }),
+          breadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "Docs", path: "/docs/" },
+            { name: TITLE, path: PATH },
+          ]),
+        ]}
+      />
+      <DocsPage
+        title="UI kits"
+        description={DESCRIPTION}
+        icon={Palette}
       toc={[
         { id: "model", label: "Model" },
         { id: "shadcn", label: "shadcn" },
@@ -12,7 +42,7 @@ export default function UiKitsPage() {
         { id: "preview", label: "Previews" },
       ]}
     >
-      <DocsSection id="model" title="Model">
+      <DocsSection id="model" title="Model" icon={Layers}>
         <ul className="list-disc space-y-2 pl-5">
           <li>
             <strong>Component</strong> — e.g. <code>blog-list</code>,{" "}
@@ -35,7 +65,7 @@ export default function UiKitsPage() {
         </p>
       </DocsSection>
 
-      <DocsSection id="shadcn" title="shadcn">
+      <DocsSection id="shadcn" title="shadcn" icon={Sparkles}>
         <p>
           Blocks import your project&apos;s <code>@/components/ui/*</code>{" "}
           (Button, Input, Card, …) and theme tokens. On Nuxt the same kit id
@@ -49,14 +79,14 @@ export default function UiKitsPage() {
         </p>
       </DocsSection>
 
-      <DocsSection id="minimal" title="minimal">
+      <DocsSection id="minimal" title="minimal" icon={Code2}>
         <p>
           Semantic HTML + <code>.dkit-prose</code> for rich text. No shadcn
           dependency. Every current registry block ships minimal.
         </p>
       </DocsSection>
 
-      <DocsSection id="preview" title="Previews">
+      <DocsSection id="preview" title="Previews" icon={Eye}>
         <p>
           On each <a href="/docs/modules/">module page</a>, Sandpack runs the
           real block sources with seed mocks. Preview kit primitives live in the
@@ -66,5 +96,6 @@ export default function UiKitsPage() {
         </p>
       </DocsSection>
     </DocsPage>
+    </>
   );
 }

@@ -3,6 +3,7 @@ import {
   getModuleLibDoc,
   primaryServiceExports,
 } from "@/lib/module-lib-docs";
+import { Library } from "lucide-react";
 
 export async function ModuleServicesReference({
   moduleId,
@@ -13,7 +14,8 @@ export async function ModuleServicesReference({
   if (!doc) {
     return (
       <section id="services" className="scroll-mt-24 space-y-3">
-        <h2 className="text-xl font-semibold tracking-tight text-foreground">
+        <h2 className="flex items-center gap-2 text-xl font-semibold tracking-tight text-foreground">
+          <Library className="size-5 text-primary" aria-hidden />
           Services
         </h2>
         <p className="text-sm text-muted-foreground">
@@ -28,7 +30,8 @@ export async function ModuleServicesReference({
   return (
     <section id="services" className="scroll-mt-24 space-y-4">
       <div>
-        <h2 className="text-xl font-semibold tracking-tight text-foreground">
+        <h2 className="flex items-center gap-2 text-xl font-semibold tracking-tight text-foreground">
+          <Library className="size-5 text-primary" aria-hidden />
           Services
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">

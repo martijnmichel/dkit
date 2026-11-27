@@ -4,7 +4,25 @@ import { Card, CardContent } from "@/components/ui/card";
 import { getPages } from "@/lib/dkit/pages";
 import { getBlogPosts } from "@/lib/dkit/blog";
 import { getModuleMeta, getRegistry } from "@/lib/registry";
+import { pageMetadata } from "@/lib/seo";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string; slug: string }>;
+}): Promise<Metadata> {
+  const { id, slug } = await params;
+  const meta = getModuleMeta(id);
+  const title = meta?.item.title ?? id;
+  return pageMetadata({
+    title: `${title} demo`,
+    description: `Live preview of ${title} (${slug}).`,
+    path: `/docs/modules/${id}/demo/${slug}/`,
+    noIndex: true,
+  });
+}
 
 export async function generateStaticParams() {
   const modules = getRegistry().items.filter((i) => i.type === "dkit:module");

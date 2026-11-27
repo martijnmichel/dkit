@@ -1,11 +1,41 @@
 import { DocsPage, DocsSection } from "@/components/docs-page";
+import { JsonLd } from "@/components/json-ld";
 import { Button } from "@/components/ui/button";
+import {
+  breadcrumbJsonLd,
+  pageMetadata,
+  webPageJsonLd,
+} from "@/lib/seo";
+import { CheckCircle2, PackagePlus, Rocket, Sparkles } from "lucide-react";
+
+const TITLE = "Getting started";
+const DESCRIPTION =
+  "Go from an empty folder (or an existing Next/Nuxt app) to a module running against your Directus project.";
+const PATH = "/docs/getting-started/";
+
+export const metadata = pageMetadata({
+  title: TITLE,
+  description: DESCRIPTION,
+  path: PATH,
+});
 
 export default function GettingStartedPage() {
   return (
-    <DocsPage
-      title="Getting started"
-      description="Go from an empty folder (or an existing Next/Nuxt app) to a module running against your Directus project."
+    <>
+      <JsonLd
+        data={[
+          webPageJsonLd({ title: TITLE, description: DESCRIPTION, path: PATH }),
+          breadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "Docs", path: "/docs/" },
+            { name: TITLE, path: PATH },
+          ]),
+        ]}
+      />
+      <DocsPage
+        title="Getting started"
+        description={DESCRIPTION}
+        icon={Rocket}
       toc={[
         { id: "prereqs", label: "Prerequisites" },
         { id: "init", label: "Init" },
@@ -13,7 +43,7 @@ export default function GettingStartedPage() {
         { id: "next", label: "What you get" },
       ]}
     >
-      <DocsSection id="prereqs" title="Prerequisites">
+      <DocsSection id="prereqs" title="Prerequisites" icon={CheckCircle2}>
         <ul className="list-disc space-y-2 pl-5">
           <li>Node 20+</li>
           <li>
@@ -26,7 +56,7 @@ export default function GettingStartedPage() {
         </ul>
       </DocsSection>
 
-      <DocsSection id="init" title="Init your app">
+      <DocsSection id="init" title="Init your app" icon={Sparkles}>
         <p>
           <code className="font-mono">dkit init</code> detects Next or Nuxt, or
           scaffolds one if the folder is empty. It writes{" "}
@@ -36,7 +66,7 @@ export default function GettingStartedPage() {
         <pre className="code">{`npx @kurbo/dkit init --url http://localhost:8010 --token <token>`}</pre>
       </DocsSection>
 
-      <DocsSection id="add" title="Add a module">
+      <DocsSection id="add" title="Add a module" icon={PackagePlus}>
         <p>
           Pick a module from the{" "}
           <a href="/docs/modules/">module directory</a>, then install schema,
@@ -52,7 +82,7 @@ export default function GettingStartedPage() {
         </Button>
       </DocsSection>
 
-      <DocsSection id="next" title="What you get">
+      <DocsSection id="next" title="What you get" icon={CheckCircle2}>
         <ul className="list-disc space-y-2 pl-5">
           <li>Collections, relations, and policies on Directus</li>
           <li>
@@ -70,5 +100,6 @@ export default function GettingStartedPage() {
         </p>
       </DocsSection>
     </DocsPage>
+    </>
   );
 }

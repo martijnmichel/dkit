@@ -6,6 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { pageMetadata, SITE } from "@/lib/seo";
 import {
   Boxes,
   Bot,
@@ -15,6 +16,13 @@ import {
   Terminal,
   Library,
 } from "lucide-react";
+
+export const metadata = pageMetadata({
+  title: `${SITE.name} — ${SITE.tagline}`,
+  description: SITE.description,
+  path: "/",
+  absoluteTitle: true,
+});
 
 const FEATURES = [
   {
@@ -74,7 +82,7 @@ export default function HomePage() {
           dkit
         </h1>
         <p className="mt-4 max-w-3xl text-2xl font-medium tracking-tight text-foreground sm:text-3xl sm:leading-snug">
-          The foundation for Directus modules you own
+          The foundation for your Directus projects
         </p>
         <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground">
           Composable schema, access, services, and UI for Next.js and Nuxt —

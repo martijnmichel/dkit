@@ -3,16 +3,19 @@ import {
   OnThisPageRail,
   type TocItem,
 } from "@/components/on-this-page";
+import type { LucideIcon } from "lucide-react";
 
 export function DocsPage({
   title,
   description,
   toc,
+  icon: Icon,
   children,
 }: {
   title: string;
   description?: string;
   toc?: TocItem[];
+  icon?: LucideIcon;
   children: React.ReactNode;
 }) {
   const items = toc ?? [];
@@ -22,7 +25,12 @@ export function DocsPage({
       <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_11rem] xl:gap-12">
         <article className="module-prose min-w-0">
           {items.length ? <OnThisPageMobile items={items} /> : null}
-          <h1 className="text-foreground">{title}</h1>
+          <h1 className="flex items-center gap-3 text-foreground">
+            {Icon ? (
+              <Icon className="size-7 shrink-0 text-primary" aria-hidden />
+            ) : null}
+            {title}
+          </h1>
           {description ? (
             <p className="lede mt-3 max-w-2xl">{description}</p>
           ) : null}
@@ -41,15 +49,22 @@ export function DocsPage({
 export function DocsSection({
   id,
   title,
+  icon: Icon,
   children,
 }: {
   id: string;
   title: string;
+  icon?: LucideIcon;
   children: React.ReactNode;
 }) {
   return (
     <section id={id} className="scroll-mt-24">
-      <h2 className="text-foreground">{title}</h2>
+      <h2 className="flex items-center gap-2 text-foreground">
+        {Icon ? (
+          <Icon className="size-5 shrink-0 text-primary" aria-hidden />
+        ) : null}
+        {title}
+      </h2>
       <div className="mt-4 space-y-4 text-[0.9875rem] leading-relaxed text-foreground/90">
         {children}
       </div>

@@ -10,6 +10,7 @@ import {
   parseFlowsBundle,
   parseSeedBundle,
 } from "@/lib/services-docs";
+import { Database, Workflow } from "lucide-react";
 
 /** Directus flows + optional seed under services/ — not the TypeScript fetch API. */
 export function FlowsSeedReference({
@@ -31,7 +32,8 @@ export function FlowsSeedReference({
   return (
     <section id="flows-seed" className="scroll-mt-24 space-y-6">
       <div>
-        <h2 className="text-xl font-semibold tracking-tight text-foreground">
+        <h2 className="flex items-center gap-2 text-xl font-semibold tracking-tight text-foreground">
+          <Workflow className="size-5 text-primary" aria-hidden />
           Flows &amp; seed
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -43,7 +45,10 @@ export function FlowsSeedReference({
       {hasFlows ? (
         <Card>
           <CardHeader className="pb-0">
-            <CardTitle className="text-base">Flows</CardTitle>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Workflow className="size-4 text-primary" aria-hidden />
+              Flows
+            </CardTitle>
             <CardDescription>
               <code>services/flows.json</code>
               {operationsCount > 0
@@ -90,7 +95,10 @@ export function FlowsSeedReference({
       {hasSeed ? (
         <Card>
           <CardHeader className="pb-0">
-            <CardTitle className="text-base">Seed</CardTitle>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Database className="size-4 text-primary" aria-hidden />
+              Seed
+            </CardTitle>
             <CardDescription>
               <code>services/seed.json</code> — import with{" "}
               <code>npx @kurbo/dkit add {moduleId} --seed</code>

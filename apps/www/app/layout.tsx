@@ -1,8 +1,10 @@
 import { Analytics } from "@/components/analytics";
+import { JsonLd } from "@/components/json-ld";
 import { SiteFooter, SiteHeader } from "@/components/site-header";
 import { CRYPTO_SUBTLE_BOOT_SCRIPT } from "@/lib/crypto-subtle-boot";
+import { SITE, websiteJsonLd } from "@/lib/seo";
 import { THEME_BOOT_SCRIPT } from "@/lib/theme";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono, Source_Sans_3 } from "next/font/google";
 import "./globals.css";
 
@@ -19,10 +21,62 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://dkit.run"),
-  title: "dkit — The foundation for Directus modules you own",
-  description:
-    "Composable schema, access, services, and UI for Next.js and Nuxt. Install Directus modules into your repo as code you own.",
+  metadataBase: new URL(SITE.url),
+  title: {
+    default: `${SITE.name} — ${SITE.tagline}`,
+    template: `%s — ${SITE.name}`,
+  },
+  description: SITE.description,
+  applicationName: SITE.name,
+  authors: [{ name: SITE.name, url: SITE.url }],
+  creator: SITE.name,
+  publisher: SITE.name,
+  keywords: [
+    "Directus",
+    "Next.js",
+    "Nuxt",
+    "CMS",
+    "schema",
+    "dkit",
+    "headless CMS",
+    "modules",
+  ],
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: SITE.locale,
+    url: SITE.url,
+    siteName: SITE.name,
+    title: `${SITE.name} — ${SITE.tagline}`,
+    description: SITE.description,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE.name} — ${SITE.tagline}`,
+    description: SITE.description,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  category: "technology",
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
+  colorScheme: "light dark",
 };
 
 export default function RootLayout({
@@ -37,10 +91,21 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0&display=swap"
+          rel="stylesheet"
+        />
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         <script
           dangerouslySetInnerHTML={{ __html: CRYPTO_SUBTLE_BOOT_SCRIPT }}
         />
+        <JsonLd data={websiteJsonLd()} />
       </head>
       <body className="bg-background font-sans text-foreground antialiased">
         <SiteHeader />

@@ -1,5 +1,5 @@
 import { DocsSidebar } from "@/components/docs-sidebar";
-import { getRegistry } from "@/lib/registry";
+import { getModuleIcon, getRegistry } from "@/lib/registry";
 
 export default function DocsLayout({
   children,
@@ -8,7 +8,11 @@ export default function DocsLayout({
 }) {
   const modules = getRegistry()
     .items.filter((i) => i.type === "dkit:module")
-    .map((m) => ({ id: m.id, title: m.title }));
+    .map((m) => ({
+      id: m.id,
+      title: m.title,
+      icon: getModuleIcon(m.id),
+    }));
 
   return (
     <div className="mx-auto flex min-h-[calc(100vh-8rem)] w-full max-w-7xl">

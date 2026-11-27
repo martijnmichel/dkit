@@ -1,5 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
+import {
+  DIRECTUS_COLLECTION_FALLBACK_ICON,
+  DIRECTUS_FOLDER_ICON,
+} from "@/lib/directus-icons";
+import type { RestSchemaDoc } from "@/lib/schema-docs";
 
 export type RegistryItem = {
   id: string;
@@ -77,4 +82,18 @@ export function getModuleMeta(id: string) {
     seed = JSON.parse(fs.readFileSync(seedPath, "utf8"));
 
   return { item, manifest, schema, access, flows, seed };
+}
+
+/** Material Symbol for a module — prefers the root folder / first collection icon from the snapshot. */
+export function getModuleIcon(moduleId: string): string {
+  const meta = getModuleMeta(moduleId);
+  const collections = (meta?.schema as RestSchemaDoc | undefined)?.collections ?? [];
+  const folder = collections.find(
+    (c) => c.schema === null && c.meta?.icon,
+  );
+  if (folder?.meta?.icon) return folder.meta.icon;
+  const withIcon = collections.find((c) => c.meta?.icon);
+  if (withIcon?.meta?.icon) return withIcon.meta.icon;
+  if (collections.some((c) => c.schema === null)) return DIRECTUS_FOLDER_ICON;
+  return DIRECTUS_COLLECTION_FALLBACK_ICON;
 }
