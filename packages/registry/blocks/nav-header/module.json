@@ -1,0 +1,14 @@
+{
+  "type": "dkit:block",
+  "id": "nav-header",
+  "title": "Nav header",
+  "description": "Site header with primary menu — logo soft-links settings when installed",
+  "version": "0.1.0",
+  "frameworks": ["next"],
+  "uiKits": ["shadcn", "minimal"],
+  "shadcnComponents": ["button", "navigation-menu", "sheet"],
+  "slot": "header",
+  "registryDependencies": ["navigation"],
+  "dependencies": ["@directus/sdk"],
+  "layers": ["ui"]
+}

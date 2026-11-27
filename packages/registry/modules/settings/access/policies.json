@@ -1,0 +1,31 @@
+{
+  "policies": [
+    {
+      "name": "dkit Settings Public Read",
+      "icon": "public",
+      "description": "Public read for site settings singleton and logo/favicon files. UI owns presentation.",
+      "admin_access": false,
+      "app_access": false
+    }
+  ],
+  "permissions": [
+    {
+      "policy": "dkit Settings Public Read",
+      "collection": "site_settings",
+      "action": "read",
+      "fields": ["*"]
+    },
+    {
+      "policy": "dkit Settings Public Read",
+      "collection": "directus_files",
+      "action": "read",
+      "fields": ["*"]
+    }
+  ],
+  "access": [
+    {
+      "role": "$public",
+      "policy": "dkit Settings Public Read"
+    }
+  ]
+}

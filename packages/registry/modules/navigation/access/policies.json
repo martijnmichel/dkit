@@ -1,0 +1,31 @@
+{
+  "policies": [
+    {
+      "name": "dkit Navigation Public Read",
+      "icon": "public",
+      "description": "Public read for nav menus and items (flat rules — Core-compatible). UI filters published status.",
+      "admin_access": false,
+      "app_access": false
+    }
+  ],
+  "permissions": [
+    {
+      "policy": "dkit Navigation Public Read",
+      "collection": "nav_menus",
+      "action": "read",
+      "fields": ["*"]
+    },
+    {
+      "policy": "dkit Navigation Public Read",
+      "collection": "nav_items",
+      "action": "read",
+      "fields": ["*"]
+    }
+  ],
+  "access": [
+    {
+      "role": "$public",
+      "policy": "dkit Navigation Public Read"
+    }
+  ]
+}

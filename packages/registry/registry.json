@@ -132,6 +132,58 @@
       "route": { "kind": "slug" },
       "frameworks": ["next", "nuxt"],
       "uiKits": ["shadcn", "minimal"]
+    },
+    {
+      "id": "settings",
+      "type": "dkit:module",
+      "title": "Settings",
+      "description": "Site brand and config singleton — name, logo, contact, socials, feature flags",
+      "version": "0.1.0",
+      "path": "modules/settings",
+      "defaultBlocks": []
+    },
+    {
+      "id": "navigation",
+      "type": "dkit:module",
+      "title": "Navigation",
+      "description": "Named menus and link trees for headers, footers, and inline nav",
+      "version": "0.1.0",
+      "path": "modules/navigation",
+      "defaultBlocks": ["nav-header", "nav-footer"],
+      "templates": {
+        "header": {
+          "default": "nav-header",
+          "options": ["nav-header"]
+        },
+        "footer": {
+          "default": "nav-footer",
+          "options": ["nav-footer"]
+        }
+      }
+    },
+    {
+      "id": "nav-header",
+      "type": "dkit:block",
+      "title": "Nav header",
+      "description": "Site header with primary menu — logo soft-links settings when installed",
+      "version": "0.1.0",
+      "path": "blocks/nav-header",
+      "registryDependencies": ["navigation"],
+      "slot": "header",
+      "frameworks": ["next"],
+      "uiKits": ["shadcn", "minimal"]
+    },
+    {
+      "id": "nav-footer",
+      "type": "dkit:block",
+      "title": "Nav footer",
+      "description": "Site footer with footer menu — brand/contact soft-links settings when installed",
+      "version": "0.1.0",
+      "path": "blocks/nav-footer",
+      "registryDependencies": ["navigation"],
+      "slot": "footer",
+      "frameworks": ["next"],
+      "uiKits": ["shadcn", "minimal"]
     }
   ]
 }

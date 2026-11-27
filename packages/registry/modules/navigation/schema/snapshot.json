@@ -1,0 +1,427 @@
+{
+  "format": "dkit.rest",
+  "collections": [
+    {
+      "collection": "site",
+      "schema": null,
+      "meta": {
+        "icon": "web",
+        "color": "#0F766E",
+        "collapse": "open",
+        "translations": [
+          {
+            "language": "en-US",
+            "translation": "Site",
+            "singular": "Site",
+            "plural": "Site"
+          }
+        ],
+        "note": "Site content and chrome — pages, settings, navigation"
+      }
+    },
+    {
+      "collection": "nav_menus",
+      "schema": {},
+      "meta": {
+        "icon": "lists",
+        "color": "#0F766E",
+        "group": "site",
+        "display_template": "{{name}} ({{key}})",
+        "archive_field": "status",
+        "archive_value": "archived",
+        "unarchive_value": "draft",
+        "archive_app_filter": true,
+        "sort": 3,
+        "translations": [
+          {
+            "language": "en-US",
+            "translation": "Menus",
+            "singular": "Menu",
+            "plural": "Menus"
+          }
+        ],
+        "note": "Named menus such as primary and footer"
+      },
+      "fields": [
+        {
+          "field": "id",
+          "type": "uuid",
+          "meta": {
+            "hidden": true,
+            "readonly": true,
+            "interface": "input",
+            "special": ["uuid"],
+            "sort": 1,
+            "width": "full",
+            "translations": [{ "language": "en-US", "translation": "ID" }]
+          },
+          "schema": {
+            "is_primary_key": true,
+            "length": 36,
+            "has_auto_increment": false
+          }
+        },
+        {
+          "field": "status",
+          "type": "string",
+          "meta": {
+            "interface": "select-dropdown",
+            "display": "labels",
+            "width": "half",
+            "sort": 2,
+            "options": {
+              "choices": [
+                { "text": "Published", "value": "published" },
+                { "text": "Draft", "value": "draft" },
+                { "text": "Archived", "value": "archived" }
+              ]
+            },
+            "display_options": {
+              "choices": [
+                {
+                  "text": "Published",
+                  "value": "published",
+                  "foreground": "#FFFFFF",
+                  "background": "#0F766E"
+                },
+                {
+                  "text": "Draft",
+                  "value": "draft",
+                  "foreground": "#44403C",
+                  "background": "#E7E5E4"
+                },
+                {
+                  "text": "Archived",
+                  "value": "archived",
+                  "foreground": "#FFFFFF",
+                  "background": "#A8A29E"
+                }
+              ]
+            },
+            "translations": [{ "language": "en-US", "translation": "Status" }],
+            "note": "Only published menus appear on the public site",
+            "validation": {
+              "_and": [
+                {
+                  "status": {
+                    "_in": ["published", "draft", "archived"]
+                  }
+                }
+              ]
+            },
+            "validation_message": "Choose Published, Draft, or Archived."
+          },
+          "schema": { "default_value": "published", "is_nullable": false }
+        },
+        {
+          "field": "name",
+          "type": "string",
+          "meta": {
+            "interface": "input",
+            "required": true,
+            "width": "half",
+            "sort": 3,
+            "options": { "trim": true },
+            "translations": [{ "language": "en-US", "translation": "Name" }],
+            "note": "Editor-facing label in Directus",
+            "validation": {
+              "_and": [{ "name": { "_regex": "^.{1,120}$" } }]
+            },
+            "validation_message": "Name is required (max 120 characters)."
+          },
+          "schema": { "is_nullable": false, "max_length": 120 }
+        },
+        {
+          "field": "key",
+          "type": "string",
+          "meta": {
+            "interface": "input",
+            "required": true,
+            "width": "half",
+            "sort": 4,
+            "options": { "trim": true, "slug": true },
+            "translations": [{ "language": "en-US", "translation": "Key" }],
+            "note": "Stable id used in code (primary, footer, …)",
+            "validation": {
+              "_and": [
+                {
+                  "key": {
+                    "_regex": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                  }
+                }
+              ]
+            },
+            "validation_message": "Use lowercase letters, numbers, and hyphens only."
+          },
+          "schema": { "is_nullable": false, "is_unique": true, "max_length": 64 }
+        },
+        {
+          "field": "description",
+          "type": "text",
+          "meta": {
+            "interface": "input-multiline",
+            "width": "full",
+            "sort": 5,
+            "translations": [
+              { "language": "en-US", "translation": "Description" }
+            ],
+            "note": "Optional note for editors"
+          },
+          "schema": {}
+        },
+        {
+          "field": "items",
+          "type": "alias",
+          "meta": {
+            "interface": "list-o2m",
+            "special": ["o2m"],
+            "width": "full",
+            "sort": 6,
+            "options": {
+              "template": "{{label}}"
+            },
+            "translations": [{ "language": "en-US", "translation": "Items" }],
+            "note": "Links belonging to this menu"
+          }
+        }
+      ]
+    },
+    {
+      "collection": "nav_items",
+      "schema": {},
+      "meta": {
+        "icon": "link",
+        "color": "#0F766E",
+        "group": "site",
+        "display_template": "{{label}}",
+        "archive_field": "status",
+        "archive_value": "archived",
+        "unarchive_value": "draft",
+        "archive_app_filter": true,
+        "sort_field": "sort",
+        "sort": 4,
+        "translations": [
+          {
+            "language": "en-US",
+            "translation": "Items",
+            "singular": "Item",
+            "plural": "Items"
+          }
+        ],
+        "note": "Individual navigation links (optional parent for nesting)"
+      },
+      "fields": [
+        {
+          "field": "id",
+          "type": "uuid",
+          "meta": {
+            "hidden": true,
+            "readonly": true,
+            "interface": "input",
+            "special": ["uuid"],
+            "sort": 1,
+            "width": "full",
+            "translations": [{ "language": "en-US", "translation": "ID" }]
+          },
+          "schema": {
+            "is_primary_key": true,
+            "length": 36,
+            "has_auto_increment": false
+          }
+        },
+        {
+          "field": "status",
+          "type": "string",
+          "meta": {
+            "interface": "select-dropdown",
+            "display": "labels",
+            "width": "half",
+            "sort": 2,
+            "options": {
+              "choices": [
+                { "text": "Published", "value": "published" },
+                { "text": "Draft", "value": "draft" },
+                { "text": "Archived", "value": "archived" }
+              ]
+            },
+            "display_options": {
+              "choices": [
+                {
+                  "text": "Published",
+                  "value": "published",
+                  "foreground": "#FFFFFF",
+                  "background": "#0F766E"
+                },
+                {
+                  "text": "Draft",
+                  "value": "draft",
+                  "foreground": "#44403C",
+                  "background": "#E7E5E4"
+                },
+                {
+                  "text": "Archived",
+                  "value": "archived",
+                  "foreground": "#FFFFFF",
+                  "background": "#A8A29E"
+                }
+              ]
+            },
+            "translations": [{ "language": "en-US", "translation": "Status" }],
+            "note": "Only published items appear on the public site",
+            "validation": {
+              "_and": [
+                {
+                  "status": {
+                    "_in": ["published", "draft", "archived"]
+                  }
+                }
+              ]
+            },
+            "validation_message": "Choose Published, Draft, or Archived."
+          },
+          "schema": { "default_value": "published", "is_nullable": false }
+        },
+        {
+          "field": "menu",
+          "type": "uuid",
+          "meta": {
+            "interface": "select-dropdown-m2o",
+            "special": ["m2o"],
+            "required": true,
+            "width": "half",
+            "sort": 3,
+            "options": {
+              "template": "{{name}} ({{key}})"
+            },
+            "translations": [{ "language": "en-US", "translation": "Menu" }],
+            "note": "Which menu this link belongs to"
+          },
+          "schema": { "is_nullable": false }
+        },
+        {
+          "field": "parent",
+          "type": "uuid",
+          "meta": {
+            "interface": "select-dropdown-m2o",
+            "special": ["m2o"],
+            "width": "half",
+            "sort": 4,
+            "options": {
+              "template": "{{label}}"
+            },
+            "translations": [{ "language": "en-US", "translation": "Parent" }],
+            "note": "Optional parent for dropdown / nested items"
+          },
+          "schema": {}
+        },
+        {
+          "field": "label",
+          "type": "string",
+          "meta": {
+            "interface": "input",
+            "required": true,
+            "width": "half",
+            "sort": 5,
+            "options": { "trim": true },
+            "translations": [{ "language": "en-US", "translation": "Label" }],
+            "validation": {
+              "_and": [{ "label": { "_regex": "^.{1,120}$" } }]
+            },
+            "validation_message": "Label is required (max 120 characters)."
+          },
+          "schema": { "is_nullable": false, "max_length": 120 }
+        },
+        {
+          "field": "href",
+          "type": "string",
+          "meta": {
+            "interface": "input",
+            "required": true,
+            "width": "half",
+            "sort": 6,
+            "options": { "trim": true },
+            "translations": [{ "language": "en-US", "translation": "URL" }],
+            "note": "Internal path (/blog) or absolute URL",
+            "validation": {
+              "_and": [{ "href": { "_regex": "^.{1,500}$" } }]
+            },
+            "validation_message": "URL is required (max 500 characters)."
+          },
+          "schema": { "is_nullable": false, "max_length": 500 }
+        },
+        {
+          "field": "open_in_new_tab",
+          "type": "boolean",
+          "meta": {
+            "interface": "boolean",
+            "display": "boolean",
+            "width": "half",
+            "sort": 7,
+            "translations": [
+              { "language": "en-US", "translation": "Open in new tab" }
+            ]
+          },
+          "schema": { "default_value": false, "is_nullable": false }
+        },
+        {
+          "field": "sort",
+          "type": "integer",
+          "meta": {
+            "interface": "input",
+            "hidden": true,
+            "width": "half",
+            "sort": 8,
+            "translations": [{ "language": "en-US", "translation": "Sort" }]
+          },
+          "schema": {}
+        },
+        {
+          "field": "children",
+          "type": "alias",
+          "meta": {
+            "interface": "list-o2m",
+            "special": ["o2m"],
+            "hidden": true,
+            "width": "full",
+            "sort": 9,
+            "translations": [
+              { "language": "en-US", "translation": "Children" }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "collection": "nav_items",
+      "field": "menu",
+      "related_collection": "nav_menus",
+      "meta": {
+        "many_collection": "nav_items",
+        "many_field": "menu",
+        "one_collection": "nav_menus",
+        "one_field": "items",
+        "one_deselect_action": "nullify"
+      },
+      "schema": {
+        "on_delete": "CASCADE"
+      }
+    },
+    {
+      "collection": "nav_items",
+      "field": "parent",
+      "related_collection": "nav_items",
+      "meta": {
+        "many_collection": "nav_items",
+        "many_field": "parent",
+        "one_collection": "nav_items",
+        "one_field": "children",
+        "one_deselect_action": "nullify"
+      },
+      "schema": {
+        "on_delete": "SET NULL"
+      }
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "type": "dkit:module",
+  "id": "settings",
+  "title": "Settings",
+  "description": "Site brand and config singleton — name, logo, contact, socials, feature flags",
+  "version": "0.1.0",
+  "directus": { "min": "11.0.0" },
+  "dependencies": ["@directus/sdk"],
+  "layers": ["schema", "access", "services", "types"],
+  "defaultBlocks": [],
+  "collections": ["site", "site_settings"]
+}

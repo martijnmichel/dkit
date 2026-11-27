@@ -20,6 +20,8 @@
       "@/lib/dkit/pages": ["./modules/pages/lib.ts"],
       "@/lib/dkit/page-builder": ["./modules/page-builder/lib.ts"],
       "@/lib/dkit/contact-form": ["./modules/contact-form/lib.ts"],
+      "@/lib/dkit/settings": ["./modules/settings/lib.ts"],
+      "@/lib/dkit/navigation": ["./modules/navigation/lib.ts"],
       "@/lib/utils": ["./ts-shims/utils.ts"],
       "@/components/ui/*": ["./ui-kits/shadcn/next/*"]
     }

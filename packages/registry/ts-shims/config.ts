@@ -11,6 +11,9 @@ export const collections = {
   block_richtext: "block_richtext",
   block_cta: "block_cta",
   builder_pages_blocks: "builder_pages_blocks",
+  site_settings: "site_settings",
+  nav_menus: "nav_menus",
+  nav_items: "nav_items",
 } as const;
 
 export function moduleBasePath(_moduleId: string, fallback = "/"): string {

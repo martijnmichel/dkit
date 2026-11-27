@@ -37,3 +37,7 @@ export function readItem(..._args: unknown[]): unknown {
 export function readItems(..._args: unknown[]): unknown {
   return undefined;
 }
+
+export function readSingleton(..._args: unknown[]): unknown {
+  return undefined;
+}

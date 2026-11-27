@@ -16,7 +16,7 @@
             "plural": "Site"
           }
         ],
-        "note": "Simple site pages (WYSIWYG). Use page-builder for composable M2A pages."
+        "note": "Site content and chrome — pages, settings, navigation"
       }
     },
     {

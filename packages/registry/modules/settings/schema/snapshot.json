@@ -1,0 +1,256 @@
+{
+  "format": "dkit.rest",
+  "collections": [
+    {
+      "collection": "site",
+      "schema": null,
+      "meta": {
+        "icon": "web",
+        "color": "#0F766E",
+        "collapse": "open",
+        "translations": [
+          {
+            "language": "en-US",
+            "translation": "Site",
+            "singular": "Site",
+            "plural": "Site"
+          }
+        ],
+        "note": "Site content and chrome — pages, settings, navigation"
+      }
+    },
+    {
+      "collection": "site_settings",
+      "schema": {},
+      "meta": {
+        "icon": "storefront",
+        "color": "#0F766E",
+        "group": "site",
+        "singleton": true,
+        "display_template": "{{site_name}}",
+        "sort": 1,
+        "translations": [
+          {
+            "language": "en-US",
+            "translation": "Site settings",
+            "singular": "Site settings",
+            "plural": "Site settings"
+          }
+        ],
+        "note": "Brand name, logo, contact, socials, and feature flags"
+      },
+      "fields": [
+        {
+          "field": "id",
+          "type": "uuid",
+          "meta": {
+            "hidden": true,
+            "readonly": true,
+            "interface": "input",
+            "special": ["uuid"],
+            "sort": 1,
+            "width": "full",
+            "translations": [{ "language": "en-US", "translation": "ID" }]
+          },
+          "schema": {
+            "is_primary_key": true,
+            "length": 36,
+            "has_auto_increment": false
+          }
+        },
+        {
+          "field": "site_name",
+          "type": "string",
+          "meta": {
+            "interface": "input",
+            "required": true,
+            "width": "full",
+            "sort": 2,
+            "options": { "trim": true },
+            "translations": [
+              { "language": "en-US", "translation": "Site name" }
+            ],
+            "note": "Public brand name shown in the header",
+            "validation": {
+              "_and": [{ "site_name": { "_regex": "^.{1,120}$" } }]
+            },
+            "validation_message": "Site name is required (max 120 characters)."
+          },
+          "schema": { "is_nullable": false, "max_length": 120 }
+        },
+        {
+          "field": "tagline",
+          "type": "string",
+          "meta": {
+            "interface": "input",
+            "width": "full",
+            "sort": 3,
+            "options": { "trim": true },
+            "translations": [{ "language": "en-US", "translation": "Tagline" }],
+            "note": "Optional short line under the brand name"
+          },
+          "schema": { "max_length": 200 }
+        },
+        {
+          "field": "logo",
+          "type": "uuid",
+          "meta": {
+            "interface": "file-image",
+            "special": ["file"],
+            "display": "image",
+            "width": "half",
+            "sort": 4,
+            "translations": [{ "language": "en-US", "translation": "Logo" }],
+            "note": "Primary logo used in headers"
+          },
+          "schema": {}
+        },
+        {
+          "field": "favicon",
+          "type": "uuid",
+          "meta": {
+            "interface": "file-image",
+            "special": ["file"],
+            "display": "image",
+            "width": "half",
+            "sort": 5,
+            "translations": [{ "language": "en-US", "translation": "Favicon" }],
+            "note": "Optional browser favicon"
+          },
+          "schema": {}
+        },
+        {
+          "field": "contact_email",
+          "type": "string",
+          "meta": {
+            "interface": "input",
+            "width": "half",
+            "sort": 6,
+            "options": { "trim": true },
+            "translations": [
+              { "language": "en-US", "translation": "Contact email" }
+            ],
+            "note": "Public contact address for footers and forms",
+            "validation": {
+              "_and": [
+                {
+                  "_or": [
+                    { "contact_email": { "_null": true } },
+                    { "contact_email": { "_empty": true } },
+                    {
+                      "contact_email": {
+                        "_regex": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            "validation_message": "Enter a valid email address."
+          },
+          "schema": { "max_length": 254 }
+        },
+        {
+          "field": "social_links",
+          "type": "json",
+          "meta": {
+            "interface": "list",
+            "special": ["cast-json"],
+            "width": "full",
+            "sort": 7,
+            "options": {
+              "fields": [
+                {
+                  "field": "label",
+                  "name": "Label",
+                  "type": "string",
+                  "meta": {
+                    "interface": "input",
+                    "width": "half",
+                    "required": true
+                  }
+                },
+                {
+                  "field": "href",
+                  "name": "URL",
+                  "type": "string",
+                  "meta": {
+                    "interface": "input",
+                    "width": "half",
+                    "required": true
+                  }
+                }
+              ]
+            },
+            "translations": [
+              { "language": "en-US", "translation": "Social links" }
+            ],
+            "note": "Footer/social links as { label, href }"
+          },
+          "schema": {}
+        },
+        {
+          "field": "maintenance_mode",
+          "type": "boolean",
+          "meta": {
+            "interface": "boolean",
+            "display": "boolean",
+            "width": "half",
+            "sort": 8,
+            "translations": [
+              { "language": "en-US", "translation": "Maintenance mode" }
+            ],
+            "note": "When true, frontends may show a maintenance gate"
+          },
+          "schema": { "default_value": false, "is_nullable": false }
+        },
+        {
+          "field": "feature_flags",
+          "type": "json",
+          "meta": {
+            "interface": "input-code",
+            "special": ["cast-json"],
+            "width": "full",
+            "sort": 9,
+            "options": { "language": "json", "lineNumber": true },
+            "translations": [
+              { "language": "en-US", "translation": "Feature flags" }
+            ],
+            "note": "Flat boolean map, e.g. { \"blog\": true }"
+          },
+          "schema": {}
+        }
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "collection": "site_settings",
+      "field": "logo",
+      "related_collection": "directus_files",
+      "meta": {
+        "many_collection": "site_settings",
+        "many_field": "logo",
+        "one_collection": "directus_files",
+        "one_field": null
+      },
+      "schema": {
+        "on_delete": "SET NULL"
+      }
+    },
+    {
+      "collection": "site_settings",
+      "field": "favicon",
+      "related_collection": "directus_files",
+      "meta": {
+        "many_collection": "site_settings",
+        "many_field": "favicon",
+        "one_collection": "directus_files",
+        "one_field": null
+      },
+      "schema": {
+        "on_delete": "SET NULL"
+      }
+    }
+  ]
+}

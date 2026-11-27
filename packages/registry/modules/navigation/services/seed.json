@@ -1,0 +1,96 @@
+{
+  "items": {
+    "nav_menus": [
+      {
+        "id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+        "status": "published",
+        "name": "Primary",
+        "key": "primary",
+        "description": "Main header navigation"
+      },
+      {
+        "id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0002",
+        "status": "published",
+        "name": "Footer",
+        "key": "footer",
+        "description": "Footer link row"
+      }
+    ],
+    "nav_items": [
+      {
+        "id": "cccccccc-cccc-4ccc-8ccc-cccccccc0001",
+        "status": "published",
+        "menu": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+        "label": "Home",
+        "href": "/",
+        "open_in_new_tab": false,
+        "sort": 1
+      },
+      {
+        "id": "cccccccc-cccc-4ccc-8ccc-cccccccc0002",
+        "status": "published",
+        "menu": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+        "label": "Blog",
+        "href": "/blog",
+        "open_in_new_tab": false,
+        "sort": 2
+      },
+      {
+        "id": "cccccccc-cccc-4ccc-8ccc-cccccccc0003",
+        "status": "published",
+        "menu": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+        "label": "Contact",
+        "href": "/contact",
+        "open_in_new_tab": false,
+        "sort": 3
+      },
+      {
+        "id": "cccccccc-cccc-4ccc-8ccc-cccccccc0004",
+        "status": "published",
+        "menu": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+        "label": "More",
+        "href": "#",
+        "open_in_new_tab": false,
+        "sort": 4
+      },
+      {
+        "id": "cccccccc-cccc-4ccc-8ccc-cccccccc0005",
+        "status": "published",
+        "menu": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+        "parent": "cccccccc-cccc-4ccc-8ccc-cccccccc0004",
+        "label": "About",
+        "href": "/about",
+        "open_in_new_tab": false,
+        "sort": 1
+      },
+      {
+        "id": "cccccccc-cccc-4ccc-8ccc-cccccccc0006",
+        "status": "published",
+        "menu": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+        "parent": "cccccccc-cccc-4ccc-8ccc-cccccccc0004",
+        "label": "GitHub",
+        "href": "https://github.com",
+        "open_in_new_tab": true,
+        "sort": 2
+      },
+      {
+        "id": "cccccccc-cccc-4ccc-8ccc-cccccccc0007",
+        "status": "published",
+        "menu": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0002",
+        "label": "Privacy",
+        "href": "/privacy",
+        "open_in_new_tab": false,
+        "sort": 1
+      },
+      {
+        "id": "cccccccc-cccc-4ccc-8ccc-cccccccc0008",
+        "status": "published",
+        "menu": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0002",
+        "label": "GitHub",
+        "href": "https://github.com",
+        "open_in_new_tab": true,
+        "sort": 2
+      }
+    ]
+  }
+}

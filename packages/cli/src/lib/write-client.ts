@@ -4,23 +4,32 @@ import type { DkitProjectConfig } from "@dkit/shared";
 import { resolveAliasPath } from "./paths.js";
 
 /** logical collection name → type binding for schema fields */
-const COLLECTION_TYPES: Record<string, { moduleId: string; typeName: string }> =
-  {
-    posts: { moduleId: "blog", typeName: "BlogPost" },
-    authors: { moduleId: "blog", typeName: "BlogAuthor" },
-    categories: { moduleId: "blog", typeName: "BlogCategory" },
-    posts_categories: { moduleId: "blog", typeName: "PostsCategoriesRow" },
-    pages: { moduleId: "pages", typeName: "SitePage" },
-    builder_pages: { moduleId: "page-builder", typeName: "BuilderPage" },
-    block_hero: { moduleId: "page-builder", typeName: "BlockHero" },
-    block_richtext: { moduleId: "page-builder", typeName: "BlockRichtext" },
-    block_cta: { moduleId: "page-builder", typeName: "BlockCta" },
-    builder_pages_blocks: {
-      moduleId: "page-builder",
-      typeName: "BuilderPagesBlocksRow",
-    },
-    form_submissions: { moduleId: "contact-form", typeName: "FormSubmission" },
-  };
+const COLLECTION_TYPES: Record<
+  string,
+  { moduleId: string; typeName: string; singleton?: boolean }
+> = {
+  posts: { moduleId: "blog", typeName: "BlogPost" },
+  authors: { moduleId: "blog", typeName: "BlogAuthor" },
+  categories: { moduleId: "blog", typeName: "BlogCategory" },
+  posts_categories: { moduleId: "blog", typeName: "PostsCategoriesRow" },
+  pages: { moduleId: "pages", typeName: "SitePage" },
+  builder_pages: { moduleId: "page-builder", typeName: "BuilderPage" },
+  block_hero: { moduleId: "page-builder", typeName: "BlockHero" },
+  block_richtext: { moduleId: "page-builder", typeName: "BlockRichtext" },
+  block_cta: { moduleId: "page-builder", typeName: "BlockCta" },
+  builder_pages_blocks: {
+    moduleId: "page-builder",
+    typeName: "BuilderPagesBlocksRow",
+  },
+  form_submissions: { moduleId: "contact-form", typeName: "FormSubmission" },
+  site_settings: {
+    moduleId: "settings",
+    typeName: "SiteSettings",
+    singleton: true,
+  },
+  nav_menus: { moduleId: "navigation", typeName: "NavMenu" },
+  nav_items: { moduleId: "navigation", typeName: "NavItem" },
+};
 
 /**
  * Write lib/dkit/client.ts + schema.ts.
@@ -50,10 +59,11 @@ export function writeDkitClient(
       importsByModule.set(binding.moduleId, set);
     }
     set.add(binding.typeName);
-    // Regular collections must be arrays — non-arrays are treated as singletons by @directus/sdk
-    schemaFields.push(
-      `  ${JSON.stringify(physical)}: ${binding.typeName}[];`,
-    );
+    // Regular collections must be arrays — bare objects are singletons in @directus/sdk
+    const typeExpr = binding.singleton
+      ? binding.typeName
+      : `${binding.typeName}[]`;
+    schemaFields.push(`  ${JSON.stringify(physical)}: ${typeExpr};`);
   }
 
   const importLines = [...importsByModule.entries()]
@@ -84,6 +94,7 @@ import {
   createItem,
   readItem,
   readItems,
+  readSingleton,
   rest,
 } from "@directus/sdk";
 import type { DkitSchema } from "./schema";
@@ -148,7 +159,7 @@ export function directusAssetUrl(
   return \`\${base}/assets/\${fileId}\`;
 }
 
-export { createItem, readItem, readItems };
+export { createItem, readItem, readItems, readSingleton };
 `;
   fs.writeFileSync(clientFile, clientContents, "utf8");
 

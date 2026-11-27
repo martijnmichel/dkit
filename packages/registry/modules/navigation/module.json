@@ -1,0 +1,22 @@
+{
+  "type": "dkit:module",
+  "id": "navigation",
+  "title": "Navigation",
+  "description": "Named menus and link trees for headers, footers, and inline nav",
+  "version": "0.1.0",
+  "directus": { "min": "11.0.0" },
+  "dependencies": ["@directus/sdk"],
+  "layers": ["schema", "access", "services", "types"],
+  "defaultBlocks": ["nav-header", "nav-footer"],
+  "templates": {
+    "header": {
+      "default": "nav-header",
+      "options": ["nav-header"]
+    },
+    "footer": {
+      "default": "nav-footer",
+      "options": ["nav-footer"]
+    }
+  },
+  "collections": ["site", "nav_menus", "nav_items"]
+}
