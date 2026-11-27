@@ -58,7 +58,8 @@ export function adaptShadcnBlockSource(
 }
 
 function rewriteAsChildToRender(source: string): string {
-  const openRe = /<(Button|Badge)\b/g;
+  // Any PascalCase host with `asChild` (Button, Badge, SheetTrigger, …).
+  const openRe = /<([A-Z][A-Za-z0-9]*)\b/g;
   let out = "";
   let cursor = 0;
   let m: RegExpExecArray | null;

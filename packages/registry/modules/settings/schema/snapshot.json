@@ -115,7 +115,7 @@
             "width": "half",
             "sort": 5,
             "translations": [{ "language": "en-US", "translation": "Favicon" }],
-            "note": "Optional browser favicon"
+            "note": "Optional browser favicon (falls back to logo)"
           },
           "schema": {}
         },

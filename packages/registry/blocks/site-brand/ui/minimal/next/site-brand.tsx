@@ -3,7 +3,10 @@ import {
   siteLogoUrl,
 } from "@/lib/dkit/settings";
 
-/** Brand mark from settings — compose into your header/footer layout. */
+/**
+ * Brand mark from settings — compose into your header/footer layout.
+ * Logo renders whenever settings.logo is set — use SiteLogo for logo-only.
+ */
 export async function SiteBrand({
   homeHref = "/",
   showTagline = true,

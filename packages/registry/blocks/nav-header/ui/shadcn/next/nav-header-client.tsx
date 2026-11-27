@@ -106,38 +106,34 @@ function MobileTree({ items }: { items: NavItem[] }) {
   );
 }
 
+/** Menu controls only — wrap with your own header chrome + SiteBrand. */
 export function NavHeaderClient({ items }: { items: NavItem[] }) {
   return (
-    <nav
-      aria-label="Primary"
-      className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80"
-    >
-      <div className="mx-auto flex h-14 max-w-5xl items-center justify-end gap-4 px-4 sm:px-6">
-        <NavigationMenu className="hidden md:flex">
-          <NavigationMenuList>
-            {items.map((item) => (
-              <DesktopItem key={item.id} item={item} />
-            ))}
-          </NavigationMenuList>
-        </NavigationMenu>
+    <nav aria-label="Primary" className="flex items-center justify-end gap-4">
+      <NavigationMenu className="hidden md:flex">
+        <NavigationMenuList>
+          {items.map((item) => (
+            <DesktopItem key={item.id} item={item} />
+          ))}
+        </NavigationMenuList>
+      </NavigationMenu>
 
-        <div className="md:hidden">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="outline" size="sm" aria-label="Open menu">
-                Menu
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-72 sm:max-w-sm">
-              <SheetHeader>
-                <SheetTitle>Menu</SheetTitle>
-              </SheetHeader>
-              <div className="mt-6">
-                <MobileTree items={items} />
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
+      <div className="md:hidden">
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="sm" aria-label="Open menu">
+              Menu
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-72 sm:max-w-sm">
+            <SheetHeader>
+              <SheetTitle>Menu</SheetTitle>
+            </SheetHeader>
+            <div className="mt-6">
+              <MobileTree items={items} />
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
     </nav>
   );

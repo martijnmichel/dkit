@@ -46,16 +46,10 @@ export async function NavHeader({
     <nav className="dkit-nav-header" aria-label="Primary">
       <style>{`
         .dkit-nav-header {
-          border-bottom: 1px solid #ddd;
-        }
-        .dkit-nav-header__inner {
           display: flex;
           align-items: center;
           justify-content: flex-end;
           gap: 1rem;
-          max-width: 64rem;
-          margin: 0 auto;
-          padding: 0.75rem 1rem;
         }
         .dkit-nav-header__list {
           display: flex;
@@ -121,17 +115,15 @@ export async function NavHeader({
           }
         }
       `}</style>
-      <div className="dkit-nav-header__inner">
-        <div className="dkit-nav-header__desktop">
+      <div className="dkit-nav-header__desktop">
+        <ItemList items={items} />
+      </div>
+      <details className="dkit-nav-header__mobile">
+        <summary>Menu</summary>
+        <div className="dkit-nav-header__panel">
           <ItemList items={items} />
         </div>
-        <details className="dkit-nav-header__mobile">
-          <summary>Menu</summary>
-          <div className="dkit-nav-header__panel">
-            <ItemList items={items} />
-          </div>
-        </details>
-      </div>
+      </details>
     </nav>
   );
 }

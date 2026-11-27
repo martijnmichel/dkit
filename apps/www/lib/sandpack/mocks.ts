@@ -85,7 +85,7 @@ export function siteLogoUrl(settings: any) {
 
 export function siteFaviconUrl(settings: any) {
   if (!settings) return null;
-  const id = directusFileId(settings.favicon);
+  const id = directusFileId(settings.favicon) ?? directusFileId(settings.logo);
   return id ? directusAssetUrl(id) : null;
 }
 

@@ -6,6 +6,7 @@ import {
 /**
  * Brand mark from settings (logo + name + tagline).
  * Place beside NavHeader or above NavFooter / SocialLinks in your layout.
+ * Logo renders whenever settings.logo is set — use SiteLogo for logo-only.
  */
 export async function SiteBrand({
   homeHref = "/",

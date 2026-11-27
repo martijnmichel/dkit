@@ -119,7 +119,7 @@ export function siteFaviconUrl(
   settings: SiteSettings | null | undefined,
 ): string | null {
   if (!settings) return null;
-  const id = directusFileId(settings.favicon);
+  const id = directusFileId(settings.favicon) ?? directusFileId(settings.logo);
   return id ? directusAssetUrl(id) : null;
 }
 

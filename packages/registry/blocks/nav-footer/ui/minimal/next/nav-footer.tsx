@@ -31,15 +31,6 @@ export async function NavFooter({
   return (
     <nav className="dkit-nav-footer" aria-label="Footer">
       <style>{`
-        .dkit-nav-footer {
-          border-top: 1px solid #ddd;
-          margin-top: 3rem;
-        }
-        .dkit-nav-footer__inner {
-          max-width: 64rem;
-          margin: 0 auto;
-          padding: 1.5rem 1rem;
-        }
         .dkit-nav-footer__links {
           display: flex;
           flex-wrap: wrap;
@@ -58,9 +49,7 @@ export async function NavFooter({
           color: inherit;
         }
       `}</style>
-      <div className="dkit-nav-footer__inner">
-        <FooterLinks items={items} />
-      </div>
+      <FooterLinks items={items} />
     </nav>
   );
 }

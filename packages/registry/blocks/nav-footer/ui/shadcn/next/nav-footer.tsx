@@ -34,10 +34,8 @@ export async function NavFooter({
   const items: NavItem[] = menu?.items ?? [];
 
   return (
-    <nav aria-label="Footer" className="border-t border-border">
-      <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-8 sm:px-6">
-        <FooterLinks items={items} />
-      </div>
+    <nav aria-label="Footer">
+      <FooterLinks items={items} />
     </nav>
   );
 }
