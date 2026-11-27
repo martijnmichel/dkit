@@ -1,0 +1,13 @@
+{
+  "type": "dkit:block",
+  "id": "maintenance-gate",
+  "title": "Maintenance gate",
+  "description": "Wraps the app — shows a maintenance screen when settings.maintenance_mode is on",
+  "version": "0.1.0",
+  "frameworks": ["next"],
+  "uiKits": ["shadcn", "minimal"],
+  "slot": "gate",
+  "registryDependencies": ["settings"],
+  "dependencies": ["@directus/sdk"],
+  "layers": ["ui"]
+}

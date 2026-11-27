@@ -16,6 +16,7 @@ import {
   buildContactMockSource,
   buildPageBuilderMockSource,
   buildPagesMockSource,
+  buildSettingsMockSource,
 } from "@/lib/sandpack/mocks";
 import { sandpackUiKitFiles } from "@/lib/sandpack/ui-kit-files";
 
@@ -29,7 +30,13 @@ export { resolveProjectUiKit } from "@/lib/sandpack/types";
 const BLOCK_META: Record<
   string,
   {
-    module: "blog" | "pages" | "contact-form" | "page-builder";
+    module:
+      | "blog"
+      | "pages"
+      | "contact-form"
+      | "page-builder"
+      | "settings"
+      | "navigation";
     uiKits: PreviewUiKit[];
     nextFile?: string;
     nuxtFile?: string;
@@ -82,6 +89,19 @@ const BLOCK_META: Record<
     exportName: "PageRenderer",
     props: { slug: '"sample"' },
   },
+  "social-links": {
+    module: "settings",
+    uiKits: ["shadcn", "minimal"],
+    nextFile: "social-links.tsx",
+    exportName: "SocialLinks",
+  },
+  "maintenance-gate": {
+    module: "settings",
+    uiKits: ["shadcn", "minimal"],
+    nextFile: "maintenance-gate.tsx",
+    exportName: "MaintenanceGate",
+    props: { active: "true" },
+  },
 };
 
 function readUiFile(
@@ -126,6 +146,9 @@ function sharedLibFiles(
   }
   if (moduleId === "page-builder") {
     files[`${prefix}/dkit/page-builder.ts`] = buildPageBuilderMockSource();
+  }
+  if (moduleId === "settings") {
+    files[`${prefix}/dkit/settings.ts`] = buildSettingsMockSource();
   }
   return files;
 }
@@ -176,6 +199,11 @@ function buildNextProject(
   const isMinimal = kit === "minimal";
   const padClass = isMinimal ? "dkit-preview-pad" : "px-6 py-12";
 
+  const invokeProps =
+    blockId === "maintenance-gate"
+      ? `{ ${propsObj ? `${propsObj}, ` : ""}children: <p style={{ opacity: 0.5 }}>App content stays hidden while maintenance is on.</p> }`
+      : `{ ${propsObj} }`;
+
   const appAsync = `import { useEffect, useState, type ReactNode } from "react";
 import { ${meta.exportName} } from "./components/Block";
 import "./styles.css";
@@ -183,7 +211,7 @@ import "./styles.css";
 export default function App() {
   const [ui, setUi] = useState<ReactNode>(null);
   useEffect(() => {
-    void Promise.resolve(${meta.exportName}({ ${propsObj} } as any)).then(setUi);
+    void Promise.resolve(${meta.exportName}(${invokeProps} as any)).then(setUi);
   }, []);
   return <div className="${padClass}">{ui}</div>;
 }

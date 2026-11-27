@@ -26,13 +26,15 @@ export async function ModuleBlockPreviews({
   }
 
   const seedHint =
-    moduleId === "blog" || moduleId === "pages"
+    moduleId === "blog" || moduleId === "pages" || moduleId === "settings"
       ? "Preview data comes from the module seed — the same JSON as dkit add --seed."
       : moduleId === "page-builder"
         ? "Preview uses a small sample page so you can inspect the M2A renderer."
         : moduleId === "contact-form"
           ? "Submit in the sandbox is local — nothing is sent to Directus."
-          : null;
+          : moduleId === "navigation"
+            ? "Preview uses the navigation seed menus (primary / footer)."
+            : null;
 
   const projects = buildModuleSandpackProjects(blocks);
 

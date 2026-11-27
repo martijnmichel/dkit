@@ -140,7 +140,31 @@
       "description": "Site brand and config singleton — name, logo, contact, socials, feature flags",
       "version": "0.1.0",
       "path": "modules/settings",
-      "defaultBlocks": []
+      "defaultBlocks": ["social-links", "maintenance-gate"]
+    },
+    {
+      "id": "social-links",
+      "type": "dkit:block",
+      "title": "Social links",
+      "description": "Renders settings social_links (platform dropdown) as a link row",
+      "version": "0.1.0",
+      "path": "blocks/social-links",
+      "registryDependencies": ["settings"],
+      "slot": "social",
+      "frameworks": ["next"],
+      "uiKits": ["shadcn", "minimal"]
+    },
+    {
+      "id": "maintenance-gate",
+      "type": "dkit:block",
+      "title": "Maintenance gate",
+      "description": "Wraps the app — shows a maintenance screen when settings.maintenance_mode is on",
+      "version": "0.1.0",
+      "path": "blocks/maintenance-gate",
+      "registryDependencies": ["settings"],
+      "slot": "gate",
+      "frameworks": ["next"],
+      "uiKits": ["shadcn", "minimal"]
     },
     {
       "id": "navigation",

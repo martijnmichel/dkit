@@ -17,6 +17,9 @@ export const collections = {
   block_richtext: "block_richtext",
   block_cta: "block_cta",
   builder_pages_blocks: "builder_pages_blocks",
+  site_settings: "site_settings",
+  nav_menus: "nav_menus",
+  nav_items: "nav_items",
 } as const;
 
 export type DkitCollection = keyof typeof collections;
@@ -26,6 +29,8 @@ export const modules = {
   pages: { basePath: "/docs/modules/pages/demo", blocks: undefined },
   "contact-form": { basePath: "/contact", blocks: undefined },
   "page-builder": { basePath: "/composed", blocks: undefined },
+  settings: { basePath: undefined, blocks: undefined },
+  navigation: { basePath: undefined, blocks: undefined },
 } as const;
 
 export function collection(name: DkitCollection): string {

@@ -120,12 +120,28 @@
           "schema": {}
         },
         {
+          "field": "og_image",
+          "type": "uuid",
+          "meta": {
+            "interface": "file-image",
+            "special": ["file"],
+            "display": "image",
+            "width": "half",
+            "sort": 6,
+            "translations": [
+              { "language": "en-US", "translation": "OG image" }
+            ],
+            "note": "Default Open Graph / social share image (falls back to logo)"
+          },
+          "schema": {}
+        },
+        {
           "field": "contact_email",
           "type": "string",
           "meta": {
             "interface": "input",
             "width": "half",
-            "sort": 6,
+            "sort": 7,
             "options": { "trim": true },
             "translations": [
               { "language": "en-US", "translation": "Contact email" }
@@ -157,17 +173,35 @@
             "interface": "list",
             "special": ["cast-json"],
             "width": "full",
-            "sort": 7,
+            "sort": 8,
             "options": {
               "fields": [
                 {
-                  "field": "label",
-                  "name": "Label",
+                  "field": "platform",
+                  "name": "Platform",
                   "type": "string",
                   "meta": {
-                    "interface": "input",
+                    "interface": "select-dropdown",
                     "width": "half",
-                    "required": true
+                    "required": true,
+                    "options": {
+                      "choices": [
+                        { "text": "X", "value": "x" },
+                        { "text": "GitHub", "value": "github" },
+                        { "text": "LinkedIn", "value": "linkedin" },
+                        { "text": "Instagram", "value": "instagram" },
+                        { "text": "Facebook", "value": "facebook" },
+                        { "text": "YouTube", "value": "youtube" },
+                        { "text": "Bluesky", "value": "bluesky" },
+                        { "text": "Mastodon", "value": "mastodon" },
+                        { "text": "Discord", "value": "discord" },
+                        { "text": "TikTok", "value": "tiktok" },
+                        { "text": "Threads", "value": "threads" },
+                        { "text": "Email", "value": "email" },
+                        { "text": "Website", "value": "website" },
+                        { "text": "Other", "value": "other" }
+                      ]
+                    }
                   }
                 },
                 {
@@ -179,13 +213,24 @@
                     "width": "half",
                     "required": true
                   }
+                },
+                {
+                  "field": "label",
+                  "name": "Label override",
+                  "type": "string",
+                  "meta": {
+                    "interface": "input",
+                    "width": "full",
+                    "options": { "trim": true },
+                    "note": "Optional — defaults to the platform name"
+                  }
                 }
               ]
             },
             "translations": [
               { "language": "en-US", "translation": "Social links" }
             ],
-            "note": "Footer/social links as { label, href }"
+            "note": "Platform + URL list for social link components"
           },
           "schema": {}
         },
@@ -196,7 +241,7 @@
             "interface": "boolean",
             "display": "boolean",
             "width": "half",
-            "sort": 8,
+            "sort": 9,
             "translations": [
               { "language": "en-US", "translation": "Maintenance mode" }
             ],
@@ -211,7 +256,7 @@
             "interface": "input-code",
             "special": ["cast-json"],
             "width": "full",
-            "sort": 9,
+            "sort": 10,
             "options": { "language": "json", "lineNumber": true },
             "translations": [
               { "language": "en-US", "translation": "Feature flags" }
@@ -245,6 +290,20 @@
       "meta": {
         "many_collection": "site_settings",
         "many_field": "favicon",
+        "one_collection": "directus_files",
+        "one_field": null
+      },
+      "schema": {
+        "on_delete": "SET NULL"
+      }
+    },
+    {
+      "collection": "site_settings",
+      "field": "og_image",
+      "related_collection": "directus_files",
+      "meta": {
+        "many_collection": "site_settings",
+        "many_field": "og_image",
         "one_collection": "directus_files",
         "one_field": null
       },

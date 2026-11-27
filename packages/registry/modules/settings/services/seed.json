@@ -7,8 +7,8 @@
         "tagline": "Sample brand from the settings module — replace in Directus.",
         "contact_email": "hello@example.com",
         "social_links": [
-          { "label": "GitHub", "href": "https://github.com" },
-          { "label": "X", "href": "https://x.com" }
+          { "platform": "github", "href": "https://github.com" },
+          { "platform": "x", "href": "https://x.com" }
         ],
         "maintenance_mode": false,
         "feature_flags": {

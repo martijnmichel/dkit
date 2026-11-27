@@ -29,6 +29,110 @@ export function readItem() {
 export function readItems() {
   throw new Error("readItems is not available in preview");
 }
+export function readSingleton() {
+  throw new Error("readSingleton is not available in preview");
+}
+`;
+}
+
+export function buildSettingsMockSource(): string {
+  const seed = loadModuleSeed("settings");
+  const json = JSON.stringify(seed ?? { items: {} });
+
+  return `import { directusAssetUrl, directusFileId } from "@/lib/dkit/client";
+
+const SEED = ${json} as const;
+
+const SOCIAL_PLATFORM_LABELS: Record<string, string> = {
+  x: "X",
+  github: "GitHub",
+  linkedin: "LinkedIn",
+  instagram: "Instagram",
+  facebook: "Facebook",
+  youtube: "YouTube",
+  bluesky: "Bluesky",
+  mastodon: "Mastodon",
+  discord: "Discord",
+  tiktok: "TikTok",
+  threads: "Threads",
+  email: "Email",
+  website: "Website",
+  other: "Link",
+};
+
+export function getSettings() {
+  const row = (SEED.items?.site_settings ?? [])[0] ?? null;
+  return row ? { ...row } : null;
+}
+
+export function getSetting(key: string) {
+  return getSettings()?.[key];
+}
+
+export function isFeatureEnabled(flag: string) {
+  return Boolean(getSettings()?.feature_flags?.[flag]);
+}
+
+export function isMaintenanceMode() {
+  return Boolean(getSettings()?.maintenance_mode);
+}
+
+export function siteLogoUrl(settings: any) {
+  if (!settings) return null;
+  const id = directusFileId(settings.logo);
+  return id ? directusAssetUrl(id) : null;
+}
+
+export function siteFaviconUrl(settings: any) {
+  if (!settings) return null;
+  const id = directusFileId(settings.favicon);
+  return id ? directusAssetUrl(id) : null;
+}
+
+export function siteOgImageUrl(settings: any) {
+  if (!settings) return null;
+  const id = directusFileId(settings.og_image) ?? directusFileId(settings.logo);
+  return id ? directusAssetUrl(id) : null;
+}
+
+export function siteSocialLinks(settings: any) {
+  const rows = settings?.social_links;
+  if (!Array.isArray(rows)) return [];
+  return rows.filter((row: any) => row?.platform && typeof row.href === "string" && row.href.trim());
+}
+
+export function socialLinkLabel(link: any) {
+  const override = link.label?.trim();
+  if (override) return override;
+  return SOCIAL_PLATFORM_LABELS[link.platform] ?? SOCIAL_PLATFORM_LABELS.other;
+}
+
+export function isExternalSocialHref(href: string) {
+  return /^https?:\\/\\//i.test(href) || href.startsWith("//") || href.startsWith("mailto:");
+}
+
+export function socialLinkProps(link: any) {
+  const external = isExternalSocialHref(link.href);
+  return {
+    href: link.href,
+    "aria-label": socialLinkLabel(link),
+    ...(external && !link.href.startsWith("mailto:")
+      ? { target: "_blank", rel: "noopener noreferrer" }
+      : {}),
+  };
+}
+
+export function buildSiteMetadata(settings: any, options: any = {}) {
+  const siteName = settings?.site_name?.trim() || "Site";
+  return {
+    title: options.title || siteName,
+    description: options.description ?? settings?.tagline ?? undefined,
+  };
+}
+
+export async function getSiteMetadata(options: any = {}) {
+  return buildSiteMetadata(getSettings(), options);
+}
 `;
 }
 

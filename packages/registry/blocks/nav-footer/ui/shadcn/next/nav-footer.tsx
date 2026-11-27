@@ -3,7 +3,7 @@ import {
   navLinkProps,
   type NavItem,
 } from "@/lib/dkit/navigation";
-import { loadSoftBrand } from "./soft-brand";
+import { loadSoftBrand, softSocialLabel, type SoftSocialLink } from "./soft-brand";
 
 function FooterLinks({ items }: { items: NavItem[] }) {
   return (
@@ -40,16 +40,15 @@ export async function NavFooter({
 
   let name = brandName;
   let email = contactEmail;
-  let socials: Array<{ label: string; href: string }> = [];
+  let socials: SoftSocialLink[] = [];
 
-  if (
-    brandName === undefined ||
-    contactEmail === undefined
-  ) {
+  if (brandName === undefined || contactEmail === undefined) {
     const soft = await loadSoftBrand();
     if (brandName === undefined) name = soft?.name;
     if (contactEmail === undefined) email = soft?.contactEmail ?? null;
-    socials = soft?.socialLinks ?? [];
+    socials = (soft?.socialLinks ?? []).filter(
+      (s) => typeof s.href === "string" && s.href.trim(),
+    );
   }
 
   const title = name?.trim();
@@ -81,14 +80,19 @@ export async function NavFooter({
         {socials.length > 0 ? (
           <ul className="flex flex-wrap gap-4">
             {socials.map((s) => (
-              <li key={`${s.label}-${s.href}`}>
+              <li key={`${s.platform ?? "link"}-${s.href}`}>
                 <a
                   href={s.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  target={s.href.startsWith("mailto:") ? undefined : "_blank"}
+                  rel={
+                    s.href.startsWith("mailto:")
+                      ? undefined
+                      : "noopener noreferrer"
+                  }
+                  data-platform={s.platform}
                   className="text-sm text-muted-foreground hover:text-foreground"
                 >
-                  {s.label}
+                  {softSocialLabel(s)}
                 </a>
               </li>
             ))}
