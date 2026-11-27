@@ -20,6 +20,7 @@ import {
   buildSeedAssetMap,
   buildSettingsMockSource,
 } from "@/lib/sandpack/mocks";
+import { rewriteAsChildToRender } from "@/lib/sandpack/rewrite-aschild-to-render";
 import { rewriteAtImports } from "@/lib/sandpack/rewrite-at-imports";
 import { sandpackUiKitFiles } from "@/lib/sandpack/ui-kit-files";
 
@@ -182,11 +183,15 @@ function readUiFile(
   return fs.readFileSync(abs, "utf8");
 }
 
-function rewriteImports(source: string, filePath: string): string {
-  return rewriteAtImports(
-    source.replace(/^["']use client["'];?\s*/m, ""),
-    filePath,
-  );
+function rewriteImports(
+  source: string,
+  filePath: string,
+  opts: { baseUi?: boolean } = {},
+): string {
+  let src = source.replace(/^["']use client["'];?\s*/m, "");
+  // Sandpack shadcn kit is base-nova — match CLI adaptShadcnBlockSource.
+  if (opts.baseUi) src = rewriteAsChildToRender(src);
+  return rewriteAtImports(src, filePath);
 }
 
 function mapLibFiles(files: SandpackFiles): SandpackFiles {
@@ -265,7 +270,8 @@ function buildNextProject(
   const raw = readUiFile(blockId, kit, "next", meta.nextFile);
   if (!raw) return null;
 
-  const component = rewriteImports(raw, "/components/Block.tsx");
+  const baseUi = kit === "shadcn";
+  const component = rewriteImports(raw, "/components/Block.tsx", { baseUi });
   const propEntries = meta.props ? Object.entries(meta.props) : [];
   const propsJsx = propEntries.map(([k, v]) => `${k}={${v}}`).join(" ");
   const propsObj = propEntries.map(([k, v]) => `${k}: ${v}`).join(", ");
@@ -381,7 +387,7 @@ export default function App() {
       const source = fs.readFileSync(abs, "utf8");
       siblingSources.push(source);
       const dest = `/components/${name}`;
-      siblingFiles[dest] = rewriteImports(source, dest);
+      siblingFiles[dest] = rewriteImports(source, dest, { baseUi });
     }
   }
 

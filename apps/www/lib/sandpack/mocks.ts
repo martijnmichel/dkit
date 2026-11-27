@@ -14,9 +14,12 @@ const MIME: Record<string, string> = {
 };
 
 /**
- * Map seed file ids → URLs for Sandpack. Prefer inlined data URLs so the
- * Nodebox iframe does not depend on dkit.run; fall back to absolute /preview.
+ * Map seed file ids → URLs for Sandpack.
+ * Inline only tiny assets (SVGs/icons). Large PNGs bloat the RSC/HTML payload
+ * (~2MB×N previews) and hang Nodebox locally; prod uses absolute /preview URLs.
  */
+const INLINE_ASSET_MAX_BYTES = 12_000;
+
 export function buildSeedAssetMap(moduleId: string): Record<string, string> {
   const seed = loadModuleSeed(moduleId);
   const map: Record<string, string> = {};
@@ -38,7 +41,7 @@ export function buildSeedAssetMap(moduleId: string): Record<string, string> {
     if (
       abs.startsWith(path.resolve(servicesDir)) &&
       fs.existsSync(abs) &&
-      fs.statSync(abs).size < 200_000
+      fs.statSync(abs).size < INLINE_ASSET_MAX_BYTES
     ) {
       const ext = path.extname(abs).toLowerCase();
       const mime = MIME[ext] ?? "application/octet-stream";
